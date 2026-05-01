@@ -33,3 +33,6 @@ yarn-error.log*
 
 # Coverage
 coverage
+
+# TypeScript incremental build caches
+*.tsbuildinfo
