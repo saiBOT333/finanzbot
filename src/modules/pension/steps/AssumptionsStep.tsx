@@ -5,7 +5,8 @@ import { Select } from "../../../components/ui/Select";
 import { InfoTooltip } from "../../../components/InfoTooltip";
 import { AssetsManager } from "../../../components/AssetsManager";
 import { useProfile, setProfile } from "../../../lib/profile/useProfile";
-import { PENSION_DEFAULTS, grossPensionToNet } from "../defaults";
+import { PENSION_DEFAULTS, midGrossFromRenteninfo, realNetPensionFromGross } from "../defaults";
+import { formatEUR, formatPercent } from "../../../lib/format";
 import { pensionStore, PENSION_MODULE_DEFAULTS } from "../state";
 import { PRESETS, detectActivePreset, type PresetId } from "../presets";
 import { tooltips } from "../tooltips";
@@ -94,6 +95,11 @@ export function AssumptionsStep() {
               }
             />
             <RenteninfoHelfer
+              inflation={m.inflation}
+              yearsToRetirement={Math.max(
+                0,
+                (profile.retirementAge ?? PENSION_DEFAULTS.retirementAge) - (profile.age ?? 0),
+              )}
               onApplyNet={(net) =>
                 pensionStore.set({ expectedStatePension: Math.round(net) })
               }
@@ -230,17 +236,27 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 /**
- * Helper that converts a gross pension value (as printed on the Renteninformation
- * letter) to a net pension via Finanztip's 20 % rule of thumb, then writes it
- * to the parent input.
+ * Helper that turns the two gross projections from the German "Renteninformation"
+ * letter into a net pension in today's purchasing power, following the exact
+ * Finanztip pipeline: average → minus 20 % → discount by inflation. Each step
+ * is shown to the user so the number is auditable.
  */
-function RenteninfoHelfer({ onApplyNet }: { onApplyNet: (net: number) => void }) {
+function RenteninfoHelfer({
+  inflation,
+  yearsToRetirement,
+  onApplyNet,
+}: {
+  inflation: number;
+  yearsToRetirement: number;
+  onApplyNet: (net: number) => void;
+}) {
   const [open, setOpen] = useState(false);
   const [grossLow, setGrossLow] = useState<number | undefined>();
   const [grossHigh, setGrossHigh] = useState<number | undefined>();
 
-  const mid = grossLow !== undefined && grossHigh !== undefined ? (grossLow + grossHigh) / 2 : undefined;
-  const net = mid !== undefined ? grossPensionToNet(mid) : undefined;
+  const ready = grossLow !== undefined && grossHigh !== undefined && yearsToRetirement > 0;
+  const mid = ready ? midGrossFromRenteninfo(grossLow!, grossHigh!) : undefined;
+  const result = mid !== undefined ? realNetPensionFromGross(mid, inflation, yearsToRetirement) : undefined;
 
   return (
     <div className="rounded-lg bg-slate-50 p-3 ring-1 ring-slate-200">
@@ -254,10 +270,10 @@ function RenteninfoHelfer({ onApplyNet }: { onApplyNet: (net: number) => void })
       {open && (
         <div className="mt-3 space-y-3">
           <p className="text-xs leading-relaxed text-slate-600">
-            Auf deiner Renteninformation findest du zwei Hochrechnungen für die Brutto-Rente:
-            eine bei 1 % und eine bei 2 % Rentensteigerung. Wir bilden den Mittelwert (entspricht
-            ~1,5 % Steigerung) und ziehen 20 % für Steuern und Krankenversicherung ab — Standardweg
-            laut Finanztip.
+            Auf deiner Renteninformation stehen zwei Hochrechnungen der Brutto-Rente: eine bei 1 %
+            und eine bei 2 % Rentensteigerung. Wir bilden den Mittelwert (≈ 1,5 % Steigerung),
+            ziehen 20 % für Steuern und Krankenversicherung ab und rechnen den Wert mit deiner
+            Inflations-Annahme zurück in <strong>heutige Kaufkraft</strong> — exakt nach Finanztip.
           </p>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <NumberInput
@@ -275,15 +291,37 @@ function RenteninfoHelfer({ onApplyNet }: { onApplyNet: (net: number) => void })
               min={0}
             />
           </div>
-          {net !== undefined && (
-            <div className="flex items-center justify-between rounded bg-white px-3 py-2 text-sm ring-1 ring-slate-200">
-              <span className="text-slate-600">
-                Mittel {Math.round(mid!)} € brutto · −20 % ={" "}
-                <strong className="text-slate-900">{Math.round(net)} €</strong> netto
-              </span>
-              <Button size="sm" onClick={() => onApplyNet(net)}>
-                Übernehmen
-              </Button>
+          {yearsToRetirement <= 0 && (
+            <p className="text-xs text-amber-700">
+              Bitte erst Schritt 1 (Alter & Renteneintritt) ausfüllen — wir brauchen die Jahre bis
+              zur Rente, um die Inflation rauszurechnen.
+            </p>
+          )}
+          {result !== undefined && mid !== undefined && (
+            <div className="space-y-2 rounded bg-white px-3 py-2 text-sm ring-1 ring-slate-200">
+              <div className="space-y-1 text-xs text-slate-600">
+                <div className="flex justify-between">
+                  <span>Mittel der Brutto-Werte</span>
+                  <strong className="text-slate-900">{formatEUR(mid)}</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span>− 20 % Steuern und KV/PV</span>
+                  <strong className="text-slate-900">
+                    {formatEUR(result.netNominal)} netto in {yearsToRetirement} Jahren
+                  </strong>
+                </div>
+                <div className="flex justify-between">
+                  <span>÷ Inflation {formatPercent(inflation)} über {yearsToRetirement} Jahre</span>
+                  <strong className="text-slate-900">
+                    {formatEUR(result.netReal)} heutige Kaufkraft
+                  </strong>
+                </div>
+              </div>
+              <div className="flex items-center justify-end pt-1">
+                <Button size="sm" onClick={() => onApplyNet(result.netReal)}>
+                  Übernehmen
+                </Button>
+              </div>
             </div>
           )}
         </div>

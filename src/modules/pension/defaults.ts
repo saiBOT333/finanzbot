@@ -56,3 +56,32 @@ export function withDefaults(partial: Partial<PensionInputs>): PensionInputs {
 export function grossPensionToNet(grossMonthly: number): number {
   return grossMonthly * PENSION_DEFAULTS.grossToNetPensionFactor;
 }
+
+/**
+ * Average two gross pension projections from the German "Renteninformation" letter
+ * (one at 1 % and one at 2 % yearly raise). Result is the mid-case in nominal Euro
+ * at the time of retirement.
+ */
+export function midGrossFromRenteninfo(low: number, high: number): number {
+  return (low + high) / 2;
+}
+
+/**
+ * Full Finanztip pipeline: average two gross projections, deduct 20 % for taxes
+ * and health/long-term-care, then discount back to today's purchasing power
+ * using the inflation assumption.
+ *
+ * Reproduces the Daniela example from the Finanztip video:
+ *   midGross 3.400 € · yearsToRetirement 35 · inflation 2 %
+ *   → 2.720 € net nominal · ≈ 1.360 € net in today's purchasing power.
+ */
+export function realNetPensionFromGross(
+  grossMonthly: number,
+  inflation: number,
+  yearsToRetirement: number,
+): { netNominal: number; netReal: number } {
+  const netNominal = grossPensionToNet(grossMonthly);
+  if (yearsToRetirement <= 0) return { netNominal, netReal: netNominal };
+  const netReal = netNominal / Math.pow(1 + inflation, yearsToRetirement);
+  return { netNominal, netReal };
+}
