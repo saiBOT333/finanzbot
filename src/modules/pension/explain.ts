@@ -2,6 +2,13 @@ import { formatEUR, formatNumber, formatPercent } from "../../lib/format";
 import { PENSION_DEFAULTS } from "./defaults";
 import type { PensionInputs, PensionResult } from "./types";
 
+function describeBuckets(buckets: Array<{ weight: number; rate: number }>): string {
+  return buckets
+    .filter((b) => b.weight > 0)
+    .map((b) => `${formatPercent(b.weight)} @ ${formatPercent(b.rate)}`)
+    .join(" + ");
+}
+
 export type ExplanationInput = {
   label: string;
   symbol: string;
@@ -39,8 +46,8 @@ export function explainPension(
     replacementRate,
     expectedStatePension,
     inflation,
-    realReturn,
-    payoutRealReturn,
+    savingsBuckets,
+    payoutBuckets,
     existingAssets,
     payoutMethod,
     payoutYears,
@@ -48,8 +55,8 @@ export function explainPension(
     taxBufferPct,
   } = inputs;
 
-  const r = realReturn;
-  const rPay = payoutRealReturn;
+  const r = result.effectiveSavingReturn;
+  const rPay = result.effectivePayoutReturn;
   const rMonthly = Math.pow(1 + r, 1 / 12) - 1;
   const months = result.yearsToRetirement * 12;
   const useAnnuity = payoutMethod === "annuity";
@@ -89,16 +96,16 @@ export function explainPension(
       isDefault: inflation === PENSION_DEFAULTS.inflation,
     },
     {
-      label: "Reale Rendite (Sparphase)",
+      label: "Reale Rendite Sparphase (gewichtet)",
       symbol: "r",
-      value: formatPercent(realReturn),
-      isDefault: realReturn === PENSION_DEFAULTS.realReturn,
+      value: `${formatPercent(r)}    [${describeBuckets(savingsBuckets)}]`,
+      isDefault: false,
     },
     {
-      label: "Reale Rendite (Auszahlphase)",
+      label: "Reale Rendite Auszahlphase (gewichtet)",
       symbol: "rₐ",
-      value: formatPercent(payoutRealReturn),
-      isDefault: payoutRealReturn === PENSION_DEFAULTS.payoutRealReturn,
+      value: `${formatPercent(rPay)}    [${describeBuckets(payoutBuckets)}]`,
+      isDefault: false,
     },
     {
       label: "Bestehendes Vorsorge-Vermögen (Summe)",

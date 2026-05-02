@@ -75,8 +75,55 @@ export type Asset = {
   realReturnOverride?: number;
 };
 
-export function effectiveRealReturn(asset: Asset): number {
+export function effectiveRealReturn(asset: Asset | AllocationEntry): number {
   return asset.realReturnOverride ?? getAssetTypeDef(asset.type).defaultRealReturn;
+}
+
+/**
+ * One slice of an allocation (% of the portfolio in this bucket).
+ * Re-uses AssetType so that the savings allocation and the existing-assets
+ * list speak the same vocabulary.
+ */
+export type AllocationEntry = {
+  id: string;
+  type: AssetType;
+  /** 0..100 — share of the portfolio in this bucket. */
+  percent: number;
+  /** Optional: overrides the type's default real return. */
+  realReturnOverride?: number;
+};
+
+export type Allocation = AllocationEntry[];
+
+export function allocationTotalPercent(allocation: Allocation): number {
+  return allocation.reduce((sum, a) => sum + a.percent, 0);
+}
+
+export function isAllocationValid(allocation: Allocation): boolean {
+  if (allocation.length === 0) return false;
+  if (allocation.some((a) => a.percent < 0)) return false;
+  return Math.abs(allocationTotalPercent(allocation) - 100) < 0.01;
+}
+
+/**
+ * Effective real return of a portfolio (weighted average of bucket returns).
+ * Useful as a display value; the actual capital projection uses per-bucket
+ * compounding (see lib/finance.ts) for accuracy when bucket returns differ.
+ */
+export function weightedRealReturn(allocation: Allocation): number {
+  if (allocation.length === 0) return 0;
+  const total = allocationTotalPercent(allocation);
+  if (total === 0) return 0;
+  return (
+    allocation.reduce((sum, a) => sum + (a.percent / 100) * effectiveRealReturn(a), 0) *
+    (100 / total)
+  );
+}
+
+let nextAllocId = 0;
+export function newAllocationId(): string {
+  nextAllocId += 1;
+  return `alloc-${Date.now().toString(36)}-${nextAllocId}`;
 }
 
 export function totalAmount(assets: readonly Asset[]): number {

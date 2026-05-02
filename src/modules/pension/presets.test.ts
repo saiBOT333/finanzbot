@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { PRESETS, detectActivePreset, DEFAULT_PRESET } from "./presets";
 import { calculatePension } from "./calculations";
-import { withDefaults } from "./defaults";
+import { allocationToBuckets, withDefaults } from "./defaults";
 import { PENSION_MODULE_DEFAULTS, type PensionModuleState } from "./state";
 
 const fixtureInputs = (state: PensionModuleState) =>
@@ -11,8 +11,8 @@ const fixtureInputs = (state: PensionModuleState) =>
     replacementRate: state.replacementRate,
     expectedStatePension: 3000 * 0.48,
     inflation: state.inflation,
-    realReturn: state.realReturn,
-    payoutRealReturn: state.payoutRealReturn,
+    savingsBuckets: allocationToBuckets(state.savingsAllocation),
+    payoutBuckets: allocationToBuckets(state.payoutAllocation),
     payoutMethod: state.payoutMethod,
     payoutYears: state.payoutYears,
     safeWithdrawalRate: state.safeWithdrawalRate,

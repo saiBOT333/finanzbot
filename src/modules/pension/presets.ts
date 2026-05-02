@@ -1,3 +1,4 @@
+import { newAllocationId, type Allocation } from "../../lib/assets";
 import type { PensionModuleState } from "./state";
 
 export type PresetId = "conservative" | "investor";
@@ -11,17 +12,40 @@ export type Preset = {
   state: Omit<PensionModuleState, "expectedStatePension">;
 };
 
+const conservativeSavings: Allocation = [
+  { id: newAllocationId(), type: "etf-world", percent: 30 },
+  { id: newAllocationId(), type: "bonds", percent: 50 },
+  { id: newAllocationId(), type: "cash", percent: 20 },
+];
+
+const conservativePayout: Allocation = [
+  { id: newAllocationId(), type: "etf-world", percent: 10 },
+  { id: newAllocationId(), type: "bonds", percent: 60 },
+  { id: newAllocationId(), type: "cash", percent: 30 },
+];
+
+const investorSavings: Allocation = [
+  { id: newAllocationId(), type: "etf-world", percent: 80 },
+  { id: newAllocationId(), type: "bonds", percent: 20 },
+];
+
+const investorPayout: Allocation = [
+  { id: newAllocationId(), type: "etf-world", percent: 40 },
+  { id: newAllocationId(), type: "bonds", percent: 40 },
+  { id: newAllocationId(), type: "cash", percent: 20 },
+];
+
 const conservative: Preset = {
   id: "conservative",
   label: "Konservativ",
   source: "Finanztip",
   description:
-    "Vorsichtige Annahmen aus dem Finanztip-Video: gemischtes Portfolio, niedrigere Rendite, längere Bezugsdauer, keine Steuern eingerechnet.",
+    "Vorsichtige Annahmen aus dem Finanztip-Video: gemischtes Portfolio (eher defensiv), längere Bezugsdauer, keine Steuern eingerechnet.",
   state: {
     replacementRate: 0.8,
     inflation: 0.02,
-    realReturn: 0.03,
-    payoutRealReturn: 0.01,
+    savingsAllocation: conservativeSavings,
+    payoutAllocation: conservativePayout,
     payoutMethod: "annuity",
     payoutYears: 30,
     safeWithdrawalRate: 0.035,
@@ -34,12 +58,12 @@ const investor: Preset = {
   label: "Investor",
   source: "Finanzfluss",
   description:
-    "Investorisch: Welt-ETF-Annahme mit 5 % realer Rendite durchgängig, sichere Entnahmerate (3,5 %), mit Steuer-Puffer.",
+    "Investorisch: hohe Aktien-Quote bis ins Alter, sichere Entnahmerate (3,5 %), mit Steuer-Puffer.",
   state: {
     replacementRate: 0.8,
     inflation: 0.02,
-    realReturn: 0.05,
-    payoutRealReturn: 0.05,
+    savingsAllocation: investorSavings,
+    payoutAllocation: investorPayout,
     payoutMethod: "safe-withdrawal",
     payoutYears: 30,
     safeWithdrawalRate: 0.035,
@@ -51,6 +75,13 @@ export const PRESETS: readonly Preset[] = [conservative, investor];
 
 /** Default preset applied when nothing is stored yet — Finanztip-conservative. */
 export const DEFAULT_PRESET = conservative;
+
+function normaliseAllocation(allocation: Allocation): string {
+  return allocation
+    .map((a) => `${a.type}:${a.percent}:${a.realReturnOverride ?? "-"}`)
+    .sort()
+    .join(",");
+}
 
 /**
  * Detect which preset the current module state matches (ignoring expectedStatePension,
@@ -70,11 +101,11 @@ function matchesPreset(
   return (
     state.replacementRate === preset.replacementRate &&
     state.inflation === preset.inflation &&
-    state.realReturn === preset.realReturn &&
-    state.payoutRealReturn === preset.payoutRealReturn &&
     state.payoutMethod === preset.payoutMethod &&
     state.payoutYears === preset.payoutYears &&
     state.safeWithdrawalRate === preset.safeWithdrawalRate &&
-    state.taxBufferPct === preset.taxBufferPct
+    state.taxBufferPct === preset.taxBufferPct &&
+    normaliseAllocation(state.savingsAllocation) === normaliseAllocation(preset.savingsAllocation) &&
+    normaliseAllocation(state.payoutAllocation) === normaliseAllocation(preset.payoutAllocation)
   );
 }

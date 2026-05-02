@@ -1,10 +1,16 @@
 import {
   annualToMonthlyRate,
   compound,
-  paymentForFutureValue,
-  presentValueAnnuity,
+  weightedFutureValueAnnuityFactor,
+  weightedPresentValueAnnuity,
 } from "../../lib/finance";
 import type { PensionInputs, PensionResult } from "./types";
+
+function weightedAverage(buckets: Array<{ weight: number; rate: number }>): number {
+  const total = buckets.reduce((s, b) => s + b.weight, 0);
+  if (total === 0) return 0;
+  return buckets.reduce((s, b) => s + (b.weight / total) * b.rate, 0);
+}
 
 /* ─────────────────────────────────────────────────────────────────────────────
  *                     FORMEL-STAMMTISCH (Renten-Modul)
@@ -63,14 +69,17 @@ export function calculatePension(inputs: PensionInputs): PensionResult {
     replacementRate,
     expectedStatePension,
     inflation,
-    realReturn,
-    payoutRealReturn,
+    savingsBuckets,
+    payoutBuckets,
     existingAssets,
     payoutMethod,
     payoutYears,
     safeWithdrawalRate,
     taxBufferPct,
   } = inputs;
+
+  const effectiveSavingReturn = weightedAverage(savingsBuckets);
+  const effectivePayoutReturn = weightedAverage(payoutBuckets);
 
   if (currentAge <= 0 || retirementAge <= 0 || netIncomeMonthly <= 0) {
     return { kind: "invalid", reason: "Bitte Alter, Renteneintritt und Netto-Einkommen angeben." };
@@ -95,13 +104,13 @@ export function calculatePension(inputs: PensionInputs): PensionResult {
 
   const capitalNeededBeforeTax =
     payoutMethod === "annuity"
-      ? presentValueAnnuity(gapToday * 12, payoutRealReturn, payoutYears)
+      ? weightedPresentValueAnnuity(gapToday * 12, payoutBuckets, payoutYears)
       : (gapToday * 12) / safeWithdrawalRate;
 
   const taxBufferAmount = capitalNeededBeforeTax * taxBufferPct;
   const capitalNeeded = capitalNeededBeforeTax + taxBufferAmount;
 
-  // Each asset bucket grows at its own real return — Tagesgeld stagniert,
+  // Each existing asset compounds at its own real return — Tagesgeld stagniert,
   // ETF wächst kräftig. Summe ergibt das gesamte zukünftige Vermögen.
   const existingFV = existingAssets.reduce(
     (sum, a) => sum + compound(a.amount, a.realReturn, yearsToRetirement),
@@ -109,10 +118,17 @@ export function calculatePension(inputs: PensionInputs): PensionResult {
   );
   const remainingCapital = Math.max(0, capitalNeeded - existingFV);
 
-  const rMonthly = annualToMonthlyRate(realReturn);
+  // Each savings bucket compounds independently at its own monthly real rate.
+  // Sum of per-bucket FV-Annuities for a 1 € payment gives the inverse factor
+  // used to derive the required monthly contribution.
   const months = yearsToRetirement * 12;
+  const monthlyBuckets = savingsBuckets.map((b) => ({
+    weight: b.weight,
+    rate: annualToMonthlyRate(b.rate),
+  }));
+  const fvFactor = weightedFutureValueAnnuityFactor(monthlyBuckets, months);
   const monthlySavings =
-    remainingCapital === 0 ? 0 : paymentForFutureValue(remainingCapital, rMonthly, months);
+    remainingCapital === 0 || fvFactor === 0 ? 0 : remainingCapital / fvFactor;
 
   const savingsRatePct = (monthlySavings / netIncomeMonthly) * 100;
   const gapAtRetirementNominal = gapToday * Math.pow(1 + inflation, yearsToRetirement);
@@ -130,5 +146,7 @@ export function calculatePension(inputs: PensionInputs): PensionResult {
     monthlySavings,
     savingsRatePct,
     gapAtRetirementNominal,
+    effectiveSavingReturn,
+    effectivePayoutReturn,
   };
 }

@@ -7,7 +7,7 @@ import { calculatePension } from "../calculations";
 import { explainPension } from "../explain";
 import { PensionRechenweg } from "../PensionRechenweg";
 import { pensionStore } from "../state";
-import { withDefaults } from "../defaults";
+import { allocationToBuckets, withDefaults } from "../defaults";
 import { SAVINGS_RATE_BENCHMARKS } from "../constants";
 import { tooltips } from "../tooltips";
 import { effectiveRealReturn } from "../../../lib/assets";
@@ -23,8 +23,8 @@ export function ResultStep() {
     replacementRate: m.replacementRate,
     expectedStatePension: m.expectedStatePension ?? undefined,
     inflation: m.inflation,
-    realReturn: m.realReturn,
-    payoutRealReturn: m.payoutRealReturn,
+    savingsBuckets: allocationToBuckets(m.savingsAllocation),
+    payoutBuckets: allocationToBuckets(m.payoutAllocation),
     existingAssets: (profile.assets ?? []).map((a) => ({
       amount: a.amount,
       realReturn: effectiveRealReturn(a),
@@ -133,8 +133,8 @@ export function ResultStep() {
           </li>
           <li>
             Mit {formatEUR(result.monthlySavings, true)} pro Monat und{" "}
-            {formatPercent(inputs.realReturn)} realer Rendite erreichst du das in{" "}
-            {result.yearsToRetirement} Jahren.
+            {formatPercent(result.effectiveSavingReturn)} realer Rendite (gewichtetes
+            Mittel deiner Allokation) erreichst du das in {result.yearsToRetirement} Jahren.
           </li>
         </ol>
       </Card>

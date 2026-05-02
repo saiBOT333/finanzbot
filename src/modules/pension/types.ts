@@ -10,10 +10,10 @@ export type PensionInputs = {
   expectedStatePension: number;
   /** Annual inflation rate, e.g. 0.02 for 2 %. */
   inflation: number;
-  /** Annual real return during the saving phase. */
-  realReturn: number;
-  /** Annual real return during the payout phase (typically lower — fewer equities). */
-  payoutRealReturn: number;
+  /** Per-bucket weights and real returns during the saving phase. Weights sum to 1. */
+  savingsBuckets: Array<{ weight: number; rate: number }>;
+  /** Per-bucket weights and real returns during the payout phase. Weights sum to 1. */
+  payoutBuckets: Array<{ weight: number; rate: number }>;
   /**
    * Existing capital earmarked for retirement, broken down by bucket.
    * Each entry grows at its own real rate during the saving phase.
@@ -43,6 +43,10 @@ export type PensionResult =
       monthlySavings: number;
       savingsRatePct: number;
       gapAtRetirementNominal: number;
+      /** Weighted average real return during saving (for display). */
+      effectiveSavingReturn: number;
+      /** Weighted average real return during payout (for display). */
+      effectivePayoutReturn: number;
     }
   | { kind: "no-gap"; needToday: number; expectedStatePension: number }
   | { kind: "already-retired" }

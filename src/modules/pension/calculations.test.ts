@@ -34,7 +34,7 @@ describe("calculatePension — happy path with default Finanztip/Finanzfluss set
 
   it("a higher real return reduces the required monthly contribution", () => {
     const high = calculatePension(
-      withDefaults({ currentAge: 35, netIncomeMonthly: 3000, realReturn: 0.07 }),
+      withDefaults({ currentAge: 35, netIncomeMonthly: 3000, savingsBuckets: [{ weight: 1, rate: 0.07 }] }),
     );
     const base = calculatePension(baseInputs);
     if (high.kind !== "ok" || base.kind !== "ok") throw new Error("expected ok");
@@ -148,8 +148,8 @@ describe("calculatePension — Finanztip cross-check (Daniela)", () => {
         netIncomeMonthly: 2600,
         replacementRate: 2200 / 2600,
         expectedStatePension: 1360,
-        realReturn: 0.03, // 5 % nominal − 2 % inflation
-        payoutRealReturn: 0.01, // 3 % nominal − 2 % inflation
+        savingsBuckets: [{ weight: 1, rate: 0.03 }], // 5 % nominal − 2 % inflation
+        payoutBuckets: [{ weight: 1, rate: 0.01 }], // 3 % nominal − 2 % inflation
         payoutYears: 30,
         taxBufferPct: 0, // Finanztip ignores capital gains tax in this example
       }),
@@ -175,7 +175,8 @@ describe("calculatePension — Finanzfluss cross-check (Carlotta)", () => {
         netIncomeMonthly: 2300,
         replacementRate: 0.8,
         expectedStatePension: 2300 * 0.3, // 30 % gesetzliche Rente
-        realReturn: 0.05,
+        savingsBuckets: [{ weight: 1, rate: 0.05 }],
+        payoutBuckets: [{ weight: 1, rate: 0.05 }],
         payoutMethod: "safe-withdrawal",
         safeWithdrawalRate: 0.035,
         taxBufferPct: 0,
@@ -196,7 +197,8 @@ describe("calculatePension — Finanzfluss cross-check (Carlotta)", () => {
         netIncomeMonthly: 2300,
         replacementRate: 0.8,
         expectedStatePension: 2300 * 0.3,
-        realReturn: 0.05,
+        savingsBuckets: [{ weight: 1, rate: 0.05 }],
+        payoutBuckets: [{ weight: 1, rate: 0.05 }],
         payoutMethod: "safe-withdrawal",
         safeWithdrawalRate: 0.035,
         taxBufferPct: 0.11,

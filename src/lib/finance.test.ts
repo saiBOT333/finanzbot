@@ -6,6 +6,9 @@ import {
   paymentForFutureValue,
   annualToMonthlyRate,
   monthlyToAnnualRate,
+  weightedFutureValueAnnuity,
+  weightedPresentValueAnnuity,
+  weightedFutureValueAnnuityFactor,
 } from "./finance";
 
 describe("compound", () => {
@@ -48,6 +51,62 @@ describe("paymentForFutureValue", () => {
   });
   it("handles rate=0", () => {
     expect(paymentForFutureValue(1200, 0, 12)).toBe(100);
+  });
+});
+
+describe("weightedFutureValueAnnuity", () => {
+  it("collapses to plain FV-Annuity when there is one bucket at weight 1", () => {
+    const buckets = [{ weight: 1, rate: 0.05 }];
+    expect(weightedFutureValueAnnuity(100, buckets, 10)).toBeCloseTo(
+      futureValueAnnuity(100, 0.05, 10),
+      6,
+    );
+  });
+
+  it("buckets compound independently — 60/40 ETF vs cash gives more than 3 % blend", () => {
+    const buckets = [
+      { weight: 0.6, rate: 0.05 },
+      { weight: 0.4, rate: 0.0 },
+    ];
+    const separate = weightedFutureValueAnnuity(100, buckets, 30);
+    const blended = futureValueAnnuity(100, 0.6 * 0.05 + 0.4 * 0.0, 30);
+    // Per-bucket compounding beats the weighted-average rate because the
+    // 5 %-bucket compounds on its full share for the full duration.
+    expect(separate).toBeGreaterThan(blended);
+  });
+});
+
+describe("weightedPresentValueAnnuity", () => {
+  it("collapses to plain PV-Annuity for a single-bucket allocation", () => {
+    const buckets = [{ weight: 1, rate: 0.03 }];
+    expect(weightedPresentValueAnnuity(100, buckets, 30)).toBeCloseTo(
+      presentValueAnnuity(100, 0.03, 30),
+      6,
+    );
+  });
+
+  it("is the linear combination of per-bucket PV-Annuities", () => {
+    const buckets = [
+      { weight: 0.7, rate: 0.04 },
+      { weight: 0.3, rate: 0.01 },
+    ];
+    const expected =
+      0.7 * presentValueAnnuity(100, 0.04, 25) + 0.3 * presentValueAnnuity(100, 0.01, 25);
+    expect(weightedPresentValueAnnuity(100, buckets, 25)).toBeCloseTo(expected, 6);
+  });
+});
+
+describe("weightedFutureValueAnnuityFactor", () => {
+  it("inverts to give the required monthly payment to hit a target FV", () => {
+    const buckets = [
+      { weight: 0.7, rate: 0.004074 }, // ~5 % p.a. monthly
+      { weight: 0.3, rate: 0 },        // cash
+    ];
+    const months = 360;
+    const targetFV = 250_000;
+    const factor = weightedFutureValueAnnuityFactor(buckets, months);
+    const monthly = targetFV / factor;
+    expect(weightedFutureValueAnnuity(monthly, buckets, months)).toBeCloseTo(targetFV, 2);
   });
 });
 

@@ -26,9 +26,12 @@ describe("explainPension", () => {
     const byLabel = Object.fromEntries(ex.inputs.map((i) => [i.symbol, i]));
     expect(byLabel.a?.isDefault).toBe(false);
     expect(byLabel.N?.isDefault).toBe(false);
-    expect(byLabel.r?.isDefault).toBe(true);
     expect(byLabel.i?.isDefault).toBe(true);
     expect(byLabel["τ"]?.isDefault).toBe(true);
+    // r and rₐ now describe a weighted allocation; the per-bucket detail is
+    // shown in the value text, so we no longer flag them as "default" or not.
+    expect(byLabel.r?.value).toMatch(/@/);
+    expect(byLabel["rₐ"]?.value).toMatch(/@/);
   });
 
   it("produces a complete sequence of indexed steps", () => {

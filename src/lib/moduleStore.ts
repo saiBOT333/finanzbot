@@ -37,13 +37,20 @@ function getStoreCache(): StoreCache {
  * Re-uses an existing instance for the same `id` across HMR reloads so all
  * components share a single subscriber list.
  */
-export function createModuleStore<T extends object>(id: string, defaults: T): ModuleStore<T> {
+export function createModuleStore<T extends object>(
+  id: string,
+  defaults: T,
+  /** Optional one-shot migration applied to whatever is found in localStorage. */
+  migrate?: (stored: Partial<T> & Record<string, unknown>) => Partial<T>,
+): ModuleStore<T> {
   const cache = getStoreCache();
   const cached = cache.get(id);
   if (cached) return cached as unknown as ModuleStore<T>;
 
   const storageKey = KEYS.moduleKey(id);
-  let state: T = { ...defaults, ...(readJSON<Partial<T>>(storageKey) ?? {}) } as T;
+  const raw = readJSON<Partial<T> & Record<string, unknown>>(storageKey) ?? {};
+  const migrated = migrate ? migrate(raw) : raw;
+  let state: T = { ...defaults, ...migrated } as T;
   const listeners = new Set<() => void>();
 
   const notify = () => listeners.forEach((l) => l());

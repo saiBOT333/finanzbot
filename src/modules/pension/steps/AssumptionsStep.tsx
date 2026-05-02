@@ -4,6 +4,7 @@ import { Button } from "../../../components/ui/Button";
 import { Select } from "../../../components/ui/Select";
 import { InfoTooltip } from "../../../components/InfoTooltip";
 import { AssetsManager } from "../../../components/AssetsManager";
+import { AllocationManager } from "../../../components/AllocationManager";
 import { useProfile, setProfile } from "../../../lib/profile/useProfile";
 import { PENSION_DEFAULTS, midGrossFromRenteninfo, realNetPensionFromGross } from "../defaults";
 import { formatEUR, formatPercent } from "../../../lib/format";
@@ -136,17 +137,6 @@ export function AssumptionsStep() {
                   max={60}
                   tooltip={tooltips.payoutYears}
                 />
-                <NumberInput
-                  label="Reale Rendite im Ruhestand"
-                  value={m.payoutRealReturn * 100}
-                  onChange={(v) =>
-                    v !== undefined && pensionStore.set({ payoutRealReturn: v / 100 })
-                  }
-                  unit="%"
-                  min={0}
-                  max={20}
-                  tooltip={tooltips.payoutRealReturn}
-                />
               </div>
             ) : (
               <NumberInput
@@ -164,7 +154,30 @@ export function AssumptionsStep() {
             )}
           </Section>
 
-          <Section title="Renditen, Inflation und Steuern">
+          <Section title="Anlage-Allokation in der Sparphase">
+            <p className="text-xs leading-relaxed text-slate-600">
+              Anteile in %, die du regelmäßig in jede Anlageform investierst. Aus den
+              gewichteten realen Renditen ergibt sich die Anspar-Rendite. Standardmäßig
+              passend zum gewählten Profil — du kannst sie individuell anpassen.
+            </p>
+            <AllocationManager
+              allocation={m.savingsAllocation}
+              onChange={(savingsAllocation) => pensionStore.set({ savingsAllocation })}
+            />
+          </Section>
+
+          <Section title="Anlage-Allokation in der Rente">
+            <p className="text-xs leading-relaxed text-slate-600">
+              Im Alter ist die Aktien-Quote oft niedriger. Hier die geplante
+              Allokation während der Auszahlphase.
+            </p>
+            <AllocationManager
+              allocation={m.payoutAllocation}
+              onChange={(payoutAllocation) => pensionStore.set({ payoutAllocation })}
+            />
+          </Section>
+
+          <Section title="Inflation und Steuern">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <NumberInput
                 label="Inflation"
@@ -176,17 +189,6 @@ export function AssumptionsStep() {
                 min={0}
                 max={20}
                 tooltip={tooltips.inflation}
-              />
-              <NumberInput
-                label="Reale Rendite in der Sparphase"
-                value={m.realReturn * 100}
-                onChange={(v) =>
-                  v !== undefined && pensionStore.set({ realReturn: v / 100 })
-                }
-                unit="%"
-                min={0}
-                max={20}
-                tooltip={tooltips.realReturn}
               />
               <NumberInput
                 label="Steuer-Puffer auf Kapital"
