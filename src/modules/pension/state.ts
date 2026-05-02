@@ -1,5 +1,5 @@
 import { createModuleStore } from "../../lib/moduleStore";
-import { STANDARD_PRESET } from "./presets";
+import { DEFAULT_PRESET } from "./presets";
 import type { PayoutMethod } from "./types";
 
 export type PensionModuleState = {
@@ -15,9 +15,9 @@ export type PensionModuleState = {
   taxBufferPct: number;
 };
 
-/** Defaults are coupled to the "Standard" preset to keep them in sync. */
+/** Defaults are coupled to the conservative preset (Finanztip-Methode). */
 export const PENSION_MODULE_DEFAULTS: PensionModuleState = {
-  ...STANDARD_PRESET.state,
+  ...DEFAULT_PRESET.state,
   expectedStatePension: null,
 };
 

@@ -7,6 +7,8 @@ export type WizardStep = {
   content: ReactNode;
   /** When false, the "Weiter" button is disabled. */
   canProceed?: boolean;
+  /** Optional hint shown next to the disabled button so users know why. */
+  blockReason?: string;
 };
 
 type WizardProps = {
@@ -72,13 +74,18 @@ export function Wizard({ steps, onFinish, finishLabel = "Fertig" }: WizardProps)
         <div className="space-y-4">{step.content}</div>
       </div>
 
-      <div className="flex items-center justify-between border-t border-slate-100 pt-4">
+      <div className="flex flex-col gap-2 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
         <Button variant="ghost" onClick={handleBack} disabled={index === 0}>
           Zurück
         </Button>
-        <Button onClick={handleNext} disabled={!canProceed}>
-          {isLast ? finishLabel : "Weiter"}
-        </Button>
+        <div className="flex flex-col items-stretch gap-1 sm:items-end">
+          {!canProceed && step.blockReason && (
+            <p className="text-xs text-amber-700 sm:text-right">{step.blockReason}</p>
+          )}
+          <Button onClick={handleNext} disabled={!canProceed}>
+            {isLast ? finishLabel : "Weiter"}
+          </Button>
+        </div>
       </div>
     </div>
   );

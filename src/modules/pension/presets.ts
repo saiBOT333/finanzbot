@@ -1,6 +1,6 @@
 import type { PensionModuleState } from "./state";
 
-export type PresetId = "conservative" | "standard" | "investor";
+export type PresetId = "conservative" | "investor";
 
 export type Preset = {
   id: PresetId;
@@ -29,24 +29,6 @@ const conservative: Preset = {
   },
 };
 
-const standard: Preset = {
-  id: "standard",
-  label: "Standard",
-  source: "Mix Finanztip + Finanzfluss",
-  description:
-    "Mittelweg: Finanztip-Methode (Annuität, 30 Jahre) mit höheren Rendite-Annahmen wie bei Finanzfluss und Steuer-Puffer.",
-  state: {
-    replacementRate: 0.8,
-    inflation: 0.02,
-    realReturn: 0.05,
-    payoutRealReturn: 0.03,
-    payoutMethod: "annuity",
-    payoutYears: 30,
-    safeWithdrawalRate: 0.035,
-    taxBufferPct: 0.12,
-  },
-};
-
 const investor: Preset = {
   id: "investor",
   label: "Investor",
@@ -65,9 +47,10 @@ const investor: Preset = {
   },
 };
 
-export const PRESETS: readonly Preset[] = [conservative, standard, investor];
+export const PRESETS: readonly Preset[] = [conservative, investor];
 
-export const STANDARD_PRESET = standard;
+/** Default preset applied when nothing is stored yet — Finanztip-conservative. */
+export const DEFAULT_PRESET = conservative;
 
 /**
  * Detect which preset the current module state matches (ignoring expectedStatePension,

@@ -19,7 +19,8 @@ type NumberInputProps = {
 /**
  * Localized numeric input. Stores the typed string locally so the user can
  * edit fluidly (decimal commas, intermediate states); commits a parsed number
- * to the parent on every change.
+ * to the parent on every change. Shows a red error message when the parsed
+ * value is out of range so the user knows why their input was rejected.
  */
 export function NumberInput({
   label,
@@ -34,6 +35,7 @@ export function NumberInput({
   tooltip,
 }: NumberInputProps) {
   const id = useId();
+  const errorId = `${id}-error`;
   const [text, setText] = useState<string>(value === undefined ? "" : formatNumber(value));
 
   useEffect(() => {
@@ -43,16 +45,26 @@ export function NumberInput({
     }
     const parsed = parseLocalNumber(text);
     if (parsed !== value) setText(formatNumber(value));
-    // Only sync from external changes when our local parse differs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
-  const parsed = parseLocalNumber(text);
-  const invalid =
-    text.trim() !== "" &&
-    (parsed === null ||
-      (min !== undefined && parsed < min) ||
-      (max !== undefined && parsed > max));
+  const trimmed = text.trim();
+  const parsed = parseLocalNumber(trimmed);
+
+  let error: string | null = null;
+  if (trimmed !== "") {
+    if (parsed === null) {
+      error = "Bitte eine gültige Zahl eingeben.";
+    } else if (min !== undefined && parsed < min) {
+      error = `Mindestens ${formatNumber(min)}${unit ? " " + unit : ""}.`;
+    } else if (max !== undefined && parsed > max) {
+      error = `Höchstens ${formatNumber(max)}${unit ? " " + unit : ""}.`;
+    }
+  } else if (required) {
+    error = "Pflichtfeld.";
+  }
+
+  const showError = error !== null && trimmed !== "";
 
   return (
     <div className="space-y-1.5">
@@ -69,18 +81,21 @@ export function NumberInput({
           inputMode="decimal"
           value={text}
           placeholder={placeholder}
-          invalid={invalid}
+          invalid={showError}
+          aria-invalid={showError ? true : undefined}
+          aria-describedby={showError ? errorId : undefined}
           onChange={(e) => {
             const next = e.target.value;
             setText(next);
-            const n = parseLocalNumber(next);
+            const parsedNext = parseLocalNumber(next.trim());
             if (next.trim() === "") {
               onChange(undefined);
-            } else if (n !== null) {
-              if (min !== undefined && n < min) return;
-              if (max !== undefined && n > max) return;
-              onChange(n);
+              return;
             }
+            if (parsedNext === null) return; // keep text but don't commit garbage
+            // Commit even when out of range — error is shown to the user, but
+            // we don't want to silently swallow keystrokes mid-edit.
+            onChange(parsedNext);
           }}
         />
         {unit && (
@@ -89,7 +104,13 @@ export function NumberInput({
           </span>
         )}
       </div>
-      {hint && <p className="text-xs text-slate-500">{hint}</p>}
+      {showError ? (
+        <p id={errorId} className="text-xs font-medium text-red-600">
+          {error}
+        </p>
+      ) : (
+        hint && <p className="text-xs text-slate-500">{hint}</p>
+      )}
     </div>
   );
 }

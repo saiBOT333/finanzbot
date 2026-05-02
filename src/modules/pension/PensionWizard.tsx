@@ -14,12 +14,16 @@ export function PensionWizard() {
       title: "1. Basisdaten",
       content: <BasicsStep />,
       canProceed: isBasicsComplete(profile.age),
+      blockReason: isBasicsComplete(profile.age) ? undefined : "Bitte gültiges Alter eintragen.",
     },
     {
       id: "income",
       title: "2. Einkommen & Bedarf",
       content: <IncomeStep />,
       canProceed: isIncomeComplete(profile.netIncomeMonthly),
+      blockReason: isIncomeComplete(profile.netIncomeMonthly)
+        ? undefined
+        : "Bitte Netto-Einkommen pro Monat eintragen.",
     },
     {
       id: "assumptions",

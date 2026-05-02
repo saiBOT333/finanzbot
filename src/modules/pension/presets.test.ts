@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { PRESETS, detectActivePreset, STANDARD_PRESET } from "./presets";
+import { PRESETS, detectActivePreset, DEFAULT_PRESET } from "./presets";
 import { calculatePension } from "./calculations";
 import { withDefaults } from "./defaults";
 import { PENSION_MODULE_DEFAULTS, type PensionModuleState } from "./state";
@@ -20,8 +20,8 @@ const fixtureInputs = (state: PensionModuleState) =>
   });
 
 describe("PRESETS", () => {
-  it("contains exactly the three expected presets in stable order", () => {
-    expect(PRESETS.map((p) => p.id)).toEqual(["conservative", "standard", "investor"]);
+  it("contains exactly the two expected presets in stable order", () => {
+    expect(PRESETS.map((p) => p.id)).toEqual(["conservative", "investor"]);
   });
 
   it("each preset names its source", () => {
@@ -32,57 +32,48 @@ describe("PRESETS", () => {
     }
   });
 
-  it("the 'standard' preset matches the module default state (apart from expectedStatePension)", () => {
+  it("the conservative preset is the module default", () => {
+    expect(DEFAULT_PRESET.id).toBe("conservative");
     const def = { ...PENSION_MODULE_DEFAULTS };
     delete (def as Partial<PensionModuleState>).expectedStatePension;
-    expect(STANDARD_PRESET.state).toEqual(def);
+    expect(DEFAULT_PRESET.state).toEqual(def);
   });
 });
 
 describe("PRESETS — savings rate per profile (35 J / 3.000 € fixture)", () => {
   const presetById = Object.fromEntries(PRESETS.map((p) => [p.id, p]));
 
-  const monthlySavingsFor = (id: "conservative" | "standard" | "investor") => {
+  const monthlySavingsFor = (id: "conservative" | "investor") => {
     const r = calculatePension(fixtureInputs({ ...presetById[id]!.state, expectedStatePension: 1440 }));
     if (r.kind !== "ok") throw new Error(`expected ok for ${id}`);
     return r.monthlySavings;
   };
 
-  it("conservative produces the highest savings rate (Finanztip-style, ~ 460 €)", () => {
+  it("conservative produces a Finanztip-style savings rate (~ 460 €)", () => {
     const s = monthlySavingsFor("conservative");
     expect(s).toBeGreaterThan(420);
     expect(s).toBeLessThan(520);
   });
 
-  it("investor sits in between (Finanzfluss-style, ~ 380–410 €)", () => {
+  it("investor produces a Finanzfluss-style savings rate (~ 380–410 €)", () => {
     const s = monthlySavingsFor("investor");
     expect(s).toBeGreaterThan(360);
     expect(s).toBeLessThan(450);
   });
 
-  it("standard is the most optimistic of the three (~ 250–290 €)", () => {
-    const s = monthlySavingsFor("standard");
-    expect(s).toBeGreaterThan(240);
-    expect(s).toBeLessThan(310);
-  });
-
-  it("conservative > investor > standard for monthly savings", () => {
-    const c = monthlySavingsFor("conservative");
-    const i = monthlySavingsFor("investor");
-    const s = monthlySavingsFor("standard");
-    expect(c).toBeGreaterThan(i);
-    expect(i).toBeGreaterThan(s);
+  it("conservative requires more savings than investor (more cautious)", () => {
+    expect(monthlySavingsFor("conservative")).toBeGreaterThan(monthlySavingsFor("investor"));
   });
 });
 
 describe("detectActivePreset", () => {
-  it("returns the standard id for fresh defaults", () => {
-    expect(detectActivePreset(PENSION_MODULE_DEFAULTS)).toBe("standard");
+  it("returns the conservative id for fresh defaults", () => {
+    expect(detectActivePreset(PENSION_MODULE_DEFAULTS)).toBe("conservative");
   });
 
   it("ignores expectedStatePension when matching", () => {
     expect(detectActivePreset({ ...PENSION_MODULE_DEFAULTS, expectedStatePension: 1234 })).toBe(
-      "standard",
+      "conservative",
     );
   });
 
