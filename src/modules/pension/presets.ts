@@ -12,27 +12,30 @@ export type Preset = {
   state: Omit<PensionModuleState, "expectedStatePension">;
 };
 
+// Profile-Defaults sind als SINGLE-BUCKET-Allokationen kalibriert, damit das
+// Tool out-of-the-box die jeweilige Faustformel exakt reproduziert. Wer sein
+// echtes Portfolio abbilden will, fügt manuell weitere Buckets hinzu — das
+// Profil wechselt dann auf "Eigene Einstellungen" und die Mathematik wird
+// automatisch genauer (weighted Aufzinsung pro Bucket).
+
 const conservativeSavings: Allocation = [
-  { id: newAllocationId(), type: "etf-world", percent: 30 },
-  { id: newAllocationId(), type: "bonds", percent: 50 },
-  { id: newAllocationId(), type: "cash", percent: 20 },
+  // Saidi/Finanztip: 5 % nominal Anspar = 3 % real bei gemischtem Portfolio.
+  { id: newAllocationId(), type: "etf-mixed", percent: 100 },
 ];
 
 const conservativePayout: Allocation = [
-  { id: newAllocationId(), type: "etf-world", percent: 10 },
-  { id: newAllocationId(), type: "bonds", percent: 60 },
-  { id: newAllocationId(), type: "cash", percent: 30 },
+  // Saidi/Finanztip: 3 % nominal Auszahl = 1 % real (deutlich weniger Aktien im Alter).
+  { id: newAllocationId(), type: "bonds", percent: 100 },
 ];
 
 const investorSavings: Allocation = [
-  { id: newAllocationId(), type: "etf-world", percent: 80 },
-  { id: newAllocationId(), type: "bonds", percent: 20 },
+  // Carlotta/Finanzfluss: durchgängig 5 % real auf einem Welt-ETF.
+  { id: newAllocationId(), type: "etf-world", percent: 100 },
 ];
 
 const investorPayout: Allocation = [
-  { id: newAllocationId(), type: "etf-world", percent: 40 },
-  { id: newAllocationId(), type: "bonds", percent: 40 },
-  { id: newAllocationId(), type: "cash", percent: 20 },
+  // Carlotta/Finanzfluss: ETF-Anteil bleibt auch im Alter hoch.
+  { id: newAllocationId(), type: "etf-world", percent: 100 },
 ];
 
 const conservative: Preset = {
@@ -40,7 +43,7 @@ const conservative: Preset = {
   label: "Konservativ",
   source: "Finanztip",
   description:
-    "Vorsichtige Annahmen aus dem Finanztip-Video: gemischtes Portfolio (eher defensiv), längere Bezugsdauer, keine Steuern eingerechnet.",
+    "Faustformel aus dem Finanztip-Video: 3 % real Anspar (≈ 5 % nominal bei gemischtem Portfolio), 1 % real Auszahl (≈ 3 % nominal mit niedriger Aktienquote im Alter), 30 Jahre Bezugsdauer, keine Steuern eingerechnet. Wer sein echtes Portfolio abbilden will, ergänzt die Allokation manuell.",
   state: {
     replacementRate: 0.8,
     inflation: 0.02,
@@ -58,7 +61,7 @@ const investor: Preset = {
   label: "Investor",
   source: "Finanzfluss",
   description:
-    "Investorisch: hohe Aktien-Quote bis ins Alter, sichere Entnahmerate (3,5 %), mit Steuer-Puffer.",
+    "Faustformel aus dem Finanzfluss-Video (Carlotta): 5 % real durchgängig (Welt-ETF-Annahme), sichere Entnahmerate von 3,5 %, mit 12 % Steuer-Puffer. Wer das Portfolio realistischer mischen will, fügt Anleihen oder Cash zur Allokation hinzu.",
   state: {
     replacementRate: 0.8,
     inflation: 0.02,
