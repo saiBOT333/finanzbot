@@ -7,7 +7,7 @@ export const tooltips: Record<string, string> = {
   replacementRate:
     "Wie viel Prozent deines heutigen Netto-Einkommens du im Ruhestand brauchst. Faustformel: 80 %, weil viele Ausgaben (Pendeln, Sparen für die Rente, oft auch die Tilgung) wegfallen.",
   expectedStatePension:
-    "Erwartete Netto-Rente in heutiger Kaufkraft — also nicht der Brutto-Wert von der Renteninformation und auch nicht das Netto in 35 Jahren, sondern was die Rente in heutigen Euro wert wäre. Nutze den Helfer darunter, der aus den zwei Brutto-Werten der Renteninformation automatisch 20 % Steuern/KV abzieht und die Inflation rausrechnet.",
+    "Erwartete Netto-Rente in heutiger Kaufkraft — also nicht der Brutto-Wert von der Renteninformation und auch nicht das Netto in 35 Jahren, sondern was die Rente in heutigen Euro wert wäre. Nutze den Helfer darunter, der aus dem Brutto-Wert deiner Renteninformation (ohne Anpassung), deiner Steigerungs-Annahme und deinem persönlichen Steuer-/KV-Abzug die Netto-Rente in heutiger Kaufkraft rechnet.",
   inflation:
     "Jährlicher Kaufkraftverlust. Langfristig pendelt die Inflation um 2 %. Wir rechnen damit Beträge auf 'Geld in N Jahren' hoch.",
   realReturn:

@@ -6,7 +6,13 @@ import { InfoTooltip } from "../../../components/InfoTooltip";
 import { AssetsManager } from "../../../components/AssetsManager";
 import { AllocationManager } from "../../../components/AllocationManager";
 import { useProfile, setProfile } from "../../../lib/profile/useProfile";
-import { PENSION_DEFAULTS, midGrossFromRenteninfo, realNetPensionFromGross } from "../defaults";
+import { PENSION_DEFAULTS, projectedNetPensionToday } from "../defaults";
+import {
+  PENSION_DEDUCTION_RANGE,
+  PENSION_GROSS_TO_NET_DEDUCTION,
+  PENSION_RAISE_DEFAULT,
+  PENSION_RAISE_RANGE,
+} from "../constants";
 import { formatEUR, formatPercent } from "../../../lib/format";
 import { pensionStore, PENSION_MODULE_DEFAULTS } from "../state";
 import { PRESETS, detectActivePreset, type PresetId } from "../presets";
@@ -238,10 +244,12 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 /**
- * Helper that turns the two gross projections from the German "Renteninformation"
- * letter into a net pension in today's purchasing power, following the exact
- * Finanztip pipeline: average → minus 20 % → discount by inflation. Each step
- * is shown to the user so the number is auditable.
+ * Helper that projects the "voraussichtliche Regelaltersrente OHNE Anpassung"
+ * from the Renteninformation letter into a net pension in today's purchasing
+ * power. Pipeline: gross × (1 + raise)^years − deduction → discount by inflation.
+ * The user picks both the raise and the deduction percentage so the helper
+ * adapts to their personal situation rather than relying on Finanztip's
+ * one-size-fits-all averages.
  */
 function RenteninfoHelfer({
   inflation,
@@ -253,12 +261,14 @@ function RenteninfoHelfer({
   onApplyNet: (net: number) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const [grossLow, setGrossLow] = useState<number | undefined>();
-  const [grossHigh, setGrossHigh] = useState<number | undefined>();
+  const [grossWithoutAdjustment, setGrossWithoutAdjustment] = useState<number | undefined>();
+  const [raise, setRaise] = useState<number>(PENSION_RAISE_DEFAULT);
+  const [deduction, setDeduction] = useState<number>(PENSION_GROSS_TO_NET_DEDUCTION);
 
-  const ready = grossLow !== undefined && grossHigh !== undefined && yearsToRetirement > 0;
-  const mid = ready ? midGrossFromRenteninfo(grossLow!, grossHigh!) : undefined;
-  const result = mid !== undefined ? realNetPensionFromGross(mid, inflation, yearsToRetirement) : undefined;
+  const ready = grossWithoutAdjustment !== undefined && yearsToRetirement > 0;
+  const result = ready
+    ? projectedNetPensionToday(grossWithoutAdjustment!, raise, deduction, inflation, yearsToRetirement)
+    : undefined;
 
   return (
     <div className="rounded-lg bg-slate-50 p-3 ring-1 ring-slate-200">
@@ -272,48 +282,70 @@ function RenteninfoHelfer({
       {open && (
         <div className="mt-3 space-y-3">
           <p className="text-xs leading-relaxed text-slate-600">
-            Auf deiner Renteninformation stehen zwei Hochrechnungen der Brutto-Rente: eine bei 1 %
-            und eine bei 2 % Rentensteigerung. Wir bilden den Mittelwert (≈ 1,5 % Steigerung),
-            ziehen 20 % für Steuern und Krankenversicherung ab und rechnen den Wert mit deiner
-            Inflations-Annahme zurück in <strong>heutige Kaufkraft</strong> — exakt nach Finanztip.
+            Such auf deinem Renteninfo-Brief den Wert{" "}
+            <strong>„voraussichtliche Regelaltersrente, wenn Sie wie bisher Beiträge zahlen"</strong>{" "}
+            — das ist der <em>ohne Anpassung</em>-Wert, meist in der Tabelle direkt unter dem
+            heutigen Rentenwert. Anschließend wählst du selbst, wie viel jährliche Rentenanpassung
+            du erwartest und wie hoch deine spätere Steuer- und KV-Belastung sein wird. Wir
+            rechnen daraus die Netto-Rente in heutiger Kaufkraft.
           </p>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <NumberInput
-              label="Brutto bei 1 % Rentensteigerung"
-              value={grossLow}
-              onChange={setGrossLow}
-              unit="€"
-              min={0}
-            />
-            <NumberInput
-              label="Brutto bei 2 % Rentensteigerung"
-              value={grossHigh}
-              onChange={setGrossHigh}
-              unit="€"
-              min={0}
-            />
-          </div>
+          <NumberInput
+            label="Brutto-Rente ohne Anpassung (heutiger Rentenwert)"
+            value={grossWithoutAdjustment}
+            onChange={setGrossWithoutAdjustment}
+            unit="€"
+            min={0}
+            placeholder="z. B. 1.988"
+          />
+          <NumberInput
+            label="Erwartete jährliche Rentenanpassung"
+            value={raise * 100}
+            onChange={(v) => v !== undefined && setRaise(v / 100)}
+            unit="%"
+            min={PENSION_RAISE_RANGE.min * 100}
+            max={PENSION_RAISE_RANGE.max * 100}
+            hint="Finanztip-Faustformel: 1,5 % (Mitte zwischen den DRV-Hochrechnungen 1 % und 2 %). Wer pessimistisch plant, geht eher Richtung 1 %."
+          />
+          <NumberInput
+            label="Pauschalabzug für Steuern + KV/PV"
+            value={deduction * 100}
+            onChange={(v) => v !== undefined && setDeduction(v / 100)}
+            unit="%"
+            min={PENSION_DEDUCTION_RANGE.min * 100}
+            max={PENSION_DEDUCTION_RANGE.max * 100}
+            hint="12 % = nur Sozialabgaben (geringe Rente, nur Rente als Einkommen). 20 % = Faustformel Finanztip (mittlere Rente). 30 %+ = höhere Rente mit Nebeneinkünften."
+          />
           {yearsToRetirement <= 0 && (
             <p className="text-xs text-amber-700">
               Bitte erst Schritt 1 (Alter & Renteneintritt) ausfüllen — wir brauchen die Jahre bis
-              zur Rente, um die Inflation rauszurechnen.
+              zur Rente, um die Anpassung und Inflation hochzurechnen.
             </p>
           )}
-          {result !== undefined && mid !== undefined && (
+          {result !== undefined && grossWithoutAdjustment !== undefined && (
             <div className="space-y-2 rounded bg-white px-3 py-2 text-sm ring-1 ring-slate-200">
               <div className="space-y-1 text-xs text-slate-600">
                 <div className="flex justify-between">
-                  <span>Mittel der Brutto-Werte</span>
-                  <strong className="text-slate-900">{formatEUR(mid)}</strong>
+                  <span>Brutto ohne Anpassung</span>
+                  <strong className="text-slate-900">{formatEUR(grossWithoutAdjustment)}</strong>
                 </div>
                 <div className="flex justify-between">
-                  <span>− 20 % Steuern und KV/PV</span>
+                  <span>
+                    × (1 + {formatPercent(raise)})<sup>{yearsToRetirement}</sup> Anpassung
+                  </span>
+                  <strong className="text-slate-900">
+                    {formatEUR(result.grossNominal)} brutto in {yearsToRetirement} Jahren
+                  </strong>
+                </div>
+                <div className="flex justify-between">
+                  <span>− {formatPercent(deduction)} Steuern und KV/PV</span>
                   <strong className="text-slate-900">
                     {formatEUR(result.netNominal)} netto in {yearsToRetirement} Jahren
                   </strong>
                 </div>
                 <div className="flex justify-between">
-                  <span>÷ Inflation {formatPercent(inflation)} über {yearsToRetirement} Jahre</span>
+                  <span>
+                    ÷ Inflation {formatPercent(inflation)} über {yearsToRetirement} Jahre
+                  </span>
                   <strong className="text-slate-900">
                     {formatEUR(result.netReal)} heutige Kaufkraft
                   </strong>

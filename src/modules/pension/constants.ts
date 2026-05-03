@@ -19,6 +19,15 @@ export const CAPITAL_GAINS_TAX_RATE = 0.26375;
 /** Faustformel-Pauschalabzug auf die Brutto-Rente: 20 % für Steuern + KV/PV. */
 export const PENSION_GROSS_TO_NET_DEDUCTION = 0.2;
 
+/** Realistische Bandbreite des Pauschalabzugs (KV+PV ~12 % als Untergrenze, hohe Renten + Nebeneinkünfte bis ~35 %). */
+export const PENSION_DEDUCTION_RANGE = { min: 0.12, max: 0.35 } as const;
+
+/** Mittel der DRV-Hochrechnungen 1 % und 2 % — Finanztip-Faustformel. */
+export const PENSION_RAISE_DEFAULT = 0.015;
+
+/** Plausible Bandbreite für die jährliche Rentenanpassung. */
+export const PENSION_RAISE_RANGE = { min: 0, max: 0.03 } as const;
+
 // ──────────────────────────────────────────────────────────────────────────
 // RULES OF THUMB (Quellen: Finanztip / Finanzfluss / Trinity-Studie)
 // ──────────────────────────────────────────────────────────────────────────
