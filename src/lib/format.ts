@@ -18,7 +18,10 @@ const percentFormatter = new Intl.NumberFormat("de-DE", {
 });
 
 const numberFormatter = new Intl.NumberFormat("de-DE", {
-  maximumFractionDigits: 0,
+  // Allow fractional digits for small numbers (percent values like 1,5 %),
+  // but no trailing zeros for integers (3.000 stays "3.000", not "3.000,00").
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 4,
 });
 
 export function formatEUR(value: number, precise = false): string {

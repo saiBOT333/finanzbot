@@ -27,6 +27,16 @@ describe("formatNumber", () => {
   it("formats with German thousand separators", () => {
     expect(formatNumber(12345)).toBe("12.345");
   });
+
+  it("preserves fractional digits without rounding (e.g. percent defaults like 1,5)", () => {
+    expect(formatNumber(1.5)).toBe("1,5");
+    expect(formatNumber(2.75)).toBe("2,75");
+  });
+
+  it("does not append trailing zeros for whole numbers", () => {
+    expect(formatNumber(3000)).toBe("3.000");
+    expect(formatNumber(20)).toBe("20");
+  });
 });
 
 describe("parseLocalNumber", () => {
