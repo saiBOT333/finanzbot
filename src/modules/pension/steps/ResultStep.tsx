@@ -80,9 +80,24 @@ export function ResultStep() {
 
   const coveredByStatePension = result.needToday - result.gapToday;
   const explanation = explainPension(inputs, result);
+  const usingDefaultStatePension = m.expectedStatePension === null;
 
   return (
     <div className="space-y-4">
+      {usingDefaultStatePension && (
+        <Card className="border-amber-200 bg-amber-50 ring-amber-200">
+          <p className="text-sm font-medium text-amber-900">
+            ⚠ Du hast keine Renteninformation eingetragen.
+          </p>
+          <p className="mt-1 text-xs leading-relaxed text-amber-800">
+            Wir rechnen mit der Faustformel <strong>48 % vom Netto</strong> ={" "}
+            {formatEUR(result.needToday - result.gapToday)} pro Monat. Das ist eine sehr
+            grobe Schätzung und kann je nach Erwerbsbiografie deutlich daneben liegen.
+            Trag in <strong>Schritt 3 (Renteninformation)</strong> deinen echten Wert ein
+            für ein verlässliches Ergebnis.
+          </p>
+        </Card>
+      )}
       <Card className="ring-brand-200">
         <p className="text-sm font-medium text-slate-500">Empfehlung</p>
         <p className="mt-1 text-3xl font-bold tracking-tight text-slate-900">

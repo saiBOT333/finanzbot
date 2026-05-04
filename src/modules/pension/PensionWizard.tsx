@@ -2,6 +2,7 @@ import { Wizard, type WizardStep } from "../../components/Wizard";
 import { useProfile } from "../../lib/profile/useProfile";
 import { BasicsStep, isBasicsComplete } from "./steps/BasicsStep";
 import { IncomeStep, isIncomeComplete } from "./steps/IncomeStep";
+import { PensionInformationStep } from "./steps/PensionInformationStep";
 import { AssumptionsStep } from "./steps/AssumptionsStep";
 import { ResultStep } from "./steps/ResultStep";
 
@@ -26,14 +27,20 @@ export function PensionWizard() {
         : "Bitte Netto-Einkommen pro Monat eintragen.",
     },
     {
+      id: "pension-info",
+      title: "3. Renteninformation",
+      content: <PensionInformationStep />,
+      canProceed: true,
+    },
+    {
       id: "assumptions",
-      title: "3. Annahmen",
+      title: "4. Annahmen",
       content: <AssumptionsStep />,
       canProceed: true,
     },
     {
       id: "result",
-      title: "4. Ergebnis",
+      title: "5. Ergebnis",
       content: <ResultStep />,
       canProceed: true,
     },
