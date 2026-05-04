@@ -29,7 +29,9 @@ export const tooltips: Record<string, string> = {
   capitalNeeded:
     "Das Vermögen, das du bei Rentenbeginn brauchst, damit du die monatliche Lücke decken kannst — inklusive Steuer-Puffer, falls aktiviert.",
   monthlySavings:
-    "Was du ab heute jeden Monat zusätzlich zur Seite legen müsstest, um diese Lücke zu schließen – schon bestehendes Vermögen ist berücksichtigt.",
+    "Was du ab heute jeden Monat zusätzlich zur Seite legen müsstest – in heutiger Kaufkraft. Da das Modell real rechnet, muss dieser Betrag jedes Jahr mit der Inflation angepasst werden (z. B. +2 %). Steigt dein Gehalt mit der Inflation, bleibt die Sparquote konstant.",
+  fixedNominalSavings:
+    "Alternativ: ein fester Nominalbetrag, den du die gesamte Sparphase gleichbleibend einzahlst – ohne jährliche Anpassung. Er liegt höher als der reale Startwert, weil frühe Zahlungen mehr Zinseszins sammeln müssen, um die inflationsbedingte Abschwächung späterer Zahlungen auszugleichen.",
   savingsRatePct: "Anteil deines aktuellen Netto-Einkommens, den du dafür sparen müsstest.",
   savingsRateContext:
     "Zum Vergleich: der deutsche Durchschnitt spart ~11 % vom Netto, Finanzfluss empfiehlt für die Altersvorsorge realistisch 15–20 %.",

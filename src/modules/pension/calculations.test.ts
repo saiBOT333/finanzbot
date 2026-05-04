@@ -49,6 +49,20 @@ describe("calculatePension — happy path with default Finanztip/Finanzfluss set
     expect(withTax.capitalNeeded).toBeGreaterThan(noTax.capitalNeeded);
     expect(withTax.taxBufferAmount).toBeGreaterThan(0);
   });
+
+  it("fixedNominalSavings is higher than monthlySavings (compensates for static contribution)", () => {
+    const r = calculatePension(baseInputs);
+    if (r.kind !== "ok") throw new Error("expected ok");
+    // Constant nominal payment must start higher because later years lose to inflation —
+    // the early years have to over-fund what the late years under-fund.
+    expect(r.fixedNominalSavings).toBeGreaterThan(r.monthlySavings);
+  });
+
+  it("fixedNominalSavings === monthlySavings when inflation is 0", () => {
+    const r = calculatePension(withDefaults({ ...baseInputs, inflation: 0 }));
+    if (r.kind !== "ok") throw new Error("expected ok");
+    expect(r.fixedNominalSavings).toBeCloseTo(r.monthlySavings, 2);
+  });
 });
 
 describe("calculatePension — asset buckets grow individually", () => {

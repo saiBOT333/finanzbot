@@ -130,6 +130,20 @@ export function calculatePension(inputs: PensionInputs): PensionResult {
   const monthlySavings =
     remainingCapital === 0 || fvFactor === 0 ? 0 : remainingCapital / fvFactor;
 
+  // Fixed nominal savings: constant nominal monthly payment (no annual inflation adjustment needed).
+  // Each bucket's real rate is converted to nominal: r_nom = (1+r_real)(1+inflation) - 1.
+  // The remaining capital target is also scaled to nominal euros at retirement.
+  const nominalMonthlyBuckets = savingsBuckets.map((b) => ({
+    weight: b.weight,
+    rate: annualToMonthlyRate((1 + b.rate) * (1 + inflation) - 1),
+  }));
+  const nominalFvFactor = weightedFutureValueAnnuityFactor(nominalMonthlyBuckets, months);
+  const remainingCapitalNominal = remainingCapital * Math.pow(1 + inflation, yearsToRetirement);
+  const fixedNominalSavings =
+    remainingCapital === 0 || nominalFvFactor === 0
+      ? 0
+      : remainingCapitalNominal / nominalFvFactor;
+
   const savingsRatePct = (monthlySavings / netIncomeMonthly) * 100;
   const gapAtRetirementNominal = gapToday * Math.pow(1 + inflation, yearsToRetirement);
 
@@ -144,6 +158,7 @@ export function calculatePension(inputs: PensionInputs): PensionResult {
     existingFV,
     remainingCapital,
     monthlySavings,
+    fixedNominalSavings,
     savingsRatePct,
     gapAtRetirementNominal,
     effectiveSavingReturn,

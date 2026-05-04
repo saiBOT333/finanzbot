@@ -108,6 +108,17 @@ export function ResultStep() {
           Netto-Einkommens. Damit schließt du deine Rentenlücke voraussichtlich bis zum
           Renteneintritt.
         </p>
+        <p className="mt-2 rounded-md bg-slate-50 px-3 py-2 text-xs leading-relaxed text-slate-600 ring-1 ring-slate-200">
+          <strong>Hinweis:</strong> Dieser Betrag gilt in heutiger Kaufkraft. Um real gleich zu
+          bleiben, musst du ihn jedes Jahr um die Inflation anpassen (z. B. +2 %). Steigt dein
+          Gehalt mit der Inflation, bleibt deine Sparquote konstant.{" "}
+          <span className="text-slate-500">
+            Alternativ als fixer Betrag (ohne Anpassung):{" "}
+            <strong className="text-slate-700">
+              {formatEUR(result.fixedNominalSavings, true)} pro Monat
+            </strong>
+          </span>
+        </p>
         <SparquoteEinordnung pct={result.savingsRatePct} />
       </Card>
 

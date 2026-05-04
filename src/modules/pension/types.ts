@@ -41,6 +41,8 @@ export type PensionResult =
       existingFV: number;
       remainingCapital: number;
       monthlySavings: number;
+      /** Fixed nominal monthly savings — constant in nominal euros, no annual inflation adjustment needed. */
+      fixedNominalSavings: number;
       savingsRatePct: number;
       gapAtRetirementNominal: number;
       /** Weighted average real return during saving (for display). */
