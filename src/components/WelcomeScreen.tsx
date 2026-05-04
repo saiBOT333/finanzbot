@@ -17,10 +17,11 @@ export function WelcomeScreen({ onStart }: Props) {
             Wie viel musst du sparen, damit die Rente reicht?
           </h2>
           <p className="text-sm leading-relaxed text-slate-600">
-            In vier Schritten errechnen wir deine Rentenlücke und die monatliche
+            In fünf Schritten errechnen wir deine Rentenlücke und die monatliche
             Sparrate, mit der du sie schließt — nach der Methodik aus den
-            Finanztip- und Finanzfluss-Videos. Du kannst zwischen drei Profilen
-            (konservativ, Standard, investorisch) wählen und sehen, was sich ändert.
+            Finanztip- und Finanzfluss-Videos. Du kannst zwischen einem konservativen
+            (Finanztip-Faustformel) und einem investorischen Profil (Welt-ETF) wählen
+            und siehst sofort, wie sich deine Sparrate ändert.
           </p>
         </div>
 

@@ -21,3 +21,42 @@
     @apply mx-auto w-full max-w-3xl px-4 py-8;
   }
 }
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * Print stylesheet — drucken nur das Ergebnis, nicht Header/Wizard/Buttons.
+ * Triggered via the "Drucken"-Button in the result step (calls window.print).
+ * ──────────────────────────────────────────────────────────────────────── */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Hide navigation, header buttons, wizard stepper, action buttons. */
+  header,
+  footer,
+  ol[aria-label],
+  [data-print="hide"] {
+    display: none !important;
+  }
+
+  /* Drop ring/shadow effects on cards for clean black/white print. */
+  .container-page {
+    @apply max-w-full px-0 py-0;
+  }
+  [class*="ring-"] {
+    box-shadow: none !important;
+  }
+  [class*="bg-emerald-"],
+  [class*="bg-amber-"],
+  [class*="bg-rose-"],
+  [class*="bg-brand-"] {
+    background: transparent !important;
+  }
+
+  /* Ensure the recommendation prints prominently. */
+  h2,
+  h3 {
+    page-break-after: avoid;
+  }
+}

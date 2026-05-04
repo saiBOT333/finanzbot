@@ -1,11 +1,13 @@
 import { useEffect } from "react";
 import { Card } from "../../../components/ui/Card";
+import { Button } from "../../../components/ui/Button";
 import { InfoTooltip } from "../../../components/InfoTooltip";
 import { formatEUR, formatPercent } from "../../../lib/format";
 import { useProfile, setProfile } from "../../../lib/profile/useProfile";
 import { calculatePension } from "../calculations";
 import { explainPension } from "../explain";
 import { PensionRechenweg } from "../PensionRechenweg";
+import { ProfileComparison } from "../ProfileComparison";
 import { pensionStore } from "../state";
 import { allocationToBuckets, withDefaults } from "../defaults";
 import { SAVINGS_RATE_BENCHMARKS } from "../constants";
@@ -99,7 +101,18 @@ export function ResultStep() {
         </Card>
       )}
       <Card className="ring-brand-200">
-        <p className="text-sm font-medium text-slate-500">Empfehlung</p>
+        <div className="flex items-start justify-between gap-3">
+          <p className="text-sm font-medium text-slate-500">Empfehlung</p>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => window.print()}
+            data-print="hide"
+            title="Ergebnis drucken oder als PDF speichern"
+          >
+            🖨 Drucken
+          </Button>
+        </div>
         <p className="mt-1 text-3xl font-bold tracking-tight text-slate-900">
           {formatEUR(result.monthlySavings, true)} pro Monat
         </p>
@@ -164,6 +177,8 @@ export function ResultStep() {
           </li>
         </ol>
       </Card>
+
+      <ProfileComparison profile={profile} state={m} current={result} />
 
       <PensionRechenweg explanation={explanation} />
     </div>
