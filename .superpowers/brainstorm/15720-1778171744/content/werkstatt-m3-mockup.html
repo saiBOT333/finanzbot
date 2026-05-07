@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinanzBot — Material You Pilot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      /* M3 Indigo — Light Scheme */
+      --m3-primary: #2E4BAE;
+      --m3-on-primary: #FFFFFF;
+      --m3-primary-container: #DEE0FF;
+      --m3-on-primary-container: #00105C;
+      --m3-secondary-container: #E2E1EC;
+      --m3-on-secondary-container: #1A1B23;
+      --m3-tertiary: #735471;
+      --m3-tertiary-container: #FED7F7;
+      --m3-on-tertiary-container: #2B122B;
+      --m3-surface: #FBFAFF;
+      --m3-surface-container: #F0EFF7;
+      --m3-surface-container-high: #E7E6F0;
+      --m3-surface-container-highest: #DEDDE6;
+      --m3-on-surface: #1A1B21;
+      --m3-on-surface-variant: #45464F;
+      --m3-outline: #767680;
+      --m3-outline-variant: #C7C5D0;
+      --m3-error: #BA1A1A;
+      --m3-error-container: #FFDAD6;
+      --m3-success: #2E6A1F;
+      --m3-success-container: #B6F2A1;
+
+      /* Shape */
+      --m3-radius-sm: 8px;
+      --m3-radius-md: 16px;
+      --m3-radius-lg: 24px;
+      --m3-radius-button: 20px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: 'Roboto Flex', system-ui, sans-serif;
+      background: var(--m3-surface);
+      color: var(--m3-on-surface);
+      font-size: 16px;
+      line-height: 1.5;
+      font-variant-numeric: tabular-nums;
+    }
+    .app-shell { max-width: 1280px; margin: 0 auto; padding: 24px 32px 64px; }
+    .tab-bar {
+      display: flex;
+      gap: 8px;
+      padding: 8px;
+      background: var(--m3-surface-container);
+      border-radius: var(--m3-radius-md);
+      margin-bottom: 32px;
+      width: fit-content;
+    }
+    .tab {
+      border: none;
+      background: transparent;
+      padding: 10px 20px;
+      border-radius: var(--m3-radius-button);
+      font: inherit;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      color: var(--m3-on-surface-variant);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .tab:hover { background: var(--m3-surface-container-high); }
+    .tab.active { background: var(--m3-primary-container); color: var(--m3-on-primary-container); }
+    .screen { display: none; }
+    .screen.active { display: block; }
+    h1, h2, h3, p { margin: 0; }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <nav class="tab-bar" role="tablist">
+      <button class="tab active" data-screen="welcome" role="tab">Welcome</button>
+      <button class="tab" data-screen="wizard" role="tab">Wizard · Eckdaten</button>
+      <button class="tab" data-screen="result" role="tab">Ergebnis</button>
+    </nav>
+
+    <section class="screen active" data-screen="welcome">
+      <h1>Welcome — Platzhalter</h1>
+    </section>
+
+    <section class="screen" data-screen="wizard">
+      <h1>Wizard — Platzhalter</h1>
+    </section>
+
+    <section class="screen" data-screen="result">
+      <h1>Ergebnis — Platzhalter</h1>
+    </section>
+  </div>
+
+  <script>
+    document.querySelectorAll('.tab').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.screen;
+        document.querySelectorAll('.tab').forEach((t) => t.classList.toggle('active', t === btn));
+        document.querySelectorAll('.screen').forEach((s) => {
+          s.classList.toggle('active', s.dataset.screen === target);
+        });
+      });
+    });
+  </script>
+</body>
+</html>
