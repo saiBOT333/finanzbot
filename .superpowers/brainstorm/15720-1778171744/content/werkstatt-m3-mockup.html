@@ -163,6 +163,165 @@
       transition: filter 0.15s;
     }
     .btn-filled:hover { filter: brightness(1.05); }
+
+    /* === Wizard === */
+    .wizard-progress { margin-bottom: 24px; }
+    .wizard-progress-track {
+      height: 4px;
+      background: var(--m3-surface-container-high);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .wizard-progress-fill {
+      height: 100%;
+      width: 40%;
+      background: var(--m3-primary);
+    }
+    .step-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .step-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 500;
+      background: var(--m3-surface-container);
+      color: var(--m3-on-surface-variant);
+    }
+    .step-chip .num {
+      background: var(--m3-outline-variant);
+      color: var(--m3-on-surface);
+      border-radius: 999px;
+      width: 22px; height: 22px;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 600;
+    }
+    .step-chip.active { background: var(--m3-primary-container); color: var(--m3-on-primary-container); }
+    .step-chip.active .num { background: var(--m3-primary); color: var(--m3-on-primary); }
+    .step-chip.done .num { background: var(--m3-success); color: #fff; }
+
+    .wizard-card {
+      background: var(--m3-surface-container);
+      border-radius: var(--m3-radius-lg);
+      padding: 32px;
+      margin-top: 32px;
+    }
+    .wizard-headline {
+      font-size: 28px;
+      font-weight: 500;
+      letter-spacing: -0.005em;
+      color: var(--m3-on-surface);
+      margin-bottom: 8px;
+    }
+    .wizard-sub {
+      color: var(--m3-on-surface-variant);
+      margin-bottom: 32px;
+      max-width: 60ch;
+    }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+    .tf {
+      display: flex; flex-direction: column;
+      background: var(--m3-surface-container-high);
+      border-radius: var(--m3-radius-sm) var(--m3-radius-sm) 0 0;
+      padding: 8px 16px 12px;
+      border-bottom: 2px solid var(--m3-on-surface-variant);
+    }
+    .tf:focus-within { border-bottom-color: var(--m3-primary); }
+    .tf-label {
+      font-size: 12px;
+      color: var(--m3-on-surface-variant);
+      margin-bottom: 4px;
+      letter-spacing: 0.02em;
+    }
+    .tf-input {
+      border: none; background: transparent; outline: none;
+      font: inherit; font-size: 16px; color: var(--m3-on-surface);
+      padding: 0;
+    }
+    .tf-supporting {
+      font-size: 12px;
+      color: var(--m3-on-surface-variant);
+      margin-top: 4px;
+      padding-left: 16px;
+    }
+    .slider-row { margin-bottom: 24px; }
+    .slider-label {
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin-bottom: 8px;
+    }
+    .slider-label-text { font-size: 14px; color: var(--m3-on-surface-variant); }
+    .slider-value {
+      font-size: 18px; font-weight: 600; color: var(--m3-primary);
+    }
+    .slider-track {
+      height: 6px; background: var(--m3-surface-container-high);
+      border-radius: 3px; position: relative;
+    }
+    .slider-fill {
+      position: absolute; left: 0; top: 0; bottom: 0;
+      background: var(--m3-primary); border-radius: 3px;
+      width: 35%;
+    }
+    .slider-thumb {
+      position: absolute; top: 50%;
+      transform: translate(-50%, -50%);
+      width: 18px; height: 18px;
+      background: var(--m3-primary);
+      border-radius: 50%;
+      border: 3px solid var(--m3-surface);
+      left: 35%;
+      box-shadow: 0 0 0 8px rgba(46, 75, 174, 0.12);
+    }
+    .choice-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .choice-chip {
+      border: 1px solid var(--m3-outline);
+      background: transparent;
+      padding: 10px 18px;
+      border-radius: var(--m3-radius-sm);
+      font: inherit; font-size: 14px; font-weight: 500;
+      color: var(--m3-on-surface);
+      cursor: pointer;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .choice-chip.selected {
+      background: var(--m3-secondary-container);
+      border-color: transparent;
+      color: var(--m3-on-secondary-container);
+    }
+    .choice-chip.selected::before {
+      content: "✓"; font-weight: 700;
+    }
+    .field-block { margin-bottom: 24px; }
+    .field-block-label {
+      font-size: 12px; font-weight: 500; letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--m3-on-surface-variant);
+      margin-bottom: 12px;
+    }
+    .btn-text {
+      background: transparent; border: none;
+      color: var(--m3-primary);
+      padding: 14px 18px; border-radius: var(--m3-radius-button);
+      font: inherit; font-size: 15px; font-weight: 500;
+      cursor: pointer;
+    }
+    .btn-text:hover { background: var(--m3-primary-container); }
+    .wizard-nav {
+      display: flex; justify-content: space-between;
+      margin-top: 32px;
+    }
+    .icon-btn {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--m3-secondary-container);
+      color: var(--m3-on-secondary-container);
+      border: none;
+      display: inline-flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 14px;
+      margin-left: 6px;
+    }
   </style>
 </head>
 <body>
@@ -206,7 +365,59 @@
     </section>
 
     <section class="screen" data-screen="wizard">
-      <h1>Wizard — Platzhalter</h1>
+      <div class="wizard-progress">
+        <div class="wizard-progress-track"><div class="wizard-progress-fill"></div></div>
+        <div class="step-chips">
+          <span class="step-chip done"><span class="num">✓</span>Eckdaten</span>
+          <span class="step-chip active"><span class="num">2</span>Einkommen</span>
+          <span class="step-chip"><span class="num">3</span>Renteninfo</span>
+          <span class="step-chip"><span class="num">4</span>Annahmen</span>
+          <span class="step-chip"><span class="num">5</span>Ergebnis</span>
+        </div>
+      </div>
+
+      <div class="wizard-card">
+        <h2 class="wizard-headline">Eckdaten</h2>
+        <p class="wizard-sub">Wir brauchen dein aktuelles Alter und wann du in Rente gehen möchtest. Daraus ergibt sich der Anspar-Horizont.</p>
+
+        <div class="field-row">
+          <label class="tf">
+            <span class="tf-label">Aktuelles Alter</span>
+            <input class="tf-input" type="number" value="35" />
+          </label>
+          <label class="tf">
+            <span class="tf-label">Gewünschtes Renteneintrittsalter</span>
+            <input class="tf-input" type="number" value="67" />
+          </label>
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-label">
+            <span class="slider-label-text">Inflationsannahme p. a.
+              <button type="button" class="icon-btn" title="Erklärung">?</button>
+            </span>
+            <span class="slider-value">2,0 %</span>
+          </div>
+          <div class="slider-track">
+            <div class="slider-fill"></div>
+            <div class="slider-thumb"></div>
+          </div>
+        </div>
+
+        <div class="field-block">
+          <div class="field-block-label">Profil-Voreinstellung</div>
+          <div class="choice-chips">
+            <button type="button" class="choice-chip selected">Konservativ</button>
+            <button type="button" class="choice-chip">Investor</button>
+            <button type="button" class="choice-chip">Eigene Einstellungen</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="wizard-nav">
+        <button type="button" class="btn-text">← Zurück</button>
+        <button type="button" class="btn-filled">Weiter →</button>
+      </div>
     </section>
 
     <section class="screen" data-screen="result">
