@@ -9,17 +9,23 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const base =
-  "inline-flex items-center justify-center rounded-lg font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex items-center justify-center font-mono uppercase tracking-instrument transition-all disabled:cursor-not-allowed disabled:opacity-40";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-brand-600 text-white hover:bg-brand-700",
-  secondary: "bg-white text-slate-800 ring-1 ring-slate-300 hover:bg-slate-50",
-  ghost: "text-slate-700 hover:bg-slate-100",
+  // Primary: schwarz mit Senf-Akzent-Linie unten — wirkt wie ein Schalter.
+  primary:
+    "bg-ink-900 text-paper-50 border border-ink-900 hover:bg-mustard-400 hover:text-ink-900 hover:border-mustard-400 active:bg-mustard-500",
+  // Secondary: 1px schwarz, transparent, ALL-CAPS Mono.
+  secondary:
+    "bg-transparent text-ink-900 border border-ink-900 hover:bg-ink-900 hover:text-paper-50 active:bg-ink-800",
+  // Ghost: nur Text, Hover unterstreicht in Senf.
+  ghost:
+    "bg-transparent text-ink-700 border border-transparent hover:text-ink-900 hover:underline underline-offset-4 decoration-mustard-400 decoration-2",
 };
 
 const sizes: Record<Size, string> = {
-  md: "h-10 px-4 text-sm",
-  sm: "h-8 px-3 text-xs",
+  md: "h-10 px-5 text-[11px] font-medium",
+  sm: "h-8 px-3 text-[10px] font-medium",
 };
 
 export function Button({

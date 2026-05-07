@@ -1,5 +1,6 @@
 import { Button } from "./ui/Button";
 import { Select } from "./ui/Select";
+import { Field } from "./ui/Field";
 import { NumberInput } from "./NumberInput";
 import {
   ASSET_TYPES,
@@ -44,32 +45,43 @@ export function AllocationManager({ allocation, onChange, emptyHint }: Props) {
   return (
     <div className="space-y-3">
       {allocation.length === 0 ? (
-        <p className="rounded-md bg-slate-50 p-3 text-sm text-slate-600 ring-1 ring-slate-200">
+        <p className="border border-ink-100 bg-paper-50 p-3 font-sans text-[13px] text-ink-700">
           {emptyHint ?? "Noch keine Allokation gesetzt — füg Anteile in % hinzu."}
         </p>
       ) : (
-        <ul className="space-y-2">
-          {allocation.map((a) => {
+        <ul className="divide-y divide-ink-100 border border-ink-900 bg-white">
+          {allocation.map((a, i) => {
             const def = getAssetTypeDef(a.type);
             const r = effectiveRealReturn(a);
             return (
-              <li key={a.id} className="rounded-lg bg-white p-3 ring-1 ring-slate-200">
+              <li key={a.id} className="px-4 py-3">
+                <div className="mb-2 flex items-baseline gap-2 font-mono text-[10.5px] uppercase tracking-instrument text-ink-500">
+                  <span className="text-mustard-600">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span aria-hidden>—</span>
+                  <span>Position</span>
+                </div>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-12">
                   <div className="sm:col-span-5">
-                    <label className="text-xs font-medium text-slate-600">Anlageform</label>
-                    <Select
-                      value={a.type}
-                      onChange={(e) => {
-                        const type = e.target.value as AssetType;
-                        update(a.id, { type, realReturnOverride: undefined });
-                      }}
-                    >
-                      {ASSET_TYPES.map((t) => (
-                        <option key={t.id} value={t.id}>
-                          {t.label}
-                        </option>
-                      ))}
-                    </Select>
+                    <Field label="Anlageform">
+                      {(id) => (
+                        <Select
+                          id={id}
+                          value={a.type}
+                          onChange={(e) => {
+                            const type = e.target.value as AssetType;
+                            update(a.id, { type, realReturnOverride: undefined });
+                          }}
+                        >
+                          {ASSET_TYPES.map((t) => (
+                            <option key={t.id} value={t.id}>
+                              {t.label}
+                            </option>
+                          ))}
+                        </Select>
+                      )}
+                    </Field>
                   </div>
                   <div className="sm:col-span-3">
                     <NumberInput
@@ -101,8 +113,10 @@ export function AllocationManager({ allocation, onChange, emptyHint }: Props) {
                     />
                   </div>
                 </div>
-                <div className="mt-2 flex items-center justify-between">
-                  <p className="text-xs leading-relaxed text-slate-500">{def.hint}</p>
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <p className="font-sans text-[12px] leading-relaxed text-ink-500">
+                    {def.hint}
+                  </p>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -118,20 +132,29 @@ export function AllocationManager({ allocation, onChange, emptyHint }: Props) {
         </ul>
       )}
 
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <Button variant="secondary" size="sm" onClick={add}>
           + Anteil hinzufügen
         </Button>
-        <div className="flex flex-col items-end text-sm">
-          <span className={valid ? "text-slate-600" : "text-amber-700"}>
-            Summe:{" "}
-            <strong className="text-slate-900">{formatPercent(totalPercent / 100)}</strong>
-            {!valid && allocation.length > 0 && " — muss 100 % ergeben"}
+        <div className="flex flex-col items-start gap-0.5 sm:items-end">
+          <span
+            className={[
+              "font-mono text-[11px] uppercase tracking-instrument",
+              valid ? "text-ink-700" : "text-brick-600",
+            ].join(" ")}
+          >
+            Summe ·{" "}
+            <strong className="text-ink-900">
+              {formatPercent(totalPercent / 100)}
+            </strong>
+            {!valid && allocation.length > 0 && (
+              <span className="ml-1 normal-case">▲ muss 100 % ergeben</span>
+            )}
           </span>
           {valid && (
-            <span className="text-xs text-slate-500">
+            <span className="font-mono text-[10.5px] uppercase tracking-instrument text-ink-500">
               Gewichtete reale Rendite ≈{" "}
-              <strong className="text-slate-700">{formatPercent(effective)}</strong>
+              <strong className="text-mustard-600">{formatPercent(effective)}</strong>
             </span>
           )}
         </div>

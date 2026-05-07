@@ -7,7 +7,6 @@ import { useProfile, setProfile } from "../../../lib/profile/useProfile";
 import { calculatePension } from "../calculations";
 import { explainPension } from "../explain";
 import { PensionRechenweg } from "../PensionRechenweg";
-import { ProfileComparison } from "../ProfileComparison";
 import { pensionStore } from "../state";
 import { allocationToBuckets, withDefaults } from "../defaults";
 import { SAVINGS_RATE_BENCHMARKS } from "../constants";
@@ -51,8 +50,11 @@ export function ResultStep() {
 
   if (result.kind === "invalid") {
     return (
-      <Card className="border-amber-200 bg-amber-50 ring-amber-200">
-        <p className="text-sm text-amber-900">{result.reason}</p>
+      <Card className="!border-brick-600">
+        <p className="font-mono text-[10.5px] font-medium uppercase tracking-instrument text-brick-700">
+          ▲ Eingabe ungültig
+        </p>
+        <p className="mt-2 font-sans text-[13px] leading-relaxed text-ink-700">{result.reason}</p>
       </Card>
     );
   }
@@ -60,9 +62,10 @@ export function ResultStep() {
   if (result.kind === "already-retired") {
     return (
       <Card>
-        <p className="text-sm">
-          Mit dem aktuellen Alter und Renteneintritt befindest du dich bereits im Ruhestand.
-          Passe die Werte an, um eine Lücke zu berechnen.
+        <p className="eyebrow-muted">Hinweis</p>
+        <p className="mt-2 font-sans text-[13px] leading-relaxed text-ink-700">
+          Mit dem aktuellen Alter und Renteneintritt befindest du dich bereits im Ruhestand. Passe
+          die Werte an, um eine Lücke zu berechnen.
         </p>
       </Card>
     );
@@ -70,11 +73,18 @@ export function ResultStep() {
 
   if (result.kind === "no-gap") {
     return (
-      <Card className="ring-emerald-200">
-        <p className="text-lg font-semibold text-emerald-700">Keine Rentenlücke 🎉</p>
-        <p className="mt-2 text-sm text-slate-600">
-          Bei Bedarf {formatEUR(result.needToday)} und erwarteter gesetzlicher Rente von{" "}
-          {formatEUR(result.expectedStatePension)} liegt keine Lücke vor.
+      <Card>
+        <p className="font-mono text-[10.5px] font-medium uppercase tracking-instrument text-emerald-700">
+          ◯ Keine Rentenlücke
+        </p>
+        <p className="mt-3 font-display text-3xl font-semibold tracking-[-0.02em] text-ink-900">
+          Du bist abgesichert.
+        </p>
+        <p className="mt-3 font-sans text-[13.5px] leading-relaxed text-ink-700">
+          Bei Bedarf <span className="font-mono">{formatEUR(result.needToday)}</span> und erwarteter
+          gesetzlicher Rente von{" "}
+          <span className="font-mono">{formatEUR(result.expectedStatePension)}</span> liegt keine
+          Lücke vor.
         </p>
       </Card>
     );
@@ -85,24 +95,33 @@ export function ResultStep() {
   const usingDefaultStatePension = m.expectedStatePension === null;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {usingDefaultStatePension && (
-        <Card className="border-amber-200 bg-amber-50 ring-amber-200">
-          <p className="text-sm font-medium text-amber-900">
-            ⚠ Du hast keine Renteninformation eingetragen.
+        <div className="border border-brick-600 bg-brick-50 px-5 py-4">
+          <p className="font-mono text-[10.5px] font-medium uppercase tracking-instrument text-brick-700">
+            ▲ Achtung · Renteninformation fehlt
           </p>
-          <p className="mt-1 text-xs leading-relaxed text-amber-800">
-            Wir rechnen mit der Faustformel <strong>48 % vom Netto</strong> ={" "}
-            {formatEUR(result.needToday - result.gapToday)} pro Monat. Das ist eine sehr
-            grobe Schätzung und kann je nach Erwerbsbiografie deutlich daneben liegen.
-            Trag in <strong>Schritt 3 (Renteninformation)</strong> deinen echten Wert ein
-            für ein verlässliches Ergebnis.
+          <p className="mt-2 font-sans text-[13px] leading-relaxed text-ink-700">
+            Wir rechnen mit der Faustformel <strong className="font-semibold">48 % vom Netto</strong>{" "}
+            ={" "}
+            <span className="font-mono">{formatEUR(result.needToday - result.gapToday)}</span> pro
+            Monat. Das ist eine sehr grobe Schätzung und kann je nach Erwerbsbiografie deutlich
+            daneben liegen. Trag in{" "}
+            <strong className="font-semibold">Schritt 03 (Renteninformation)</strong> deinen echten
+            Wert ein.
           </p>
-        </Card>
+        </div>
       )}
-      <Card className="ring-brand-200">
-        <div className="flex items-start justify-between gap-3">
-          <p className="text-sm font-medium text-slate-500">Empfehlung</p>
+
+      {/* Hero-Empfehlung im Werkstatt-Format: gigantische Mono-Zahl. */}
+      <Card>
+        <div className="flex items-start justify-between gap-3 border-b border-ink-100 pb-3">
+          <div>
+            <p className="eyebrow">Output · 01</p>
+            <p className="mt-1 font-mono text-[11px] uppercase tracking-instrument text-ink-500">
+              Empfohlene monatliche Sparrate
+            </p>
+          </div>
           <Button
             variant="ghost"
             size="sm"
@@ -113,25 +132,52 @@ export function ResultStep() {
             🖨 Drucken
           </Button>
         </div>
-        <p className="mt-1 text-3xl font-bold tracking-tight text-slate-900">
-          {formatEUR(result.monthlySavings, true)} pro Monat
-        </p>
-        <p className="mt-1 text-sm text-slate-600">
-          Das sind <strong>{formatPercent(result.savingsRatePct / 100)}</strong> deines aktuellen
-          Netto-Einkommens. Damit schließt du deine Rentenlücke voraussichtlich bis zum
-          Renteneintritt.
-        </p>
-        <p className="mt-2 rounded-md bg-slate-50 px-3 py-2 text-xs leading-relaxed text-slate-600 ring-1 ring-slate-200">
-          <strong>Hinweis:</strong> Dieser Betrag gilt in heutiger Kaufkraft. Um real gleich zu
-          bleiben, musst du ihn jedes Jahr um die Inflation anpassen (z. B. +2 %). Steigt dein
-          Gehalt mit der Inflation, bleibt deine Sparquote konstant.{" "}
-          <span className="text-slate-500">
-            Alternativ als fixer Betrag (ohne Anpassung):{" "}
-            <strong className="text-slate-700">
-              {formatEUR(result.fixedNominalSavings, true)} pro Monat
-            </strong>
-          </span>
-        </p>
+
+        <div className="mt-6 flex flex-col gap-3">
+          <p className="font-mono font-medium leading-[0.9] tracking-[-0.04em] text-ink-900">
+            <span className="text-[56px] text-ink-300 sm:text-[80px]">0</span>
+            <span className="text-[56px] sm:text-[80px]">
+              {formatEUR(result.monthlySavings, true)}
+            </span>
+          </p>
+          <div className="flex items-center gap-3">
+            <span aria-hidden className="h-[3px] w-12 bg-mustard-400" />
+            <span className="font-mono text-[10.5px] uppercase tracking-instrument text-ink-700">
+              Monatlich · Real · Heutige Kaufkraft
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-6 grid grid-cols-1 gap-x-8 gap-y-3 border-t border-ink-100 pt-5 sm:grid-cols-2">
+          <div>
+            <p className="eyebrow-muted">Sparquote</p>
+            <p className="mt-1 font-mono text-2xl font-semibold tabular-nums text-ink-900">
+              {formatPercent(result.savingsRatePct / 100)}
+            </p>
+            <p className="mt-1 font-sans text-[12px] leading-snug text-ink-500">
+              vom aktuellen Netto-Einkommen
+            </p>
+          </div>
+          <div>
+            <p className="eyebrow-muted">Alternativ · Nominal fix</p>
+            <p className="mt-1 font-mono text-2xl font-semibold tabular-nums text-ink-900">
+              {formatEUR(result.fixedNominalSavings, true)}
+            </p>
+            <p className="mt-1 font-sans text-[12px] leading-snug text-ink-500">
+              gleichbleibender Betrag, ohne jährliche Inflation­sanpassung
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-5 border border-ink-100 bg-paper-50 px-4 py-3">
+          <p className="eyebrow-muted">Lesehinweis</p>
+          <p className="mt-1.5 font-sans text-[12.5px] leading-relaxed text-ink-700">
+            Der Hauptbetrag gilt in heutiger Kaufkraft. Um real gleich zu bleiben, musst du ihn
+            jedes Jahr um die Inflation anpassen (z. B. +2 %). Steigt dein Gehalt mit der
+            Inflation, bleibt die Sparquote konstant.
+          </p>
+        </div>
+
         <SparquoteEinordnung pct={result.savingsRatePct} />
       </Card>
 
@@ -158,27 +204,37 @@ export function ResultStep() {
         />
       </div>
 
-      <Card className="bg-slate-50">
-        <h3 className="text-sm font-semibold text-slate-800">So entsteht die Empfehlung</h3>
-        <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-slate-600">
-          <li>Du brauchst in Rente {formatEUR(result.needToday)} pro Monat (heutige Kaufkraft).</li>
-          <li>
-            Davon deckt die gesetzliche Rente ca. {formatEUR(coveredByStatePension)} – es bleibt
-            eine Lücke von {formatEUR(result.gapToday)} monatlich.
-          </li>
-          <li>
+      <Card>
+        <p className="eyebrow">Berechnung · Schritt für Schritt</p>
+        <h3 className="mt-1 font-display text-2xl font-semibold tracking-[-0.02em] text-ink-900">
+          So entsteht die Empfehlung
+        </h3>
+        <div aria-hidden className="mt-3 hairline w-full" />
+        <ol className="mt-2 divide-y divide-ink-100 font-sans text-[13.5px] leading-[1.65] text-ink-700">
+          <ArgumentStep n="01">
+            Du brauchst in Rente{" "}
+            <span className="font-mono">{formatEUR(result.needToday)}</span> pro Monat (heutige
+            Kaufkraft).
+          </ArgumentStep>
+          <ArgumentStep n="02">
+            Davon deckt die gesetzliche Rente ca.{" "}
+            <span className="font-mono">{formatEUR(coveredByStatePension)}</span> — es bleibt eine
+            Lücke von <span className="font-mono">{formatEUR(result.gapToday)}</span> monatlich.
+          </ArgumentStep>
+          <ArgumentStep n="03">
             Über {inputs.payoutYears} Jahre Rente brauchst du dafür ein Kapital von{" "}
-            {formatEUR(result.capitalNeeded)} bei Renteneintritt.
-          </li>
-          <li>
-            Mit {formatEUR(result.monthlySavings, true)} pro Monat und{" "}
-            {formatPercent(result.effectiveSavingReturn)} realer Rendite (gewichtetes
-            Mittel deiner Allokation) erreichst du das in {result.yearsToRetirement} Jahren.
-          </li>
+            <span className="font-mono">{formatEUR(result.capitalNeeded)}</span> bei
+            Renteneintritt.
+          </ArgumentStep>
+          <ArgumentStep n="04">
+            Mit <span className="font-mono">{formatEUR(result.monthlySavings, true)}</span> pro
+            Monat und{" "}
+            <span className="font-mono">{formatPercent(result.effectiveSavingReturn)}</span>{" "}
+            realer Rendite (gewichtetes Mittel deiner Allokation) erreichst du das in{" "}
+            {result.yearsToRetirement} Jahren.
+          </ArgumentStep>
         </ol>
       </Card>
-
-      <ProfileComparison profile={profile} state={m} current={result} />
 
       <PensionRechenweg explanation={explanation} />
     </div>
@@ -211,47 +267,76 @@ function SparquoteEinordnung({ pct }: { pct: number }) {
           ? "Im empfohlenen Korridor — solide Altersvorsorge laut Finanzfluss."
           : "Hohe Sparquote — prüfe, ob deine Annahmen (Lücke, Bezugsdauer, Rendite) realistisch sind.";
 
-  const tone =
+  const accent =
     pct < recMin
-      ? "bg-amber-50 ring-amber-200 text-amber-900"
+      ? "border-mustard-400 text-ink-900"
       : pct <= recMax
-        ? "bg-emerald-50 ring-emerald-200 text-emerald-900"
-        : "bg-rose-50 ring-rose-200 text-rose-900";
+        ? "border-emerald-700 text-ink-900"
+        : "border-brick-600 text-ink-900";
+
+  const indicatorColor =
+    pct < recMin
+      ? "bg-mustard-400"
+      : pct <= recMax
+        ? "bg-emerald-700"
+        : "bg-brick-600";
 
   return (
-    <div className={`mt-4 rounded-lg p-3 ring-1 ${tone}`}>
-      <div className="relative h-2 w-full overflow-hidden rounded-full bg-white/70">
+    <div className={`mt-5 border-l-[3px] ${accent} bg-paper-50 px-4 py-3`}>
+      <p className="eyebrow-muted">Einordnung · Sparquote</p>
+      <div className="relative mt-3 h-1.5 w-full overflow-hidden bg-ink-50">
         <div
-          className="absolute inset-y-0 bg-emerald-300/70"
+          className="absolute inset-y-0 bg-emerald-700/20"
           aria-hidden="true"
           style={{ left: `${recLeft}%`, width: `${recWidth}%` }}
         />
         <div
-          className="absolute inset-y-0 left-0 bg-slate-700/70"
+          className={`absolute inset-y-0 left-0 ${indicatorColor}`}
           style={{ width: `${sparrateLeftPct}%` }}
           aria-label={`Deine Sparquote ${pct.toFixed(1)} %`}
         />
       </div>
-      <p className="mt-2 text-xs leading-relaxed">
-        Deine Sparquote liegt bei <strong>{formatPercent(pct / 100)}</strong>. {message}{" "}
-        <span className="opacity-75">
-          (Referenz: Ø Deutschland ~{avg.toFixed(0)} %, Finanzfluss-Empfehlung {recMin.toFixed(0)}–
-          {recMax.toFixed(0)} %.)
+      <div className="mt-2 flex items-center justify-between font-mono text-[10px] uppercase tracking-instrument text-ink-500">
+        <span>0 %</span>
+        <span>
+          Ø DE {avg.toFixed(0)} % · Empf. {recMin.toFixed(0)}–{recMax.toFixed(0)} %
         </span>
+      </div>
+      <p className="mt-3 font-sans text-[12.5px] leading-relaxed text-ink-700">
+        Deine Sparquote liegt bei{" "}
+        <strong className="font-mono">{formatPercent(pct / 100)}</strong>. {message}
       </p>
     </div>
   );
 }
 
+function ArgumentStep({ n, children }: { n: string; children: React.ReactNode }) {
+  return (
+    <li className="flex gap-4 py-3">
+      <span
+        aria-hidden
+        className="flex-shrink-0 font-mono text-[11px] font-medium tabular-nums text-mustard-600"
+      >
+        {n}
+      </span>
+      <span>{children}</span>
+    </li>
+  );
+}
+
 function Stat({ label, value, hint, tooltip }: StatProps) {
   return (
-    <Card>
-      <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
-        <span>{label}</span>
+    <Card className="!px-5 !py-4 sm:!px-5 sm:!py-4">
+      <div className="flex items-center gap-1.5">
+        <span className="eyebrow-muted">{label}</span>
         {tooltip && <InfoTooltip content={tooltip} label={`Erklärung zu ${label}`} />}
       </div>
-      <div className="mt-1 text-xl font-semibold text-slate-900">{value}</div>
-      {hint && <div className="mt-1 text-xs text-slate-500">{hint}</div>}
+      <div className="mt-2 font-mono text-xl font-semibold tabular-nums text-ink-900 sm:text-2xl">
+        {value}
+      </div>
+      {hint && (
+        <div className="mt-1.5 font-sans text-[11.5px] leading-snug text-ink-500">{hint}</div>
+      )}
     </Card>
   );
 }

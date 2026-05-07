@@ -1,6 +1,7 @@
 import { Button } from "./ui/Button";
 import { Select } from "./ui/Select";
 import { Input } from "./ui/Input";
+import { Field } from "./ui/Field";
 import { NumberInput } from "./NumberInput";
 import {
   ASSET_TYPES,
@@ -39,52 +40,64 @@ export function AssetsManager({ assets, onChange }: Props) {
   return (
     <div className="space-y-3">
       {assets.length === 0 ? (
-        <p className="rounded-md bg-slate-50 p-3 text-sm text-slate-600 ring-1 ring-slate-200">
+        <p className="border border-ink-100 bg-paper-50 p-3 font-sans text-[13px] leading-relaxed text-ink-700">
           Noch kein Vermögen erfasst. Füg deine größten Positionen hinzu — Tagesgeld,
           ETF-Depot, Festgeld etc. Jede Position wächst bis zur Rente mit ihrer eigenen
           erwarteten Rendite.
         </p>
       ) : (
-        <ul className="space-y-2">
-          {assets.map((a) => {
+        <ul className="divide-y divide-ink-100 border border-ink-900 bg-white">
+          {assets.map((a, i) => {
             const def = getAssetTypeDef(a.type);
             const r = effectiveRealReturn(a);
             return (
-              <li
-                key={a.id}
-                className="rounded-lg bg-white p-3 ring-1 ring-slate-200"
-              >
+              <li key={a.id} className="px-4 py-3">
+                <div className="mb-2 flex items-baseline gap-2 font-mono text-[10.5px] uppercase tracking-instrument text-ink-500">
+                  <span className="text-mustard-600">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span aria-hidden>—</span>
+                  <span>Position</span>
+                </div>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-12">
                   <div className="sm:col-span-4">
-                    <label className="text-xs font-medium text-slate-600">Bezeichnung</label>
-                    <Input
-                      value={a.name}
-                      onChange={(e) => update(a.id, { name: e.target.value })}
-                      placeholder={def.label}
-                    />
+                    <Field label="Bezeichnung">
+                      {(id) => (
+                        <Input
+                          id={id}
+                          value={a.name}
+                          onChange={(e) => update(a.id, { name: e.target.value })}
+                          placeholder={def.label}
+                        />
+                      )}
+                    </Field>
                   </div>
                   <div className="sm:col-span-3">
-                    <label className="text-xs font-medium text-slate-600">Typ</label>
-                    <Select
-                      value={a.type}
-                      onChange={(e) => {
-                        const type = e.target.value as AssetType;
-                        update(a.id, {
-                          type,
-                          name:
-                            a.name === getAssetTypeDef(a.type).label || a.name === ""
-                              ? getAssetTypeDef(type).label
-                              : a.name,
-                          realReturnOverride: undefined,
-                        });
-                      }}
-                    >
-                      {ASSET_TYPES.map((t) => (
-                        <option key={t.id} value={t.id}>
-                          {t.label}
-                        </option>
-                      ))}
-                    </Select>
+                    <Field label="Typ">
+                      {(id) => (
+                        <Select
+                          id={id}
+                          value={a.type}
+                          onChange={(e) => {
+                            const type = e.target.value as AssetType;
+                            update(a.id, {
+                              type,
+                              name:
+                                a.name === getAssetTypeDef(a.type).label || a.name === ""
+                                  ? getAssetTypeDef(type).label
+                                  : a.name,
+                              realReturnOverride: undefined,
+                            });
+                          }}
+                        >
+                          {ASSET_TYPES.map((t) => (
+                            <option key={t.id} value={t.id}>
+                              {t.label}
+                            </option>
+                          ))}
+                        </Select>
+                      )}
+                    </Field>
                   </div>
                   <div className="sm:col-span-3">
                     <NumberInput
@@ -115,8 +128,10 @@ export function AssetsManager({ assets, onChange }: Props) {
                     />
                   </div>
                 </div>
-                <div className="mt-2 flex items-center justify-between">
-                  <p className="text-xs leading-relaxed text-slate-500">{def.hint}</p>
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <p className="font-sans text-[12px] leading-relaxed text-ink-500">
+                    {def.hint}
+                  </p>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -132,13 +147,14 @@ export function AssetsManager({ assets, onChange }: Props) {
         </ul>
       )}
 
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <Button variant="secondary" size="sm" onClick={add}>
           + Position hinzufügen
         </Button>
         {assets.length > 0 && (
-          <p className="text-sm text-slate-600">
-            Summe: <strong className="text-slate-900">{formatEUR(total)}</strong>
+          <p className="font-mono text-[11px] uppercase tracking-instrument text-ink-700">
+            Summe ·{" "}
+            <strong className="text-ink-900">{formatEUR(total)}</strong>
           </p>
         )}
       </div>

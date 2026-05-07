@@ -1,6 +1,6 @@
 import { createModuleStore } from "../../lib/moduleStore";
 import { newAllocationId, type Allocation } from "../../lib/assets";
-import { DEFAULT_PRESET } from "./presets";
+import { DEFAULT_PENSION_STATE } from "./presets";
 import type { PayoutMethod } from "./types";
 
 export type PensionModuleState = {
@@ -18,9 +18,9 @@ export type PensionModuleState = {
   taxBufferPct: number;
 };
 
-/** Defaults are coupled to the conservative preset (Finanztip-Methode). */
+/** Default-State (Finanztip-Methodik): siehe `presets.ts`. */
 export const PENSION_MODULE_DEFAULTS: PensionModuleState = {
-  ...DEFAULT_PRESET.state,
+  ...DEFAULT_PENSION_STATE,
   expectedStatePension: null,
 };
 

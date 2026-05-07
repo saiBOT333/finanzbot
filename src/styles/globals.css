@@ -8,31 +8,85 @@
   }
 
   body {
-    @apply min-h-screen bg-slate-50 text-slate-900;
+    @apply min-h-screen text-ink-900;
+    background-color: theme("colors.paper.100");
+    font-feature-settings: "ss01", "ss02", "cv11";
+  }
+
+  ::selection {
+    background-color: theme("colors.mustard.300");
+    color: theme("colors.ink.900");
   }
 
   :focus-visible {
-    @apply outline-none ring-2 ring-brand-500 ring-offset-2;
+    @apply outline-none;
+    box-shadow: 0 0 0 2px theme("colors.paper.100"), 0 0 0 4px theme("colors.mustard.400");
+  }
+
+  /* Tabellen-Ziffern überall, wo Mono läuft. */
+  .tabular-nums,
+  .font-mono {
+    font-variant-numeric: tabular-nums;
   }
 }
 
 @layer components {
   .container-page {
-    @apply mx-auto w-full max-w-3xl px-4 py-8;
+    @apply mx-auto w-full max-w-3xl px-5 py-10 sm:px-8;
+  }
+
+  /* Werkstatt-Eyebrow: Mono-Versalien mit weitem Tracking. */
+  .eyebrow {
+    @apply font-mono text-[10.5px] font-medium uppercase tracking-instrument text-mustard-600;
+  }
+  .eyebrow-muted {
+    @apply font-mono text-[10.5px] font-medium uppercase tracking-instrument text-ink-500;
+  }
+  .eyebrow-ink {
+    @apply font-mono text-[10.5px] font-medium uppercase tracking-instrument text-ink-900;
+  }
+
+  /* Sektions-Nummer im Werkstatt-Stil: 04 — TITEL */
+  .section-number {
+    @apply font-mono text-sm font-medium tabular-nums text-mustard-600;
+  }
+
+  /* Tick-mark als Skala-Element (vertikale Linien für den Stepper). */
+  .tick-mark {
+    width: 1px;
+    height: 12px;
+    background-color: theme("colors.ink.300");
+  }
+  .tick-mark-active {
+    background-color: theme("colors.mustard.400");
+    height: 18px;
+  }
+  .tick-mark-done {
+    background-color: theme("colors.ink.700");
+    height: 14px;
+  }
+
+  /* Harte 1px-Hairline. */
+  .hairline {
+    background-color: theme("colors.ink.900");
+    height: 1px;
+  }
+  .hairline-soft {
+    background-color: theme("colors.ink.100");
+    height: 1px;
   }
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
- * Print stylesheet — drucken nur das Ergebnis, nicht Header/Wizard/Buttons.
- * Triggered via the "Drucken"-Button in the result step (calls window.print).
+ * Print stylesheet
  * ──────────────────────────────────────────────────────────────────────── */
 @media print {
   body {
     background: white !important;
+    background-image: none !important;
     color: black !important;
   }
 
-  /* Hide navigation, header buttons, wizard stepper, action buttons. */
   header,
   footer,
   ol[aria-label],
@@ -40,7 +94,6 @@
     display: none !important;
   }
 
-  /* Drop ring/shadow effects on cards for clean black/white print. */
   .container-page {
     @apply max-w-full px-0 py-0;
   }
@@ -50,11 +103,11 @@
   [class*="bg-emerald-"],
   [class*="bg-amber-"],
   [class*="bg-rose-"],
-  [class*="bg-brand-"] {
+  [class*="bg-mustard-"],
+  [class*="bg-paper-"] {
     background: transparent !important;
   }
 
-  /* Ensure the recommendation prints prominently. */
   h2,
   h3 {
     page-break-after: avoid;

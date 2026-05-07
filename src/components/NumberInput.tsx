@@ -1,5 +1,6 @@
-import { useEffect, useId, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Input } from "./ui/Input";
+import { Field } from "./ui/Field";
 import { InfoTooltip } from "./InfoTooltip";
 import { parseLocalNumber, formatNumber } from "../lib/format";
 
@@ -34,8 +35,6 @@ export function NumberInput({
   hint,
   tooltip,
 }: NumberInputProps) {
-  const id = useId();
-  const errorId = `${id}-error`;
   const [text, setText] = useState<string>(value === undefined ? "" : formatNumber(value));
 
   useEffect(() => {
@@ -67,50 +66,42 @@ export function NumberInput({
   const showError = error !== null && trimmed !== "";
 
   return (
-    <div className="space-y-1.5">
-      <label htmlFor={id} className="flex items-center gap-2 text-sm font-medium text-slate-800">
-        <span>
-          {label}
-          {required && <span className="ml-0.5 text-red-500">*</span>}
-        </span>
-        {tooltip && <InfoTooltip content={tooltip} label={`Erklärung zu ${label}`} />}
-      </label>
-      <div className="relative">
-        <Input
-          id={id}
-          inputMode="decimal"
-          value={text}
-          placeholder={placeholder}
-          invalid={showError}
-          aria-invalid={showError ? true : undefined}
-          aria-describedby={showError ? errorId : undefined}
-          onChange={(e) => {
-            const next = e.target.value;
-            setText(next);
-            const parsedNext = parseLocalNumber(next.trim());
-            if (next.trim() === "") {
-              onChange(undefined);
-              return;
-            }
-            if (parsedNext === null) return; // keep text but don't commit garbage
-            // Commit even when out of range — error is shown to the user, but
-            // we don't want to silently swallow keystrokes mid-edit.
-            onChange(parsedNext);
-          }}
-        />
-        {unit && (
-          <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-slate-500">
-            {unit}
-          </span>
-        )}
-      </div>
-      {showError ? (
-        <p id={errorId} className="text-xs font-medium text-red-600">
-          {error}
-        </p>
-      ) : (
-        hint && <p className="text-xs text-slate-500">{hint}</p>
+    <Field
+      label={label}
+      adornment={tooltip && <InfoTooltip content={tooltip} label={`Erklärung zu ${label}`} />}
+      required={required}
+      hint={hint}
+      error={showError ? error : undefined}
+    >
+      {(id) => (
+        <div className="relative">
+          <Input
+            id={id}
+            inputMode="decimal"
+            value={text}
+            placeholder={placeholder}
+            invalid={showError}
+            aria-invalid={showError ? true : undefined}
+            className={unit ? "pr-12" : ""}
+            onChange={(e) => {
+              const next = e.target.value;
+              setText(next);
+              const parsedNext = parseLocalNumber(next.trim());
+              if (next.trim() === "") {
+                onChange(undefined);
+                return;
+              }
+              if (parsedNext === null) return;
+              onChange(parsedNext);
+            }}
+          />
+          {unit && (
+            <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center font-mono text-[11px] uppercase tracking-instrument text-ink-500">
+              {unit}
+            </span>
+          )}
+        </div>
       )}
-    </div>
+    </Field>
   );
 }
