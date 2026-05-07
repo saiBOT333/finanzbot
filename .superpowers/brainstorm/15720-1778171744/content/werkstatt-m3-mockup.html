@@ -200,7 +200,7 @@
     }
     .step-chip.active { background: var(--m3-primary-container); color: var(--m3-on-primary-container); }
     .step-chip.active .num { background: var(--m3-primary); color: var(--m3-on-primary); }
-    .step-chip.done .num { background: var(--m3-success); color: #fff; }
+    .step-chip.done .num { background: var(--m3-success); color: var(--m3-on-primary); }
 
     .wizard-card {
       background: var(--m3-surface-container);
@@ -272,7 +272,7 @@
       border-radius: 50%;
       border: 3px solid var(--m3-surface);
       left: 35%;
-      box-shadow: 0 0 0 8px rgba(46, 75, 174, 0.12);
+      box-shadow: 0 0 0 8px color-mix(in srgb, var(--m3-primary) 12%, transparent);
     }
     .choice-chips { display: flex; gap: 8px; flex-wrap: wrap; }
     .choice-chip {
@@ -494,10 +494,10 @@
 </head>
 <body>
   <div class="app-shell">
-    <nav class="tab-bar" role="tablist">
-      <button class="tab active" data-screen="welcome" role="tab">Welcome</button>
-      <button class="tab" data-screen="wizard" role="tab">Wizard · Eckdaten</button>
-      <button class="tab" data-screen="result" role="tab">Ergebnis</button>
+    <nav class="tab-bar" aria-label="Mockup-Screens">
+      <button type="button" class="tab active" data-screen="welcome">Welcome</button>
+      <button type="button" class="tab" data-screen="wizard">Wizard · Eckdaten</button>
+      <button type="button" class="tab" data-screen="result">Ergebnis</button>
     </nav>
 
     <section class="screen active" data-screen="welcome">
