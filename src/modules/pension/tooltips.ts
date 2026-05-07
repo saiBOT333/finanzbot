@@ -15,7 +15,7 @@ export const tooltips: Record<string, string> = {
   payoutRealReturn:
     "Erwartete Rendite IM RUHESTAND nach Inflation. Üblich ist eine geringere Rendite als in der Sparphase, weil im Alter der Aktienanteil heruntergefahren wird. Finanztip-Standard: ~1 % real (3 % nominal).",
   payoutMethod:
-    "Wie das Vermögen in der Rente verbraucht wird. 'Annuität': Vermögen wird über X Jahre aufgebraucht (Finanztip). 'Sichere Entnahmerate': feste Quote pro Jahr, das Vermögen lebt theoretisch unbegrenzt (Finanzfluss).",
+    "Wie das Vermögen in der Rente verbraucht wird. 'Annuität': Vermögen wird über X Jahre vollständig aufgebraucht — niedrigerer Kapitalbedarf, aber endlich. 'Sichere Entnahmerate': feste Quote pro Jahr, das Kapital lebt theoretisch unbegrenzt — höherer Kapitalbedarf, dafür kein Langlebigkeitsrisiko.",
   payoutYears:
     "Wie viele Jahre dein Rentenkapital reichen soll. Finanztip empfiehlt 30 Jahre (rechne lieber bis 100 Lebensjahre).",
   safeWithdrawalRate:

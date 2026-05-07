@@ -17,6 +17,13 @@ type WizardProps = {
   finishLabel?: string;
 };
 
+/** Strip leading "1. " / "2. " prefixes — replaced by zero-padded numbers. */
+function stripNumberPrefix(title: string): string {
+  return title.replace(/^\s*\d+\.\s*/, "");
+}
+
+const pad = (n: number) => String(n).padStart(2, "0");
+
 export function Wizard({ steps, onFinish, finishLabel = "Fertig" }: WizardProps) {
   const [index, setIndex] = useState(0);
   const total = steps.length;
@@ -38,52 +45,86 @@ export function Wizard({ steps, onFinish, finishLabel = "Fertig" }: WizardProps)
     setIndex((i) => Math.max(i - 1, 0));
   };
 
+  const cleanTitle = stripNumberPrefix(step.title);
+
   return (
-    <div className="space-y-6">
-      <ol aria-label="Schritte" className="flex items-center gap-2 text-xs">
+    <div className="space-y-8">
+      {/* Werkstatt-Stepper: vertikale Tick-Marks auf einer dünnen Skala. */}
+      <ol
+        aria-label="Schritte"
+        className="relative flex items-end justify-between gap-1 border-b border-ink-100 pb-4"
+      >
         {steps.map((s, i) => {
           const active = i === index;
           const done = i < index;
+          const reachable = i <= index;
           return (
-            <li key={s.id} className="flex items-center gap-2">
+            <li key={s.id} className="flex flex-1 flex-col items-center gap-2">
               <button
                 type="button"
-                onClick={() => i <= index && setIndex(i)}
+                onClick={() => reachable && setIndex(i)}
                 className={[
-                  "flex h-7 min-w-7 items-center justify-center rounded-full px-2 text-[11px] font-semibold transition-colors",
-                  active
-                    ? "bg-brand-600 text-white"
-                    : done
-                      ? "bg-brand-100 text-brand-700 hover:bg-brand-200"
-                      : "bg-slate-200 text-slate-500",
+                  "flex w-full flex-col items-center gap-2 transition-colors",
+                  reachable ? "cursor-pointer" : "cursor-not-allowed",
                 ].join(" ")}
                 aria-current={active ? "step" : undefined}
-                disabled={i > index}
+                disabled={!reachable}
                 title={s.title}
               >
-                {i + 1}
+                <span
+                  className={[
+                    "font-mono text-[11px] font-medium tabular-nums",
+                    active
+                      ? "text-mustard-600"
+                      : done
+                        ? "text-ink-900"
+                        : "text-ink-300",
+                  ].join(" ")}
+                >
+                  {pad(i + 1)}
+                </span>
+                <span
+                  aria-hidden
+                  className={[
+                    "tick-mark",
+                    active && "tick-mark-active",
+                    done && "tick-mark-done",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                />
               </button>
-              {i < total - 1 && <span className="h-px w-6 bg-slate-200" />}
             </li>
           );
         })}
       </ol>
 
-      <div>
-        <h2 className="mb-1 text-lg font-semibold text-slate-900">{step.title}</h2>
-        <div className="space-y-4">{step.content}</div>
-      </div>
+      <header className="space-y-3">
+        <div className="flex items-baseline gap-3">
+          <span className="section-number">{pad(index + 1)}</span>
+          <span aria-hidden className="text-ink-300">—</span>
+          <p className="eyebrow-ink">{cleanTitle}</p>
+        </div>
+        <h2 className="font-display text-3xl font-semibold leading-[1.05] tracking-tight text-ink-900 sm:text-4xl">
+          {cleanTitle}
+        </h2>
+      </header>
 
-      <div className="space-y-2 border-t border-slate-100 pt-4" data-print="hide">
+      <div className="space-y-5">{step.content}</div>
+
+      <div className="space-y-2 pt-6" data-print="hide">
+        <div aria-hidden className="hairline-soft w-full" />
         {!canProceed && step.blockReason && (
-          <p className="text-right text-xs text-amber-700">{step.blockReason}</p>
+          <p className="pt-3 text-right font-mono text-[11px] uppercase tracking-instrument text-brick-600">
+            ▲ {step.blockReason}
+          </p>
         )}
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center justify-between gap-2 pt-3">
           <Button variant="ghost" onClick={handleBack} disabled={index === 0}>
-            Zurück
+            ← Zurück
           </Button>
           <Button onClick={handleNext} disabled={!canProceed}>
-            {isLast ? finishLabel : "Weiter"}
+            {isLast ? finishLabel : "Weiter →"}
           </Button>
         </div>
       </div>

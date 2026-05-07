@@ -6,7 +6,8 @@ type TooltipProps = {
 };
 
 /**
- * Lightweight CSS-only tooltip with hover and keyboard focus support.
+ * Werkstatt-Tooltip: schwarzes Panel mit hartem 1px-Rand, Mono-Body. Wirkt
+ * wie ein Datenblatt-Etikett, nicht wie ein abgerundeter Bubble.
  */
 export function Tooltip({ content, children }: TooltipProps) {
   const [open, setOpen] = useState(false);
@@ -22,7 +23,7 @@ export function Tooltip({ content, children }: TooltipProps) {
       {open && (
         <span
           role="tooltip"
-          className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 w-64 -translate-x-1/2 rounded-md bg-slate-900 px-3 py-2 text-xs leading-relaxed text-white shadow-lg"
+          className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 w-64 -translate-x-1/2 border border-mustard-400 bg-ink-900 px-3 py-2 font-sans text-[12px] leading-relaxed text-paper-50"
         >
           {content}
         </span>

@@ -86,48 +86,55 @@ export function App() {
 
   return (
     <div className="min-h-screen">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3 px-4 py-3">
-          <div className="min-w-0">
-            <h1 className="text-base font-semibold text-slate-900">FinanzBot</h1>
-            <p className="hidden truncate text-xs text-slate-500 sm:block">
-              Lokale Finanzplanung — deine Daten bleiben hier.
-            </p>
+      <header className="bg-paper-100">
+        <div className="mx-auto w-full max-w-3xl px-5 sm:px-8">
+          <div className="flex items-end justify-between gap-3 pb-4 pt-6">
+            <div className="min-w-0">
+              <p className="eyebrow-muted">v1 · Modul 01 · Vorsorge</p>
+              <h1 className="mt-1 font-display text-[28px] font-semibold leading-none tracking-[-0.02em] text-ink-900">
+                FinanzBot<span className="text-mustard-400">.</span>
+              </h1>
+              <p className="mt-1.5 hidden font-mono text-[11px] uppercase tracking-instrument text-ink-500 sm:block">
+                Lokal · Privatsphäre-by-Design
+              </p>
+            </div>
+            <div className="flex flex-shrink-0 gap-1">
+              <Button variant="ghost" size="sm" onClick={handleImportClick} title="Daten importieren">
+                <span aria-hidden className="sm:hidden">📥</span>
+                <span className="hidden sm:inline">Import</span>
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleExport} title="Daten exportieren">
+                <span aria-hidden className="sm:hidden">📤</span>
+                <span className="hidden sm:inline">Export</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleReset}
+                title="Alle Eingaben löschen"
+              >
+                <span aria-hidden className="sm:hidden">🔄</span>
+                <span className="hidden sm:inline">Zurücksetzen</span>
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="application/json"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) void handleImportFile(file);
+                  e.target.value = "";
+                }}
+              />
+            </div>
           </div>
-          <div className="flex flex-shrink-0 gap-1">
-            <Button variant="ghost" size="sm" onClick={handleImportClick} title="Daten importieren">
-              <span aria-hidden className="sm:hidden">📥</span>
-              <span className="hidden sm:inline">Import</span>
-            </Button>
-            <Button variant="ghost" size="sm" onClick={handleExport} title="Daten exportieren">
-              <span aria-hidden className="sm:hidden">📤</span>
-              <span className="hidden sm:inline">Export</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleReset}
-              title="Alle Eingaben löschen"
-            >
-              <span aria-hidden className="sm:hidden">🔄</span>
-              <span className="hidden sm:inline">Zurücksetzen</span>
-            </Button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="application/json"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) void handleImportFile(file);
-                e.target.value = "";
-              }}
-            />
-          </div>
+          {/* Werkstatt: harte 1px-Linie unter dem Header. */}
+          <div aria-hidden className="hairline" />
         </div>
       </header>
 
-      <main className="container-page space-y-6">
+      <main className="container-page space-y-8">
         {!welcomeSeen ? (
           <WelcomeScreen onStart={handleStart} />
         ) : (
@@ -140,13 +147,13 @@ export function App() {
                     type="button"
                     onClick={() => setActiveId(m.id)}
                     className={[
-                      "rounded-full px-3 py-1.5 text-sm transition-colors",
+                      "border px-3 py-1.5 font-mono text-[11px] uppercase tracking-instrument transition-colors",
                       m.id === activeId
-                        ? "bg-brand-600 text-white"
-                        : "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50",
+                        ? "border-ink-900 bg-ink-900 text-paper-50"
+                        : "border-ink-900 bg-transparent text-ink-900 hover:bg-ink-900 hover:text-paper-50",
                     ].join(" ")}
                   >
-                    <span className="mr-1">{m.icon}</span>
+                    <span className="mr-1.5">{m.icon}</span>
                     {m.name}
                   </button>
                 ))}
@@ -155,12 +162,19 @@ export function App() {
 
             {active ? (
               <section>
-                <div className="mb-4">
-                  <h2 className="text-2xl font-bold tracking-tight text-slate-900">
-                    <span className="mr-2">{active.icon}</span>
+                <div className="mb-8 space-y-3">
+                  <div className="flex items-baseline gap-3">
+                    <span className="section-number">01</span>
+                    <span aria-hidden className="text-ink-300">—</span>
+                    <p className="eyebrow-ink">Modul Vorsorge</p>
+                  </div>
+                  <h2 className="font-display text-4xl font-semibold leading-[1.02] tracking-[-0.02em] text-ink-900 sm:text-5xl">
+                    <span className="mr-3 align-baseline text-3xl">{active.icon}</span>
                     {active.name}
                   </h2>
-                  <p className="mt-1 text-sm text-slate-600">{active.description}</p>
+                  <p className="max-w-prose font-sans text-[14px] leading-relaxed text-ink-500">
+                    {active.description}
+                  </p>
                 </div>
                 <Card>
                   <active.Component />
@@ -168,16 +182,18 @@ export function App() {
               </section>
             ) : (
               <Card>
-                <p className="text-sm text-slate-600">Keine Module aktiv.</p>
+                <p className="font-sans text-sm text-ink-500">Keine Module aktiv.</p>
               </Card>
             )}
           </>
         )}
       </main>
 
-      <footer className="container-page text-center text-xs text-slate-400">
-        Berechnungen basieren auf realen Renditen und sind eine Orientierungshilfe – keine
-        Anlageberatung.
+      <footer className="container-page">
+        <div aria-hidden className="mb-4 hairline-soft w-full" />
+        <p className="text-center font-mono text-[10.5px] uppercase tracking-instrument leading-relaxed text-ink-500">
+          Realgerechnete Orientierung · Keine Anlageberatung · Lokal &amp; quelloffen
+        </p>
       </footer>
     </div>
   );

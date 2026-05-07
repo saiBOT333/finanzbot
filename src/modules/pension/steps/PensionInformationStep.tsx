@@ -56,21 +56,24 @@ export function PensionInformationStep() {
 
   return (
     <div className="space-y-5">
-      <p className="text-sm leading-relaxed text-slate-600">
+      <p className="font-sans text-[14px] leading-relaxed text-ink-700">
         Die Deutsche Rentenversicherung schickt dir jedes Jahr eine{" "}
-        <strong>Renteninformation</strong> — darin steht, wie hoch deine Rente voraussichtlich wird.
-        Trag den Wert hier ein, damit das Tool deine echte Lücke berechnen kann statt nur eine
-        Faustformel anzuwenden.
+        <strong className="font-semibold">Renteninformation</strong> — darin steht, wie hoch deine
+        Rente voraussichtlich wird. Trag den Wert hier ein, damit das Tool deine echte Lücke
+        berechnen kann statt nur eine Faustformel anzuwenden.
       </p>
 
       {hasStored && (
-        <div className="rounded-lg bg-emerald-50 p-3 text-sm ring-1 ring-emerald-200">
-          <div className="flex items-center justify-between">
+        <div className="border-l-[3px] border-emerald-700 bg-paper-50 px-4 py-3">
+          <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="font-medium text-emerald-900">
-                Erwartete Netto-Rente: {formatEUR(stored)} pro Monat
+              <p className="eyebrow-muted">Wert übernommen</p>
+              <p className="mt-1 font-mono text-xl font-semibold tabular-nums text-ink-900">
+                {formatEUR(stored)}
+                <span className="ml-1.5 font-sans text-[11px] uppercase tracking-instrument text-ink-500">
+                  / Monat · heute
+                </span>
               </p>
-              <p className="text-xs text-emerald-800">heutige Kaufkraft</p>
             </div>
             <Button variant="ghost" size="sm" onClick={clear}>
               Ändern
@@ -81,10 +84,12 @@ export function PensionInformationStep() {
 
       {!hasStored && (
         <>
-          <div className="space-y-3 rounded-lg bg-white p-4 ring-1 ring-slate-200">
-            <p className="text-xs leading-relaxed text-slate-600">
+          <div className="space-y-4 border border-ink-900 bg-white p-4">
+            <p className="font-sans text-[12.5px] leading-relaxed text-ink-700">
               Such auf dem Renteninfo-Brief den Wert{" "}
-              <strong>„voraussichtliche Regelaltersrente, wenn Sie wie bisher Beiträge zahlen"</strong>{" "}
+              <strong className="font-semibold">
+                „voraussichtliche Regelaltersrente, wenn Sie wie bisher Beiträge zahlen"
+              </strong>{" "}
               — das ist der <em>ohne Anpassung</em>-Wert, meist in der Tabelle direkt unter dem
               heutigen Rentenwert. Wir rechnen die Anpassung und Inflation für dich raus.
             </p>
@@ -117,43 +122,34 @@ export function PensionInformationStep() {
             />
 
             {yearsToRetirement <= 0 && (
-              <p className="text-xs text-amber-700">
-                Bitte erst Schritt 1 (Alter & Renteneintritt) ausfüllen — wir brauchen die Jahre bis
-                zur Rente, um die Anpassung und Inflation hochzurechnen.
+              <p className="font-mono text-[10.5px] uppercase tracking-instrument text-brick-700">
+                ▲ Bitte erst Schritt 01 (Alter &amp; Renteneintritt) ausfüllen
               </p>
             )}
 
             {projection && grossWithoutAdjustment !== undefined && (
-              <div className="space-y-1.5 rounded bg-slate-50 px-3 py-2 text-xs text-slate-700">
-                <div className="flex justify-between">
-                  <span>Brutto ohne Anpassung</span>
-                  <strong className="text-slate-900">
-                    {formatEUR(grossWithoutAdjustment)}
-                  </strong>
-                </div>
-                <div className="flex justify-between">
-                  <span>
-                    × (1 + {formatPercent(raise)})<sup>{yearsToRetirement}</sup> Anpassung
-                  </span>
-                  <strong className="text-slate-900">
-                    {formatEUR(projection.grossNominal)} brutto in {yearsToRetirement} Jahren
-                  </strong>
-                </div>
-                <div className="flex justify-between">
-                  <span>− {formatPercent(deduction)} Steuern und KV/PV</span>
-                  <strong className="text-slate-900">
-                    {formatEUR(projection.netNominal)} netto in {yearsToRetirement} Jahren
-                  </strong>
-                </div>
-                <div className="flex justify-between border-t border-slate-200 pt-1.5">
-                  <span>
-                    ÷ Inflation {formatPercent(inflation)} über {yearsToRetirement} Jahre
-                  </span>
-                  <strong className="text-emerald-700">
-                    {formatEUR(projection.netReal)} heutige Kaufkraft
-                  </strong>
-                </div>
-                <div className="flex justify-end pt-1">
+              <div className="border border-ink-100 bg-paper-50 px-4 py-3">
+                <p className="eyebrow-muted">Hochrechnung</p>
+                <dl className="mt-2 divide-y divide-ink-100 font-mono text-[12px] text-ink-700">
+                  <CalcRow
+                    label="Brutto ohne Anpassung"
+                    value={formatEUR(grossWithoutAdjustment)}
+                  />
+                  <CalcRow
+                    label={`× (1 + ${formatPercent(raise)})^${yearsToRetirement}`}
+                    value={`${formatEUR(projection.grossNominal)} brutto in ${yearsToRetirement} J.`}
+                  />
+                  <CalcRow
+                    label={`− ${formatPercent(deduction)} Steuern + KV/PV`}
+                    value={`${formatEUR(projection.netNominal)} netto in ${yearsToRetirement} J.`}
+                  />
+                  <CalcRow
+                    label={`÷ Inflation ${formatPercent(inflation)} · ${yearsToRetirement} J.`}
+                    value={`${formatEUR(projection.netReal)} heute`}
+                    highlight
+                  />
+                </dl>
+                <div className="mt-3 flex justify-end">
                   <Button size="sm" onClick={apply}>
                     Wert übernehmen
                   </Button>
@@ -162,22 +158,48 @@ export function PensionInformationStep() {
             )}
           </div>
 
-          <div className="rounded-lg bg-amber-50 p-3 text-xs leading-relaxed text-amber-900 ring-1 ring-amber-200">
-            <p className="font-medium">Renteninformation gerade nicht zur Hand?</p>
-            <p className="mt-1">
+          <div className="border-l-[3px] border-mustard-400 bg-paper-50 px-4 py-3">
+            <p className="font-mono text-[10.5px] font-medium uppercase tracking-instrument text-mustard-600">
+              ◇ Renteninformation gerade nicht zur Hand?
+            </p>
+            <p className="mt-2 font-sans text-[12.5px] leading-relaxed text-ink-700">
               Ohne deinen Wert rechnen wir mit{" "}
-              <strong>{formatEUR(fallbackEstimate)} pro Monat</strong> — pauschal{" "}
-              {formatPercent(PENSION_DEFAULTS.statePensionFactor)} deines Netto-Einkommens.
+              <strong className="font-mono">{formatEUR(fallbackEstimate)} / Monat</strong> —
+              pauschal {formatPercent(PENSION_DEFAULTS.statePensionFactor)} deines Netto-Einkommens.
               Diese Faustformel ist <em>sehr</em> grob; gerade bei kürzeren Erwerbsbiografien oder
               höheren Einkommen kann der echte Wert deutlich abweichen.
             </p>
-            <p className="mt-2">
-              Du kannst trotzdem weitermachen, das Ergebnis ist dann eine Schätzung — und du
-              solltest die Renteninfo nachreichen, sobald du sie hast.
+            <p className="mt-2 font-sans text-[12.5px] leading-relaxed text-ink-500">
+              Du kannst trotzdem weitermachen, das Ergebnis ist dann eine Schätzung — die Renteninfo
+              solltest du nachreichen, sobald du sie hast.
             </p>
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+function CalcRow({
+  label,
+  value,
+  highlight = false,
+}: {
+  label: string;
+  value: string;
+  highlight?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 py-1.5">
+      <dt className="text-ink-500">{label}</dt>
+      <dd
+        className={[
+          "tabular-nums",
+          highlight ? "font-semibold text-mustard-600" : "font-medium text-ink-900",
+        ].join(" ")}
+      >
+        {value}
+      </dd>
     </div>
   );
 }

@@ -12,7 +12,7 @@ export function InfoTooltip({ content, label = "Erklärung" }: InfoTooltipProps)
       <button
         type="button"
         aria-label={label}
-        className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-200 text-[11px] font-semibold text-slate-700 hover:bg-slate-300"
+        className="inline-flex h-4 w-4 items-center justify-center border border-ink-700 bg-transparent font-mono text-[9px] font-semibold leading-none text-ink-700 transition-colors hover:border-mustard-400 hover:bg-mustard-400 hover:text-ink-900"
       >
         i
       </button>
