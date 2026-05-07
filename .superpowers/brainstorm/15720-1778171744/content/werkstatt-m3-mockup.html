@@ -75,6 +75,94 @@
     .screen { display: none; }
     .screen.active { display: block; }
     h1, h2, h3, p { margin: 0; }
+
+    /* === Welcome === */
+    .welcome-eyebrow {
+      display: inline-block;
+      background: var(--m3-primary-container);
+      color: var(--m3-on-primary-container);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .welcome-headline {
+      font-size: 56px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.05;
+      color: var(--m3-on-surface);
+      max-width: 18ch;
+      margin-bottom: 24px;
+    }
+    .welcome-headline .accent { color: var(--m3-primary); }
+    .welcome-lead {
+      font-size: 17px;
+      line-height: 1.6;
+      color: var(--m3-on-surface-variant);
+      max-width: 65ch;
+      margin-bottom: 32px;
+    }
+    .spec-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 32px;
+      background: var(--m3-surface-container);
+      border-radius: var(--m3-radius-md);
+      overflow: hidden;
+    }
+    .spec-list li {
+      display: grid;
+      grid-template-columns: 56px 160px 1fr;
+      gap: 16px;
+      align-items: baseline;
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--m3-outline-variant);
+    }
+    .spec-list li:last-child { border-bottom: none; }
+    .spec-num {
+      font-weight: 700;
+      color: var(--m3-primary);
+      font-size: 14px;
+      letter-spacing: 0.04em;
+    }
+    .spec-label {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--m3-on-surface-variant);
+    }
+    .spec-body { font-size: 15px; color: var(--m3-on-surface); }
+    .spec-body strong { font-weight: 600; }
+    .welcome-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .disclaimer {
+      font-size: 12px;
+      color: var(--m3-on-surface-variant);
+      letter-spacing: 0.04em;
+    }
+    .btn-filled {
+      background: var(--m3-primary);
+      color: var(--m3-on-primary);
+      border: none;
+      padding: 14px 28px;
+      border-radius: var(--m3-radius-button);
+      font: inherit;
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      transition: filter 0.15s;
+    }
+    .btn-filled:hover { filter: brightness(1.05); }
   </style>
 </head>
 <body>
@@ -86,7 +174,35 @@
     </nav>
 
     <section class="screen active" data-screen="welcome">
-      <h1>Welcome — Platzhalter</h1>
+      <span class="welcome-eyebrow">Modul Vorsorge · Setup</span>
+      <h1 class="welcome-headline">Wie viel musst du sparen,<br/>damit die Rente reicht<span class="accent">?</span></h1>
+      <p class="welcome-lead">In fünf Schritten errechnen wir deine Rentenlücke und die monatliche Sparrate, mit der du sie schließt — nach der konservativen Finanztip-Methodik (gemischtes Portfolio, real gerechnet, Annuität über 30 Jahre). Anlage-Allokation, Auszahlungsmethode und alle Annahmen kannst du frei anpassen.</p>
+      <ul class="spec-list">
+        <li>
+          <span class="spec-num">01</span>
+          <span class="spec-label">Dauer</span>
+          <span class="spec-body"><strong>~2 Minuten</strong> für den ersten Durchlauf.</span>
+        </li>
+        <li>
+          <span class="spec-num">02</span>
+          <span class="spec-label">Privatsphäre</span>
+          <span class="spec-body"><strong>Daten bleiben lokal</strong> im Browser (localStorage). Nichts wird an einen Server gesendet.</span>
+        </li>
+        <li>
+          <span class="spec-num">03</span>
+          <span class="spec-label">Vorbereitung</span>
+          <span class="spec-body">Monatliches <strong>Netto-Einkommen</strong>, idealerweise den Brief der Deutschen Rentenversicherung (Renteninformation) zur Hand.</span>
+        </li>
+        <li>
+          <span class="spec-num">04</span>
+          <span class="spec-label">Backup</span>
+          <span class="spec-body">Per <strong>Export</strong> oben rechts kannst du deine Eingaben jederzeit als JSON-Datei sichern und später importieren.</span>
+        </li>
+      </ul>
+      <div class="welcome-footer">
+        <span class="disclaimer">Keine Anlageberatung · Orientierungshilfe</span>
+        <button class="btn-filled">Loslegen →</button>
+      </div>
     </section>
 
     <section class="screen" data-screen="wizard">
