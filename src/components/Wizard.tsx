@@ -22,8 +22,6 @@ function stripNumberPrefix(title: string): string {
   return title.replace(/^\s*\d+\.\s*/, "");
 }
 
-const pad = (n: number) => String(n).padStart(2, "0");
-
 export function Wizard({ steps, onFinish, finishLabel = "Fertig" }: WizardProps) {
   const [index, setIndex] = useState(0);
   const total = steps.length;
@@ -49,77 +47,68 @@ export function Wizard({ steps, onFinish, finishLabel = "Fertig" }: WizardProps)
 
   return (
     <div className="space-y-8">
-      {/* Werkstatt-Stepper: vertikale Tick-Marks auf einer dünnen Skala. */}
-      <ol
-        aria-label="Schritte"
-        className="relative flex items-end justify-between gap-1 border-b border-ink-100 pb-4"
-      >
-        {steps.map((s, i) => {
-          const active = i === index;
-          const done = i < index;
-          const reachable = i <= index;
-          return (
-            <li key={s.id} className="flex flex-1 flex-col items-center gap-2">
-              <button
-                type="button"
-                onClick={() => reachable && setIndex(i)}
-                className={[
-                  "flex w-full flex-col items-center gap-2 transition-colors",
-                  reachable ? "cursor-pointer" : "cursor-not-allowed",
-                ].join(" ")}
-                aria-current={active ? "step" : undefined}
-                disabled={!reachable}
-                title={s.title}
-              >
-                <span
-                  className={[
-                    "font-mono text-[11px] font-medium tabular-nums",
-                    active
-                      ? "text-mustard-600"
-                      : done
-                        ? "text-ink-900"
-                        : "text-ink-300",
-                  ].join(" ")}
+      {/* M3 Linear Progress + Step-Chips. */}
+      <div className="space-y-3" aria-label="Wizard-Fortschritt">
+        <div className="h-1 w-full overflow-hidden rounded-full bg-surface-container-high" aria-hidden>
+          <div
+            className="h-full bg-primary transition-[width] duration-200"
+            style={{ width: `${((index + 1) / total) * 100}%` }}
+          />
+        </div>
+        <ol className="flex flex-wrap gap-2">
+          {steps.map((s, i) => {
+            const status = i < index ? "done" : i === index ? "active" : "pending";
+            const reachable = i <= index;
+            const tone =
+              status === "active"
+                ? "bg-primary-container text-on-primary-container"
+                : "bg-surface-container text-on-surface-variant";
+            const numTone =
+              status === "active"
+                ? "bg-primary text-on-primary"
+                : status === "done"
+                  ? "bg-success text-on-primary"
+                  : "bg-outline-variant text-on-surface";
+            return (
+              <li key={s.id}>
+                <button
+                  type="button"
+                  onClick={() => reachable && setIndex(i)}
+                  disabled={!reachable}
+                  aria-current={status === "active" ? "step" : undefined}
+                  title={s.title}
+                  className={`inline-flex items-center gap-2 rounded-m3-pill px-3.5 py-1.5 text-[13px] font-medium transition-colors ${tone} ${reachable ? "cursor-pointer hover:brightness-95" : "cursor-not-allowed opacity-60"}`}
                 >
-                  {pad(i + 1)}
-                </span>
-                <span
-                  aria-hidden
-                  className={[
-                    "tick-mark",
-                    active && "tick-mark-active",
-                    done && "tick-mark-done",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                />
-              </button>
-            </li>
-          );
-        })}
-      </ol>
+                  <span
+                    aria-hidden
+                    className={`inline-flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-semibold ${numTone}`}
+                  >
+                    {status === "done" ? "✓" : i + 1}
+                  </span>
+                  {stripNumberPrefix(s.title)}
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
 
       <header className="space-y-3">
-        <div className="flex items-baseline gap-3">
-          <span className="section-number">{pad(index + 1)}</span>
-          <span aria-hidden className="text-ink-300">—</span>
-          <p className="eyebrow-ink">{cleanTitle}</p>
-        </div>
-        <h2 className="font-display text-3xl font-semibold leading-[1.05] tracking-tight text-ink-900 sm:text-4xl">
+        <span className="m3-eyebrow">{`Schritt ${index + 1} / ${total}`}</span>
+        <h2 className="text-[28px] sm:text-[32px] font-semibold leading-[1.1] tracking-[-0.005em] text-on-surface">
           {cleanTitle}
         </h2>
       </header>
 
       <div className="space-y-5">{step.content}</div>
 
-      <div className="space-y-2 pt-6" data-print="hide">
-        <div aria-hidden className="hairline-soft w-full" />
+      <div className="space-y-3 pt-6" data-print="hide">
         {!canProceed && step.blockReason && (
-          <p className="pt-3 text-right font-mono text-[11px] uppercase tracking-instrument text-brick-600">
+          <p className="rounded-m3-md bg-error-container px-4 py-3 text-[13px] text-on-surface">
             ▲ {step.blockReason}
           </p>
         )}
-        <div className="flex items-center justify-between gap-2 pt-3">
+        <div className="flex items-center justify-between gap-2">
           <Button variant="text" onClick={handleBack} disabled={index === 0}>
             ← Zurück
           </Button>
