@@ -71,6 +71,32 @@
     letter-spacing: -0.03em;
     line-height: 0.95;
   }
+
+  /* M3 Slider — Thumb-Styles (kann nicht über Tailwind allein, weil Vendor-Selektoren). */
+  .m3-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--m3-primary);
+    border: 3px solid var(--m3-surface);
+    box-shadow: 0 0 0 8px color-mix(in srgb, var(--m3-primary) 0%, transparent);
+    transition: box-shadow 0.15s;
+    cursor: pointer;
+  }
+  .m3-slider:hover::-webkit-slider-thumb,
+  .m3-slider:focus::-webkit-slider-thumb {
+    box-shadow: 0 0 0 8px color-mix(in srgb, var(--m3-primary) 12%, transparent);
+  }
+  .m3-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--m3-primary);
+    border: 3px solid var(--m3-surface);
+    cursor: pointer;
+  }
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
