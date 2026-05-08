@@ -11,13 +11,8 @@ type FieldProps = {
 };
 
 /**
- * Werkstatt-Field: einheitlicher Wrapper für Label + Input + Hint/Error.
- * Stellt sicher, dass alle Form-Felder im Grid exakt gleiche Höhen haben —
- * Label-Höhe, Spacing zum Input und Hint-Bereich sind überall identisch.
- *
- * - Mono-Caps Label mit fixer Mindesthöhe (synchron mit Tooltip-Button)
- * - 6 px Gap zum Input
- * - Hint oder Error darunter, gleiche Typografie wie NumberInput
+ * M3 Field — Label oberhalb (kleiner uppercase Text), Eingabefeld unten,
+ * Supporting Text (Hint/Error) darunter mit gleicher Höhe-Reservierung.
  */
 export function Field({
   label,
@@ -34,11 +29,11 @@ export function Field({
     <div className="space-y-1.5">
       <label
         htmlFor={id}
-        className="flex min-h-[16px] items-center gap-2 font-mono text-[10.5px] font-medium uppercase tracking-instrument text-ink-700"
+        className="flex min-h-[16px] items-center gap-2 text-[12px] font-medium uppercase tracking-[0.04em] text-on-surface-variant"
       >
         <span>
           {label}
-          {required && <span className="ml-1 text-mustard-600">*</span>}
+          {required && <span className="ml-1 text-primary">*</span>}
         </span>
         {adornment}
       </label>
@@ -46,13 +41,13 @@ export function Field({
       {showError ? (
         <p
           id={errorId}
-          className="font-mono text-[10.5px] font-medium uppercase tracking-instrument text-brick-700"
+          className="text-[12px] font-medium text-error"
         >
-          ▲ {error}
+          {error}
         </p>
       ) : (
         hint && (
-          <p className="font-sans text-[12px] leading-snug text-ink-500">{hint}</p>
+          <p className="text-[12px] leading-snug text-on-surface-variant">{hint}</p>
         )
       )}
     </div>

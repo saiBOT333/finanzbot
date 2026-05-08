@@ -5,20 +5,20 @@ type InputProps = InputHTMLAttributes<HTMLInputElement> & {
 };
 
 /**
- * Werkstatt-Input: weiße Box mit hartem 1px-Schwarz-Rahmen, Mono-Numerik,
- * senf-gelber Unterstrich auf Fokus (statt Outline-Ring). Wirkt wie ein
- * Eingabe-Feld an einem Mess-Instrument.
+ * M3 Filled Text Field — gefärbte Surface, 2px Bottom-Border, oben abgerundet.
+ * - Hover: leichte Aufhellung (über brightness)
+ * - Focus: Bottom-Border wechselt zu Primary
+ * - Invalid: Bottom-Border und Text in Error
  */
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ invalid = false, className = "", ...rest }, ref) => {
     const tone = invalid
-      ? "border-brick-600 focus:border-brick-700"
-      : "border-ink-900 focus:border-mustard-400 hover:border-ink-700";
+      ? "text-error border-error"
+      : "text-on-surface border-on-surface-variant focus:border-primary";
     return (
       <input
         ref={ref}
-        className={`block h-10 w-full border bg-white px-3 font-mono text-[14px] leading-none tabular-nums text-ink-900 placeholder:text-ink-300 focus:outline-none focus:ring-0 ${tone} ${className}`.trim()}
-        style={{ boxShadow: "none" }}
+        className={`block h-12 w-full rounded-t-m3-sm border-b-2 bg-surface-container-high px-4 text-[16px] tabular-nums placeholder:text-on-surface-variant focus:outline-none ${tone} ${className}`.trim()}
         {...rest}
       />
     );
