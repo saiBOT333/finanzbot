@@ -21,9 +21,9 @@ export function PensionRechenweg({ explanation }: Props) {
               Verwendete Werte
             </h4>
           </div>
-          <div className="border border-on-surface-variant bg-white">
+          <div className="border border-on-surface-variant bg-surface">
             <table className="w-full font-sans text-[13px]">
-              <tbody className="divide-y divide-ink-100">
+              <tbody className="divide-y divide-outline-variant">
                 {inputs.map((it) => (
                   <tr key={it.symbol}>
                     <td className="w-10 px-3 py-2 align-top text-[12px] font-medium text-primary">
@@ -58,7 +58,7 @@ export function PensionRechenweg({ explanation }: Props) {
               Rechenschritte
             </h4>
           </div>
-          <ol className="divide-y divide-ink-100 border border-on-surface-variant bg-white">
+          <ol className="divide-y divide-outline-variant border border-on-surface-variant bg-surface">
             {steps.map((s) => (
               <li key={s.index} className="px-4 py-3">
                 <div className="flex items-baseline gap-3">

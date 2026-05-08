@@ -64,7 +64,7 @@ export function PensionInformationStep() {
       </p>
 
       {hasStored && (
-        <div className="border-l-[3px] border-emerald-700 bg-surface-container px-4 py-3">
+        <div className="border-l-[3px] border-success bg-surface-container px-4 py-3">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="m3-eyebrow-muted">Wert übernommen</p>
@@ -84,7 +84,7 @@ export function PensionInformationStep() {
 
       {!hasStored && (
         <>
-          <div className="space-y-4 border border-on-surface-variant bg-white p-4">
+          <div className="space-y-4 border border-on-surface-variant bg-surface p-4">
             <p className="font-sans text-[12.5px] leading-relaxed text-on-surface-variant">
               Such auf dem Renteninfo-Brief den Wert{" "}
               <strong className="font-semibold">
@@ -130,7 +130,7 @@ export function PensionInformationStep() {
             {projection && grossWithoutAdjustment !== undefined && (
               <div className="border border-outline-variant bg-surface-container px-4 py-3">
                 <p className="m3-eyebrow-muted">Hochrechnung</p>
-                <dl className="mt-2 divide-y divide-ink-100 text-[12px] text-on-surface-variant">
+                <dl className="mt-2 divide-y divide-outline-variant text-[12px] text-on-surface-variant">
                   <CalcRow
                     label="Brutto ohne Anpassung"
                     value={formatEUR(grossWithoutAdjustment)}

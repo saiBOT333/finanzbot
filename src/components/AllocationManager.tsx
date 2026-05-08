@@ -49,7 +49,7 @@ export function AllocationManager({ allocation, onChange, emptyHint }: Props) {
           {emptyHint ?? "Noch keine Allokation gesetzt — füg Anteile in % hinzu."}
         </p>
       ) : (
-        <ul className="divide-y divide-ink-100 border border-on-surface-variant bg-white">
+        <ul className="divide-y divide-outline-variant border border-on-surface-variant bg-surface">
           {allocation.map((a, i) => {
             const def = getAssetTypeDef(a.type);
             const r = effectiveRealReturn(a);

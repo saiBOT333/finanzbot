@@ -74,7 +74,7 @@ export function ResultStep() {
   if (result.kind === "no-gap") {
     return (
       <Card>
-        <p className="text-[10.5px] font-medium uppercase tracking-[0.04em] text-emerald-700">
+        <p className="text-[10.5px] font-medium uppercase tracking-[0.04em] text-success">
           ◯ Keine Rentenlücke
         </p>
         <p className="mt-3 text-3xl font-semibold tracking-[-0.02em] text-on-surface">
@@ -97,19 +97,22 @@ export function ResultStep() {
   return (
     <div className="space-y-6">
       {usingDefaultStatePension && (
-        <div className="border border-error bg-error-container px-5 py-4">
-          <p className="text-[10.5px] font-medium uppercase tracking-[0.04em] text-error">
-            ▲ Achtung · Renteninformation fehlt
-          </p>
-          <p className="mt-2 font-sans text-[13px] leading-relaxed text-on-surface-variant">
-            Wir rechnen mit der Faustformel <strong className="font-semibold">48 % vom Netto</strong>{" "}
-            ={" "}
-            <span className="tabular-nums">{formatEUR(result.needToday - result.gapToday)}</span> pro
-            Monat. Das ist eine sehr grobe Schätzung und kann je nach Erwerbsbiografie deutlich
-            daneben liegen. Trag in{" "}
-            <strong className="font-semibold">Schritt 03 (Renteninformation)</strong> deinen echten
-            Wert ein.
-          </p>
+        <div className="rounded-m3-md bg-error-container p-4 flex gap-3 items-start">
+          <span aria-hidden className="text-xl leading-none">▲</span>
+          <div className="space-y-1">
+            <p className="text-[12px] font-medium uppercase tracking-[0.04em] text-error">
+              Achtung · Renteninformation fehlt
+            </p>
+            <p className="text-[13px] leading-relaxed text-on-surface">
+              Wir rechnen mit der Faustformel <strong className="font-semibold">48 % vom Netto</strong>{" "}
+              ={" "}
+              <span className="tabular-nums">{formatEUR(result.needToday - result.gapToday)}</span> pro
+              Monat. Das ist eine sehr grobe Schätzung und kann je nach Erwerbsbiografie deutlich
+              daneben liegen. Trag in{" "}
+              <strong className="font-semibold">Schritt 03 (Renteninformation)</strong> deinen echten
+              Wert ein.
+            </p>
+          </div>
         </div>
       )}
 
@@ -210,7 +213,7 @@ export function ResultStep() {
         <h3 className="mt-1 text-2xl font-semibold tracking-[-0.02em] text-on-surface">
           So entsteht die Empfehlung
         </h3>
-        <ol className="mt-2 divide-y divide-ink-100 font-sans text-[13.5px] leading-[1.65] text-on-surface-variant">
+        <ol className="mt-2 divide-y divide-outline-variant font-sans text-[13.5px] leading-[1.65] text-on-surface-variant">
           <ArgumentStep n="01">
             Du brauchst in Rente{" "}
             <span className="tabular-nums">{formatEUR(result.needToday)}</span> pro Monat (heutige
@@ -271,14 +274,14 @@ function SparquoteEinordnung({ pct }: { pct: number }) {
     pct < recMin
       ? "border-primary text-on-surface"
       : pct <= recMax
-        ? "border-emerald-700 text-on-surface"
+        ? "border-success text-on-surface"
         : "border-error text-on-surface";
 
   const indicatorColor =
     pct < recMin
       ? "bg-primary"
       : pct <= recMax
-        ? "bg-emerald-700"
+        ? "bg-success"
         : "bg-error";
 
   return (
@@ -286,7 +289,7 @@ function SparquoteEinordnung({ pct }: { pct: number }) {
       <p className="m3-eyebrow-muted">Einordnung · Sparquote</p>
       <div className="relative mt-3 h-1.5 w-full overflow-hidden bg-surface-container">
         <div
-          className="absolute inset-y-0 bg-emerald-700/20"
+          className="absolute inset-y-0 bg-success/20"
           aria-hidden="true"
           style={{ left: `${recLeft}%`, width: `${recWidth}%` }}
         />

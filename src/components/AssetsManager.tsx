@@ -46,7 +46,7 @@ export function AssetsManager({ assets, onChange }: Props) {
           erwarteten Rendite.
         </p>
       ) : (
-        <ul className="divide-y divide-ink-100 border border-on-surface-variant bg-white">
+        <ul className="divide-y divide-outline-variant border border-on-surface-variant bg-surface">
           {assets.map((a, i) => {
             const def = getAssetTypeDef(a.type);
             const r = effectiveRealReturn(a);
