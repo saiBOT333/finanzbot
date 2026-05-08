@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { Card } from "./components/ui/Card";
 import { Button } from "./components/ui/Button";
+import { ChoiceChip } from "./components/ui/ChoiceChip";
 import { WelcomeScreen } from "./components/WelcomeScreen";
 import { modules } from "./modules/registry";
 import { profileStore } from "./lib/profile/store";
@@ -85,18 +86,15 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen">
-      <header className="bg-paper-100">
-        <div className="mx-auto w-full max-w-3xl px-5 sm:px-8">
-          <div className="flex items-end justify-between gap-3 pb-4 pt-6">
-            <div className="min-w-0">
-              <p className="eyebrow-muted">v1 · Modul 01 · Vorsorge</p>
-              <h1 className="mt-1 font-display text-[28px] font-semibold leading-none tracking-[-0.02em] text-ink-900">
-                FinanzBot<span className="text-mustard-400">.</span>
-              </h1>
-              <p className="mt-1.5 hidden font-mono text-[11px] uppercase tracking-instrument text-ink-500 sm:block">
-                Lokal · Privatsphäre-by-Design
-              </p>
+    <div className="flex min-h-screen flex-col">
+      <header className="sticky top-0 z-10 bg-surface/95 backdrop-blur">
+        <div className="container-page py-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-baseline gap-3">
+              <span className="m3-eyebrow">FinanzBot</span>
+              <span className="text-[14px] text-on-surface-variant">
+                Modulare Finanzplanung · lokal · quelloffen
+              </span>
             </div>
             <div className="flex flex-shrink-0 gap-1">
               <Button variant="text" size="sm" onClick={handleImportClick} title="Daten importieren">
@@ -129,50 +127,38 @@ export function App() {
               />
             </div>
           </div>
-          {/* Werkstatt: harte 1px-Linie unter dem Header. */}
-          <div aria-hidden className="hairline" />
         </div>
       </header>
 
-      <main className="container-page space-y-8">
+      <main className="container-page flex-1 space-y-8">
         {!welcomeSeen ? (
           <WelcomeScreen onStart={handleStart} />
         ) : (
           <>
             {modules.length > 1 && (
-              <nav className="flex flex-wrap gap-2">
+              <nav className="flex flex-wrap gap-2" aria-label="Modul-Auswahl">
                 {modules.map((m) => (
-                  <button
+                  <ChoiceChip
                     key={m.id}
-                    type="button"
+                    selected={m.id === activeId}
                     onClick={() => setActiveId(m.id)}
-                    className={[
-                      "border px-3 py-1.5 font-mono text-[11px] uppercase tracking-instrument transition-colors",
-                      m.id === activeId
-                        ? "border-ink-900 bg-ink-900 text-paper-50"
-                        : "border-ink-900 bg-transparent text-ink-900 hover:bg-ink-900 hover:text-paper-50",
-                    ].join(" ")}
                   >
-                    <span className="mr-1.5">{m.icon}</span>
+                    <span aria-hidden>{m.icon}</span>
                     {m.name}
-                  </button>
+                  </ChoiceChip>
                 ))}
               </nav>
             )}
 
             {active ? (
-              <section>
-                <div className="mb-8 space-y-3">
-                  <div className="flex items-baseline gap-3">
-                    <span className="section-number">01</span>
-                    <span aria-hidden className="text-ink-300">—</span>
-                    <p className="eyebrow-ink">Modul Vorsorge</p>
-                  </div>
-                  <h2 className="font-display text-4xl font-semibold leading-[1.02] tracking-[-0.02em] text-ink-900 sm:text-5xl">
+              <section className="space-y-8">
+                <div className="space-y-3">
+                  <span className="m3-eyebrow">Modul Vorsorge</span>
+                  <h2 className="text-[40px] sm:text-[48px] font-semibold leading-[1.05] tracking-[-0.02em] text-on-surface">
                     <span className="mr-3 align-baseline text-3xl">{active.icon}</span>
                     {active.name}
                   </h2>
-                  <p className="max-w-prose font-sans text-[14px] leading-relaxed text-ink-500">
+                  <p className="max-w-prose text-[15px] leading-relaxed text-on-surface-variant">
                     {active.description}
                   </p>
                 </div>
@@ -182,16 +168,15 @@ export function App() {
               </section>
             ) : (
               <Card>
-                <p className="font-sans text-sm text-ink-500">Keine Module aktiv.</p>
+                <p className="text-[14px] text-on-surface-variant">Keine Module aktiv.</p>
               </Card>
             )}
           </>
         )}
       </main>
 
-      <footer className="container-page">
-        <div aria-hidden className="mb-4 hairline-soft w-full" />
-        <p className="text-center font-mono text-[10.5px] uppercase tracking-instrument leading-relaxed text-ink-500">
+      <footer className="container-page py-6">
+        <p className="text-center text-[12px] tracking-[0.04em] text-on-surface-variant">
           Realgerechnete Orientierung · Keine Anlageberatung · Lokal &amp; quelloffen
         </p>
       </footer>
