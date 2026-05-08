@@ -21,13 +21,13 @@ export function AssumptionsStep() {
 
   return (
     <div className="space-y-4">
-      <div className="border-l-[3px] border-mustard-400 bg-paper-50 px-4 py-3">
-        <p className="eyebrow-muted">Standard-Annahmen aktiv</p>
-        <p className="mt-1.5 font-sans text-[13px] leading-relaxed text-ink-700">
+      <div className="border-l-[3px] border-primary bg-surface-container px-4 py-3">
+        <p className="m3-eyebrow-muted">Standard-Annahmen aktiv</p>
+        <p className="mt-1.5 font-sans text-[13px] leading-relaxed text-on-surface-variant">
           Konservative Finanztip-Methodik: gemischtes Portfolio,{" "}
-          <span className="font-mono">3 %</span> real Anspar,{" "}
-          <span className="font-mono">1 %</span> real Auszahl, Annuität über{" "}
-          <span className="font-mono">30 Jahre</span>. Du kannst alle Annahmen unten frei anpassen
+          <span className="tabular-nums">3 %</span> real Anspar,{" "}
+          <span className="tabular-nums">1 %</span> real Auszahl, Annuität über{" "}
+          <span className="tabular-nums">30 Jahre</span>. Du kannst alle Annahmen unten frei anpassen
           — inklusive Auszahlungsmethode und Anlage-Allokation.
         </p>
       </div>
@@ -35,7 +35,7 @@ export function AssumptionsStep() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="font-mono text-[11px] font-medium uppercase tracking-instrument text-mustard-600 hover:underline underline-offset-4 decoration-2"
+        className="text-[11px] font-medium uppercase tracking-[0.04em] text-primary hover:underline underline-offset-4 decoration-2"
       >
         {open ? "▾ Annahmen ausblenden" : "▸ Annahmen anpassen"}
       </button>
@@ -43,7 +43,7 @@ export function AssumptionsStep() {
       {open && (
         <div className="space-y-6">
           <Section title="Erwartete gesetzliche Rente">
-            <p className="font-sans text-[12px] leading-relaxed text-ink-500">
+            <p className="font-sans text-[12px] leading-relaxed text-on-surface-variant">
               Aus Schritt 3 übernommen — falls du sie hier korrigieren willst:
             </p>
             <NumberInput
@@ -83,7 +83,7 @@ export function AssumptionsStep() {
                 </Select>
               )}
             </Field>
-            <p className="border-l-[2px] border-ink-100 pl-3 font-sans text-[12px] leading-relaxed text-ink-500">
+            <p className="border-l-[2px] border-outline-variant pl-3 font-sans text-[12px] leading-relaxed text-on-surface-variant">
               {m.payoutMethod === "annuity"
                 ? "Annuität: dein Kapital ist nach X Jahren komplett aufgebraucht. Niedrigerer Kapitalbedarf, aber Risiko, dich zu überleben."
                 : "Sichere Entnahmerate: du entnimmst jedes Jahr eine feste Quote, das Kapital lebt theoretisch unbegrenzt. Höherer Kapitalbedarf, dafür Sicherheit gegen Langlebigkeitsrisiko."}
@@ -118,7 +118,7 @@ export function AssumptionsStep() {
           </Section>
 
           <Section title="Anlage-Allokation in der Sparphase">
-            <p className="font-sans text-[12px] leading-relaxed text-ink-500">
+            <p className="font-sans text-[12px] leading-relaxed text-on-surface-variant">
               Anteile in %, die du regelmäßig in jede Anlageform investierst. Aus den
               gewichteten realen Renditen ergibt sich die Anspar-Rendite.
             </p>
@@ -129,7 +129,7 @@ export function AssumptionsStep() {
           </Section>
 
           <Section title="Anlage-Allokation in der Rente">
-            <p className="font-sans text-[12px] leading-relaxed text-ink-500">
+            <p className="font-sans text-[12px] leading-relaxed text-on-surface-variant">
               Im Alter ist die Aktien-Quote oft niedriger. Hier die geplante
               Allokation während der Auszahlphase.
             </p>
@@ -168,7 +168,7 @@ export function AssumptionsStep() {
           </Section>
 
           <Section title="Bestehendes Vermögen">
-            <p className="font-sans text-[12px] leading-relaxed text-ink-500">{tooltips.existingAssets}</p>
+            <p className="font-sans text-[12px] leading-relaxed text-on-surface-variant">{tooltips.existingAssets}</p>
             <AssetsManager
               assets={profile.assets ?? []}
               onChange={(assets) => setProfile({ assets })}
@@ -193,9 +193,9 @@ export function AssumptionsStep() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="space-y-3">
-      <div className="flex items-baseline gap-2 border-b border-ink-100 pb-2">
-        <span aria-hidden className="h-[3px] w-6 bg-mustard-400" />
-        <h3 className="font-mono text-[10.5px] font-medium uppercase tracking-instrument text-ink-700">
+      <div className="flex items-baseline gap-2 border-b border-outline-variant pb-2">
+        <span aria-hidden className="h-[3px] w-6 bg-primary" />
+        <h3 className="text-[10.5px] font-medium uppercase tracking-[0.04em] text-on-surface-variant">
           {title}
         </h3>
       </div>

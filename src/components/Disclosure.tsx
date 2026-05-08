@@ -8,36 +8,40 @@ type DisclosureProps = {
 };
 
 /**
- * Werkstatt-Disclosure: harte Border, eckig, Mono-Header.
+ * M3 Disclosure — Outlined Card mit Chevron, expand/collapse.
  */
 export function Disclosure({ title, defaultOpen = false, children, hint }: DisclosureProps) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border border-ink-900 bg-white">
+    <div className="rounded-m3-md border border-outline-variant overflow-hidden">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className="flex w-full items-center justify-between gap-2 px-5 py-3 text-left transition-colors hover:bg-paper-50"
+        className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left transition-colors hover:bg-surface-container"
       >
         <span className="flex flex-col gap-0.5">
-          <span className="font-display text-[15px] font-semibold tracking-[-0.01em] text-ink-900">
+          <span className="text-[15px] font-medium tracking-[-0.005em] text-on-surface">
             {title}
           </span>
           {hint && (
-            <span className="font-mono text-[10.5px] uppercase tracking-instrument text-ink-500">
+            <span className="text-[11px] uppercase tracking-[0.04em] text-on-surface-variant">
               {hint}
             </span>
           )}
         </span>
         <span
-          className={`flex h-6 w-6 flex-shrink-0 items-center justify-center border border-ink-300 font-mono text-[12px] text-ink-700 transition-transform ${open ? "rotate-180" : ""}`}
           aria-hidden="true"
+          className={`text-[14px] text-on-surface-variant transition-transform ${open ? "rotate-180" : ""}`}
         >
           ▾
         </span>
       </button>
-      {open && <div className="border-t border-ink-100 px-5 py-4">{children}</div>}
+      {open && (
+        <div className="border-t border-outline-variant px-5 py-4 text-[14px] text-on-surface">
+          {children}
+        </div>
+      )}
     </div>
   );
 }
