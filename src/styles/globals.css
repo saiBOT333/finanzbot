@@ -3,30 +3,49 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* M3 Indigo Seed — als CSS Custom Properties für dynamische Werte (color-mix etc.) */
+    --m3-primary: #2E4BAE;
+    --m3-on-primary: #FFFFFF;
+    --m3-primary-container: #DEE0FF;
+    --m3-on-primary-container: #00105C;
+    --m3-secondary-container: #E2E1EC;
+    --m3-on-secondary-container: #1A1B23;
+    --m3-tertiary: #735471;
+    --m3-tertiary-container: #FED7F7;
+    --m3-on-tertiary-container: #2B122B;
+    --m3-surface: #FBFAFF;
+    --m3-surface-container: #F0EFF7;
+    --m3-surface-container-high: #E7E6F0;
+    --m3-surface-container-highest: #DEDDE6;
+    --m3-on-surface: #1A1B21;
+    --m3-on-surface-variant: #45464F;
+    --m3-outline: #767680;
+    --m3-outline-variant: #C7C5D0;
+    --m3-error: #BA1A1A;
+    --m3-error-container: #FFDAD6;
+    --m3-success: #2E6A1F;
+    --m3-success-container: #B6F2A1;
+  }
+
   html {
-    font-family: theme("fontFamily.sans");
+    font-family: 'Roboto Flex', system-ui, sans-serif;
   }
 
   body {
-    @apply min-h-screen text-ink-900;
-    background-color: theme("colors.paper.100");
-    font-feature-settings: "ss01", "ss02", "cv11";
+    @apply min-h-screen text-on-surface;
+    background-color: var(--m3-surface);
+    font-variant-numeric: tabular-nums;
   }
 
   ::selection {
-    background-color: theme("colors.mustard.300");
-    color: theme("colors.ink.900");
+    background-color: var(--m3-primary-container);
+    color: var(--m3-on-primary-container);
   }
 
   :focus-visible {
     @apply outline-none;
-    box-shadow: 0 0 0 2px theme("colors.paper.100"), 0 0 0 4px theme("colors.mustard.400");
-  }
-
-  /* Tabellen-Ziffern überall, wo Mono läuft. */
-  .tabular-nums,
-  .font-mono {
-    font-variant-numeric: tabular-nums;
+    box-shadow: 0 0 0 2px var(--m3-surface), 0 0 0 4px var(--m3-primary);
   }
 }
 
@@ -35,55 +54,31 @@
     @apply mx-auto w-full max-w-3xl px-5 py-10 sm:px-8;
   }
 
-  /* Werkstatt-Eyebrow: Mono-Versalien mit weitem Tracking. */
-  .eyebrow {
-    @apply font-mono text-[10.5px] font-medium uppercase tracking-instrument text-mustard-600;
-  }
-  .eyebrow-muted {
-    @apply font-mono text-[10.5px] font-medium uppercase tracking-instrument text-ink-500;
-  }
-  .eyebrow-ink {
-    @apply font-mono text-[10.5px] font-medium uppercase tracking-instrument text-ink-900;
+  /* M3 Eyebrow-Pill: kleines Label auf Primary-Container. */
+  .m3-eyebrow {
+    @apply inline-block rounded-m3-pill bg-primary-container px-3.5 py-1.5 text-[11px] font-medium uppercase tracking-[0.08em] text-on-primary-container;
   }
 
-  /* Sektions-Nummer im Werkstatt-Stil: 04 — TITEL */
-  .section-number {
-    @apply font-mono text-sm font-medium tabular-nums text-mustard-600;
+  /* M3 Eyebrow-Variant: für Sekundärbereiche (Surface-Container-High). */
+  .m3-eyebrow-muted {
+    @apply inline-block rounded-m3-pill bg-surface-container-high px-3.5 py-1.5 text-[11px] font-medium uppercase tracking-[0.08em] text-on-surface-variant;
   }
 
-  /* Tick-mark als Skala-Element (vertikale Linien für den Stepper). */
-  .tick-mark {
-    width: 1px;
-    height: 12px;
-    background-color: theme("colors.ink.300");
-  }
-  .tick-mark-active {
-    background-color: theme("colors.mustard.400");
-    height: 18px;
-  }
-  .tick-mark-done {
-    background-color: theme("colors.ink.700");
-    height: 14px;
-  }
-
-  /* Harte 1px-Hairline. */
-  .hairline {
-    background-color: theme("colors.ink.900");
-    height: 1px;
-  }
-  .hairline-soft {
-    background-color: theme("colors.ink.100");
-    height: 1px;
+  /* Hero-Display-Zahl wie auf dem Ergebnis-Screen. */
+  .m3-display {
+    font-size: clamp(48px, 8vw, 96px);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 0.95;
   }
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
- * Print stylesheet
+ * Print stylesheet (M3)
  * ──────────────────────────────────────────────────────────────────────── */
 @media print {
   body {
     background: white !important;
-    background-image: none !important;
     color: black !important;
   }
 
@@ -97,15 +92,25 @@
   .container-page {
     @apply max-w-full px-0 py-0;
   }
-  [class*="ring-"] {
-    box-shadow: none !important;
+
+  /* Alle Tonal-Surfaces im Druck zu hellem Grau, Hero-Card weiß. */
+  [class*="bg-primary-container"],
+  [class*="bg-tertiary-container"],
+  [class*="bg-surface-container"] {
+    background: #f4f4f4 !important;
+    color: black !important;
   }
-  [class*="bg-emerald-"],
-  [class*="bg-amber-"],
-  [class*="bg-rose-"],
-  [class*="bg-mustard-"],
-  [class*="bg-paper-"] {
-    background: transparent !important;
+  [class*="bg-primary"]:not([class*="container"]) {
+    background: white !important;
+    color: black !important;
+    border: 1px solid #cccccc;
+  }
+  [class*="text-primary"],
+  [class*="text-tertiary"] {
+    color: black !important;
+  }
+  [class*="shadow-"] {
+    box-shadow: none !important;
   }
 
   h2,
