@@ -118,7 +118,7 @@ export function AllocationManager({ allocation, onChange, emptyHint }: Props) {
                     {def.hint}
                   </p>
                   <Button
-                    variant="ghost"
+                    variant="text"
                     size="sm"
                     onClick={() => remove(a.id)}
                     aria-label={`Position ${def.label} entfernen`}
@@ -133,7 +133,7 @@ export function AllocationManager({ allocation, onChange, emptyHint }: Props) {
       )}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <Button variant="secondary" size="sm" onClick={add}>
+        <Button variant="outlined" size="sm" onClick={add}>
           + Anteil hinzufügen
         </Button>
         <div className="flex flex-col items-start gap-0.5 sm:items-end">

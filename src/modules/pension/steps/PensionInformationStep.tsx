@@ -75,7 +75,7 @@ export function PensionInformationStep() {
                 </span>
               </p>
             </div>
-            <Button variant="ghost" size="sm" onClick={clear}>
+            <Button variant="text" size="sm" onClick={clear}>
               Ändern
             </Button>
           </div>

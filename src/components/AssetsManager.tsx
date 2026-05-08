@@ -133,7 +133,7 @@ export function AssetsManager({ assets, onChange }: Props) {
                     {def.hint}
                   </p>
                   <Button
-                    variant="ghost"
+                    variant="text"
                     size="sm"
                     onClick={() => remove(a.id)}
                     aria-label={`Position ${a.name} entfernen`}
@@ -148,7 +148,7 @@ export function AssetsManager({ assets, onChange }: Props) {
       )}
 
       <div className="flex items-center justify-between gap-3">
-        <Button variant="secondary" size="sm" onClick={add}>
+        <Button variant="outlined" size="sm" onClick={add}>
           + Position hinzufügen
         </Button>
         {assets.length > 0 && (

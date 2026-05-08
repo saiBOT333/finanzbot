@@ -177,7 +177,7 @@ export function AssumptionsStep() {
 
           <div>
             <Button
-              variant="ghost"
+              variant="text"
               size="sm"
               onClick={() => pensionStore.replace(PENSION_MODULE_DEFAULTS)}
             >

@@ -99,16 +99,16 @@ export function App() {
               </p>
             </div>
             <div className="flex flex-shrink-0 gap-1">
-              <Button variant="ghost" size="sm" onClick={handleImportClick} title="Daten importieren">
+              <Button variant="text" size="sm" onClick={handleImportClick} title="Daten importieren">
                 <span aria-hidden className="sm:hidden">📥</span>
                 <span className="hidden sm:inline">Import</span>
               </Button>
-              <Button variant="ghost" size="sm" onClick={handleExport} title="Daten exportieren">
+              <Button variant="text" size="sm" onClick={handleExport} title="Daten exportieren">
                 <span aria-hidden className="sm:hidden">📤</span>
                 <span className="hidden sm:inline">Export</span>
               </Button>
               <Button
-                variant="ghost"
+                variant="text"
                 size="sm"
                 onClick={handleReset}
                 title="Alle Eingaben löschen"

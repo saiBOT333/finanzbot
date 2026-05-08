@@ -120,7 +120,7 @@ export function Wizard({ steps, onFinish, finishLabel = "Fertig" }: WizardProps)
           </p>
         )}
         <div className="flex items-center justify-between gap-2 pt-3">
-          <Button variant="ghost" onClick={handleBack} disabled={index === 0}>
+          <Button variant="text" onClick={handleBack} disabled={index === 0}>
             ← Zurück
           </Button>
           <Button onClick={handleNext} disabled={!canProceed}>

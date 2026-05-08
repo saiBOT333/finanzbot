@@ -123,7 +123,7 @@ export function ResultStep() {
             </p>
           </div>
           <Button
-            variant="ghost"
+            variant="text"
             size="sm"
             onClick={() => window.print()}
             data-print="hide"
