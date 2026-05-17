@@ -64,6 +64,27 @@
     @apply inline-block rounded-m3-pill bg-surface-container-high px-3.5 py-1.5 text-[11px] font-medium uppercase tracking-[0.08em] text-on-surface-variant;
   }
 
+  /* M3 Material Symbol — Standard-Wrapper-Klasse. */
+  .m3-icon {
+    font-family: 'Material Symbols Rounded';
+    font-weight: normal;
+    font-style: normal;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    font-variation-settings:
+      'FILL' 0,
+      'wght' 400,
+      'GRAD' 0,
+      'opsz' 24;
+  }
+
   /* Hero-Display-Zahl wie auf dem Ergebnis-Screen. */
   .m3-display {
     font-size: clamp(48px, 8vw, 96px);

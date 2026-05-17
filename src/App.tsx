@@ -143,7 +143,7 @@ export function App() {
                     selected={m.id === activeId}
                     onClick={() => setActiveId(m.id)}
                   >
-                    <span aria-hidden>{m.icon}</span>
+                    <span aria-hidden className="m3-icon text-[20px]">{m.icon}</span>
                     {m.name}
                   </ChoiceChip>
                 ))}
@@ -154,8 +154,8 @@ export function App() {
               <section className="space-y-8">
                 <div className="space-y-3">
                   <span className="m3-eyebrow">Modul Vorsorge</span>
-                  <h2 className="text-[40px] sm:text-[48px] font-semibold leading-[1.05] tracking-[-0.02em] text-on-surface">
-                    <span className="mr-3 align-baseline text-3xl">{active.icon}</span>
+                  <h2 className="flex items-center gap-3 text-[40px] sm:text-[48px] font-semibold leading-[1.05] tracking-[-0.02em] text-on-surface">
+                    <span aria-hidden className="m3-icon text-primary text-[44px] sm:text-[52px]">{active.icon}</span>
                     {active.name}
                   </h2>
                   <p className="max-w-prose text-[15px] leading-relaxed text-on-surface-variant">
