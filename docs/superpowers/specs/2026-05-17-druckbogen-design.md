@@ -85,7 +85,7 @@ und `[data-print="hide"]`-Regeln werden nicht mehr gebraucht.
 
 ## Aufbau des Druckbogens
 
-Sechs Blöcke, von oben nach unten:
+Sieben Abschnitte, von oben nach unten (Abschnitt 2 nur bedingt):
 
 1. **Kopf** — Titel „Vorsorge · Rentenlücke & Sparrate" und das aktuelle Datum
    (`new Date()`, Format `TT.MM.JJJJ`). Das Datum dokumentiert, mit welchem
