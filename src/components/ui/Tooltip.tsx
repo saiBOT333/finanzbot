@@ -6,8 +6,7 @@ type TooltipProps = {
 };
 
 /**
- * Werkstatt-Tooltip: schwarzes Panel mit hartem 1px-Rand, Mono-Body. Wirkt
- * wie ein Datenblatt-Etikett, nicht wie ein abgerundeter Bubble.
+ * M3 Plain Tooltip — abgerundetes Panel auf inverse Surface.
  */
 export function Tooltip({ content, children }: TooltipProps) {
   const [open, setOpen] = useState(false);
@@ -23,7 +22,7 @@ export function Tooltip({ content, children }: TooltipProps) {
       {open && (
         <span
           role="tooltip"
-          className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 w-64 -translate-x-1/2 border border-mustard-400 bg-ink-900 px-3 py-2 font-sans text-[12px] leading-relaxed text-paper-50"
+          className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 w-64 -translate-x-1/2 rounded-m3-sm bg-on-surface px-3 py-2 text-[12px] leading-relaxed text-surface shadow-m3-elev2"
         >
           {content}
         </span>

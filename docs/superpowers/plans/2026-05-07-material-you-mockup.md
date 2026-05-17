@@ -1,0 +1,940 @@
+# Material-You-Mockup-Pilot — Implementierungsplan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Hochauflösendes HTML-Mockup, das die FinanzBot-Werkstatt in Material 3 (Indigo-Seed) übersetzt — drei Screens (Welcome, Wizard-Step, Ergebnis) in einer einzigen Datei.
+
+**Architecture:** Reines HTML + CSS Custom Properties + minimales JS für Tab-Switch. Kein React, kein Build, kein Eingriff in den App-Code. Auslieferung über die laufende Brainstorming-Visual-Companion unter `localhost:51332`.
+
+**Tech Stack:** HTML5, CSS (Custom Properties + flex/grid), Vanilla JS (Tab-Switch), Roboto Flex via Google Fonts.
+
+**Spec:** [`docs/superpowers/specs/2026-05-07-material-you-mockup-design.md`](../specs/2026-05-07-material-you-mockup-design.md)
+
+**Output-Pfad:** `.superpowers/brainstorm/15720-1778171744/content/werkstatt-m3-mockup.html`
+*(Wird vom Visual-Companion-Server automatisch als neueste Datei serviert.)*
+
+---
+
+## File Structure
+
+| Datei | Zweck |
+| --- | --- |
+| `.superpowers/brainstorm/15720-1778171744/content/werkstatt-m3-mockup.html` | Komplettes Mockup. Enthält `<style>`-Block mit Tokens und einen `<section>`-Block je Screen. Wird beim Speichern live im Browser sichtbar. |
+
+Eine Datei reicht. Tokens, Komponenten und alle drei Screens leben darin als CSS-Custom-Properties und HTML-Sections. Kein Build-Step, kein Splitting nötig — die Datei ist schreibtauglich groß (~600–800 Zeilen geschätzt), aber durch klare Section-Kommentare strukturiert.
+
+---
+
+## Task 1 — Scaffold mit Tokens, Schriften, Tab-Switcher
+
+**Files:**
+- Create: `.superpowers/brainstorm/15720-1778171744/content/werkstatt-m3-mockup.html`
+
+Ziel dieses Tasks: Grundgerüst bauen, das im Browser bereits sichtbar ist. Drei leere Sections mit Platzhalter-Headlines, oben drei Tabs zum Umschalten. Tokens und Roboto Flex sind verdrahtet, sodass die folgenden Tasks nur noch Inhalte einsetzen müssen.
+
+- [ ] **Step 1: Visual-Companion-Server prüfen**
+
+Befehl: `cat ".superpowers/brainstorm/15720-1778171744/state/server-info"`
+Erwartet: JSON mit `"url":"http://localhost:51332"`. Falls die Datei nicht existiert oder `server-stopped` daneben liegt, erst mit `scripts/start-server.sh --project-dir <worktree>` (run_in_background) neu starten und die neue Session-ID übernehmen.
+
+- [ ] **Step 2: Datei mit Scaffold anlegen**
+
+Inhalt der neuen Datei `werkstatt-m3-mockup.html`:
+
+```html
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinanzBot — Material You Pilot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      /* M3 Indigo — Light Scheme */
+      --m3-primary: #2E4BAE;
+      --m3-on-primary: #FFFFFF;
+      --m3-primary-container: #DEE0FF;
+      --m3-on-primary-container: #00105C;
+      --m3-secondary-container: #E2E1EC;
+      --m3-on-secondary-container: #1A1B23;
+      --m3-tertiary: #735471;
+      --m3-tertiary-container: #FED7F7;
+      --m3-on-tertiary-container: #2B122B;
+      --m3-surface: #FBFAFF;
+      --m3-surface-container: #F0EFF7;
+      --m3-surface-container-high: #E7E6F0;
+      --m3-surface-container-highest: #DEDDE6;
+      --m3-on-surface: #1A1B21;
+      --m3-on-surface-variant: #45464F;
+      --m3-outline: #767680;
+      --m3-outline-variant: #C7C5D0;
+      --m3-error: #BA1A1A;
+      --m3-error-container: #FFDAD6;
+      --m3-success: #2E6A1F;
+      --m3-success-container: #B6F2A1;
+
+      /* Shape */
+      --m3-radius-sm: 8px;
+      --m3-radius-md: 16px;
+      --m3-radius-lg: 24px;
+      --m3-radius-button: 20px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: 'Roboto Flex', system-ui, sans-serif;
+      background: var(--m3-surface);
+      color: var(--m3-on-surface);
+      font-size: 16px;
+      line-height: 1.5;
+      font-variant-numeric: tabular-nums;
+    }
+    .app-shell { max-width: 1280px; margin: 0 auto; padding: 24px 32px 64px; }
+    .tab-bar {
+      display: flex;
+      gap: 8px;
+      padding: 8px;
+      background: var(--m3-surface-container);
+      border-radius: var(--m3-radius-md);
+      margin-bottom: 32px;
+      width: fit-content;
+    }
+    .tab {
+      border: none;
+      background: transparent;
+      padding: 10px 20px;
+      border-radius: var(--m3-radius-button);
+      font: inherit;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      color: var(--m3-on-surface-variant);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .tab:hover { background: var(--m3-surface-container-high); }
+    .tab.active { background: var(--m3-primary-container); color: var(--m3-on-primary-container); }
+    .screen { display: none; }
+    .screen.active { display: block; }
+    h1, h2, h3, p { margin: 0; }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <nav class="tab-bar" role="tablist">
+      <button class="tab active" data-screen="welcome" role="tab">Welcome</button>
+      <button class="tab" data-screen="wizard" role="tab">Wizard · Eckdaten</button>
+      <button class="tab" data-screen="result" role="tab">Ergebnis</button>
+    </nav>
+
+    <section class="screen active" data-screen="welcome">
+      <h1>Welcome — Platzhalter</h1>
+    </section>
+
+    <section class="screen" data-screen="wizard">
+      <h1>Wizard — Platzhalter</h1>
+    </section>
+
+    <section class="screen" data-screen="result">
+      <h1>Ergebnis — Platzhalter</h1>
+    </section>
+  </div>
+
+  <script>
+    document.querySelectorAll('.tab').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.screen;
+        document.querySelectorAll('.tab').forEach((t) => t.classList.toggle('active', t === btn));
+        document.querySelectorAll('.screen').forEach((s) => {
+          s.classList.toggle('active', s.dataset.screen === target);
+        });
+      });
+    });
+  </script>
+</body>
+</html>
+```
+
+- [ ] **Step 3: Im Browser prüfen**
+
+User aufrufen lassen `http://localhost:51332` (bzw. die aktuelle Server-URL). Erwartet: Drei Tabs oben, Klicken wechselt die Platzhalter-Headline. Indigo-Tab-Indikator sichtbar, Roboto-Flex-Schrift geladen.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add ".superpowers/brainstorm/15720-1778171744/content/werkstatt-m3-mockup.html"
+git commit -m "feat(mockup): M3-Mockup-Scaffold mit Tokens und Tab-Switcher"
+```
+
+---
+
+## Task 2 — Welcome-Screen
+
+**Files:**
+- Modify: `.superpowers/brainstorm/15720-1778171744/content/werkstatt-m3-mockup.html` (Welcome-Section + ergänzende Styles)
+
+Ziel: Welcome-Inhalte aus `src/components/WelcomeScreen.tsx` in M3-Sprache übertragen. Hero-Headline, vier Spec-Zeilen, Filled-Button, Disclaimer.
+
+- [ ] **Step 1: Styles für Welcome ergänzen**
+
+Innerhalb des bestehenden `<style>`-Blocks ergänzen (vor dem schließenden `</style>`):
+
+```css
+/* === Welcome === */
+.welcome-eyebrow {
+  display: inline-block;
+  background: var(--m3-primary-container);
+  color: var(--m3-on-primary-container);
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.welcome-headline {
+  font-size: 56px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  color: var(--m3-on-surface);
+  max-width: 18ch;
+  margin-bottom: 24px;
+}
+.welcome-headline .accent { color: var(--m3-primary); }
+.welcome-lead {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--m3-on-surface-variant);
+  max-width: 65ch;
+  margin-bottom: 32px;
+}
+.spec-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 32px;
+  background: var(--m3-surface-container);
+  border-radius: var(--m3-radius-md);
+  overflow: hidden;
+}
+.spec-list li {
+  display: grid;
+  grid-template-columns: 56px 160px 1fr;
+  gap: 16px;
+  align-items: baseline;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--m3-outline-variant);
+}
+.spec-list li:last-child { border-bottom: none; }
+.spec-num {
+  font-weight: 700;
+  color: var(--m3-primary);
+  font-size: 14px;
+  letter-spacing: 0.04em;
+}
+.spec-label {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--m3-on-surface-variant);
+}
+.spec-body { font-size: 15px; color: var(--m3-on-surface); }
+.spec-body strong { font-weight: 600; }
+.welcome-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.disclaimer {
+  font-size: 12px;
+  color: var(--m3-on-surface-variant);
+  letter-spacing: 0.04em;
+}
+.btn-filled {
+  background: var(--m3-primary);
+  color: var(--m3-on-primary);
+  border: none;
+  padding: 14px 28px;
+  border-radius: var(--m3-radius-button);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+.btn-filled:hover { filter: brightness(1.05); }
+```
+
+- [ ] **Step 2: Welcome-Section ersetzen**
+
+Den Block
+
+```html
+<section class="screen active" data-screen="welcome">
+  <h1>Welcome — Platzhalter</h1>
+</section>
+```
+
+ersetzen durch:
+
+```html
+<section class="screen active" data-screen="welcome">
+  <span class="welcome-eyebrow">Modul Vorsorge · Setup</span>
+  <h1 class="welcome-headline">Wie viel musst du sparen,<br/>damit die Rente reicht<span class="accent">?</span></h1>
+  <p class="welcome-lead">In fünf Schritten errechnen wir deine Rentenlücke und die monatliche Sparrate, mit der du sie schließt — nach der konservativen Finanztip-Methodik (gemischtes Portfolio, real gerechnet, Annuität über 30 Jahre). Anlage-Allokation, Auszahlungsmethode und alle Annahmen kannst du frei anpassen.</p>
+  <ul class="spec-list">
+    <li>
+      <span class="spec-num">01</span>
+      <span class="spec-label">Dauer</span>
+      <span class="spec-body"><strong>~2 Minuten</strong> für den ersten Durchlauf.</span>
+    </li>
+    <li>
+      <span class="spec-num">02</span>
+      <span class="spec-label">Privatsphäre</span>
+      <span class="spec-body"><strong>Daten bleiben lokal</strong> im Browser (localStorage). Nichts wird an einen Server gesendet.</span>
+    </li>
+    <li>
+      <span class="spec-num">03</span>
+      <span class="spec-label">Vorbereitung</span>
+      <span class="spec-body">Monatliches <strong>Netto-Einkommen</strong>, idealerweise den Brief der Deutschen Rentenversicherung (Renteninformation) zur Hand.</span>
+    </li>
+    <li>
+      <span class="spec-num">04</span>
+      <span class="spec-label">Backup</span>
+      <span class="spec-body">Per <strong>Export</strong> oben rechts kannst du deine Eingaben jederzeit als JSON-Datei sichern und später importieren.</span>
+    </li>
+  </ul>
+  <div class="welcome-footer">
+    <span class="disclaimer">Keine Anlageberatung · Orientierungshilfe</span>
+    <button class="btn-filled">Loslegen →</button>
+  </div>
+</section>
+```
+
+- [ ] **Step 3: Im Browser prüfen**
+
+Browser-Reload, Tab „Welcome" prüfen. Erwartet: Indigo-Eyebrow-Pill, große Display-Headline mit „?" in Indigo, Spec-Liste auf hellgrauer Tonal-Surface, Filled-Button rechts unten. Visuell aufgeräumt, kein Mono mehr.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add ".superpowers/brainstorm/15720-1778171744/content/werkstatt-m3-mockup.html"
+git commit -m "feat(mockup): Welcome-Screen mit Hero, Spec-Liste und Filled-CTA"
+```
+
+---
+
+## Task 3 — Wizard-Step (Eckdaten)
+
+**Files:**
+- Modify: `.superpowers/brainstorm/15720-1778171744/content/werkstatt-m3-mockup.html` (Wizard-Section + Styles)
+
+Ziel: Repräsentativer Eingabe-Schritt — Linear Progress, Step-Chips, M3 Filled Text Fields, Slider, Choice-Chips für Profilauswahl, Nav-Buttons.
+
+- [ ] **Step 1: Styles für Wizard ergänzen**
+
+Im `<style>`-Block ergänzen:
+
+```css
+/* === Wizard === */
+.wizard-progress { margin-bottom: 24px; }
+.wizard-progress-track {
+  height: 4px;
+  background: var(--m3-surface-container-high);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.wizard-progress-fill {
+  height: 100%;
+  width: 40%;
+  background: var(--m3-primary);
+}
+.step-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.step-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--m3-surface-container);
+  color: var(--m3-on-surface-variant);
+}
+.step-chip .num {
+  background: var(--m3-outline-variant);
+  color: var(--m3-on-surface);
+  border-radius: 999px;
+  width: 22px; height: 22px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600;
+}
+.step-chip.active { background: var(--m3-primary-container); color: var(--m3-on-primary-container); }
+.step-chip.active .num { background: var(--m3-primary); color: var(--m3-on-primary); }
+.step-chip.done .num { background: var(--m3-success); color: #fff; }
+
+.wizard-card {
+  background: var(--m3-surface-container);
+  border-radius: var(--m3-radius-lg);
+  padding: 32px;
+  margin-top: 32px;
+}
+.wizard-headline {
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  color: var(--m3-on-surface);
+  margin-bottom: 8px;
+}
+.wizard-sub {
+  color: var(--m3-on-surface-variant);
+  margin-bottom: 32px;
+  max-width: 60ch;
+}
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+.tf {
+  display: flex; flex-direction: column;
+  background: var(--m3-surface-container-high);
+  border-radius: var(--m3-radius-sm) var(--m3-radius-sm) 0 0;
+  padding: 8px 16px 12px;
+  border-bottom: 2px solid var(--m3-on-surface-variant);
+}
+.tf:focus-within { border-bottom-color: var(--m3-primary); }
+.tf-label {
+  font-size: 12px;
+  color: var(--m3-on-surface-variant);
+  margin-bottom: 4px;
+  letter-spacing: 0.02em;
+}
+.tf-input {
+  border: none; background: transparent; outline: none;
+  font: inherit; font-size: 16px; color: var(--m3-on-surface);
+  padding: 0;
+}
+.tf-supporting {
+  font-size: 12px;
+  color: var(--m3-on-surface-variant);
+  margin-top: 4px;
+  padding-left: 16px;
+}
+.slider-row { margin-bottom: 24px; }
+.slider-label {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 8px;
+}
+.slider-label-text { font-size: 14px; color: var(--m3-on-surface-variant); }
+.slider-value {
+  font-size: 18px; font-weight: 600; color: var(--m3-primary);
+}
+.slider-track {
+  height: 6px; background: var(--m3-surface-container-high);
+  border-radius: 3px; position: relative;
+}
+.slider-fill {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  background: var(--m3-primary); border-radius: 3px;
+  width: 35%;
+}
+.slider-thumb {
+  position: absolute; top: 50%;
+  transform: translate(-50%, -50%);
+  width: 18px; height: 18px;
+  background: var(--m3-primary);
+  border-radius: 50%;
+  border: 3px solid var(--m3-surface);
+  left: 35%;
+  box-shadow: 0 0 0 8px rgba(46, 75, 174, 0.12);
+}
+.choice-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.choice-chip {
+  border: 1px solid var(--m3-outline);
+  background: transparent;
+  padding: 10px 18px;
+  border-radius: var(--m3-radius-sm);
+  font: inherit; font-size: 14px; font-weight: 500;
+  color: var(--m3-on-surface);
+  cursor: pointer;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.choice-chip.selected {
+  background: var(--m3-secondary-container);
+  border-color: transparent;
+  color: var(--m3-on-secondary-container);
+}
+.choice-chip.selected::before {
+  content: "✓"; font-weight: 700;
+}
+.field-block { margin-bottom: 24px; }
+.field-block-label {
+  font-size: 12px; font-weight: 500; letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--m3-on-surface-variant);
+  margin-bottom: 12px;
+}
+.btn-text {
+  background: transparent; border: none;
+  color: var(--m3-primary);
+  padding: 14px 18px; border-radius: var(--m3-radius-button);
+  font: inherit; font-size: 15px; font-weight: 500;
+  cursor: pointer;
+}
+.btn-text:hover { background: var(--m3-primary-container); }
+.wizard-nav {
+  display: flex; justify-content: space-between;
+  margin-top: 32px;
+}
+.icon-btn {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--m3-secondary-container);
+  color: var(--m3-on-secondary-container);
+  border: none;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 14px;
+  margin-left: 6px;
+}
+```
+
+- [ ] **Step 2: Wizard-Section ersetzen**
+
+Den Block
+
+```html
+<section class="screen" data-screen="wizard">
+  <h1>Wizard — Platzhalter</h1>
+</section>
+```
+
+ersetzen durch:
+
+```html
+<section class="screen" data-screen="wizard">
+  <div class="wizard-progress">
+    <div class="wizard-progress-track"><div class="wizard-progress-fill"></div></div>
+    <div class="step-chips">
+      <span class="step-chip done"><span class="num">✓</span>Eckdaten</span>
+      <span class="step-chip active"><span class="num">2</span>Einkommen</span>
+      <span class="step-chip"><span class="num">3</span>Renteninfo</span>
+      <span class="step-chip"><span class="num">4</span>Annahmen</span>
+      <span class="step-chip"><span class="num">5</span>Ergebnis</span>
+    </div>
+  </div>
+
+  <div class="wizard-card">
+    <h2 class="wizard-headline">Eckdaten</h2>
+    <p class="wizard-sub">Wir brauchen dein aktuelles Alter und wann du in Rente gehen möchtest. Daraus ergibt sich der Anspar-Horizont.</p>
+
+    <div class="field-row">
+      <label class="tf">
+        <span class="tf-label">Aktuelles Alter</span>
+        <input class="tf-input" type="number" value="35" />
+      </label>
+      <label class="tf">
+        <span class="tf-label">Gewünschtes Renteneintrittsalter</span>
+        <input class="tf-input" type="number" value="67" />
+      </label>
+    </div>
+
+    <div class="slider-row">
+      <div class="slider-label">
+        <span class="slider-label-text">Inflationsannahme p. a.
+          <button class="icon-btn" title="Erklärung">?</button>
+        </span>
+        <span class="slider-value">2,0 %</span>
+      </div>
+      <div class="slider-track">
+        <div class="slider-fill"></div>
+        <div class="slider-thumb"></div>
+      </div>
+    </div>
+
+    <div class="field-block">
+      <div class="field-block-label">Profil-Voreinstellung</div>
+      <div class="choice-chips">
+        <button class="choice-chip selected">Konservativ</button>
+        <button class="choice-chip">Investor</button>
+        <button class="choice-chip">Eigene Einstellungen</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="wizard-nav">
+    <button class="btn-text">← Zurück</button>
+    <button class="btn-filled">Weiter →</button>
+  </div>
+</section>
+```
+
+- [ ] **Step 3: Im Browser prüfen**
+
+Tab „Wizard · Eckdaten" anklicken. Erwartet: Progress-Bar bei 40%, fünf Step-Chips (1 done = grün, 2 active = indigo, 3-5 inaktiv), Filled-Card mit zwei Filled-Text-Fields, Slider mit Indigo-Thumb und Glow-Halo, drei Choice-Chips (Konservativ ausgewählt), Nav-Buttons unten.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add ".superpowers/brainstorm/15720-1778171744/content/werkstatt-m3-mockup.html"
+git commit -m "feat(mockup): Wizard-Schritt Eckdaten mit Progress, TextFields, Slider, Chips"
+```
+
+---
+
+## Task 4 — Ergebnis-Screen
+
+**Files:**
+- Modify: `.superpowers/brainstorm/15720-1778171744/content/werkstatt-m3-mockup.html` (Result-Section + Styles)
+
+Ziel: Schaufenster — Hero-Sparrate, drei Stat-Cards, A/B-Vergleichstabelle, Lesehinweis-Card in Tertiary-Plum, Drucken-Tonal-Button.
+
+- [ ] **Step 1: Styles für Ergebnis ergänzen**
+
+Im `<style>`-Block ergänzen:
+
+```css
+/* === Ergebnis === */
+.result-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin-bottom: 24px;
+}
+.result-eyebrow {
+  display: inline-block;
+  background: var(--m3-primary-container);
+  color: var(--m3-on-primary-container);
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.result-title {
+  font-size: 24px; font-weight: 500;
+  color: var(--m3-on-surface);
+  letter-spacing: -0.005em;
+}
+.btn-tonal {
+  background: var(--m3-secondary-container);
+  color: var(--m3-on-secondary-container);
+  border: none;
+  padding: 12px 20px;
+  border-radius: var(--m3-radius-button);
+  font: inherit; font-size: 14px; font-weight: 500;
+  cursor: pointer;
+}
+.btn-tonal:hover { filter: brightness(0.97); }
+
+.hero-card {
+  background: var(--m3-primary-container);
+  color: var(--m3-on-primary-container);
+  border-radius: var(--m3-radius-lg);
+  padding: 40px 40px 32px;
+  margin-bottom: 24px;
+}
+.hero-label {
+  font-size: 12px; font-weight: 500;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  opacity: 0.85;
+  margin-bottom: 12px;
+}
+.hero-number {
+  font-size: 96px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+  color: var(--m3-on-primary-container);
+}
+.hero-number .unit {
+  font-size: 40px; font-weight: 500; opacity: 0.8;
+  margin-left: 8px;
+}
+.hero-caption {
+  display: flex; align-items: center; gap: 12px;
+  margin-top: 16px;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+.hero-bar {
+  display: inline-block;
+  width: 32px; height: 3px;
+  background: var(--m3-primary);
+  border-radius: 2px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--m3-surface-container-high);
+  border-radius: var(--m3-radius-md);
+  padding: 24px;
+}
+.stat-label {
+  font-size: 12px; font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--m3-on-surface-variant);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.stat-value {
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--m3-on-surface);
+  margin-bottom: 6px;
+}
+.stat-hint {
+  font-size: 13px;
+  color: var(--m3-on-surface-variant);
+  line-height: 1.4;
+}
+
+.compare-card {
+  background: var(--m3-surface-container);
+  border-radius: var(--m3-radius-md);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+.compare-title {
+  font-size: 16px; font-weight: 500;
+  color: var(--m3-on-surface);
+  margin-bottom: 4px;
+}
+.compare-sub {
+  font-size: 13px; color: var(--m3-on-surface-variant);
+  margin-bottom: 16px;
+}
+.compare-table {
+  width: 100%; border-collapse: collapse;
+}
+.compare-table th, .compare-table td {
+  text-align: left;
+  padding: 12px 8px;
+  border-bottom: 1px solid var(--m3-outline-variant);
+  font-size: 14px;
+}
+.compare-table th {
+  font-size: 12px; font-weight: 500; letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--m3-on-surface-variant);
+}
+.compare-table tr:last-child td { border-bottom: none; }
+.compare-table .num {
+  font-weight: 600; color: var(--m3-on-surface);
+  text-align: right;
+}
+.compare-table .delta {
+  color: var(--m3-tertiary);
+  font-weight: 600;
+}
+.active-badge {
+  display: inline-block;
+  background: var(--m3-primary);
+  color: var(--m3-on-primary);
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 999px;
+  margin-left: 8px;
+}
+
+.tip-card {
+  background: var(--m3-tertiary-container);
+  color: var(--m3-on-tertiary-container);
+  border-radius: var(--m3-radius-md);
+  padding: 20px 24px;
+  display: flex; gap: 16px;
+  align-items: flex-start;
+}
+.tip-icon {
+  font-size: 22px; line-height: 1;
+}
+.tip-label {
+  font-size: 12px; font-weight: 500;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  margin-bottom: 6px;
+  opacity: 0.85;
+}
+.tip-body { font-size: 14px; line-height: 1.55; }
+```
+
+- [ ] **Step 2: Result-Section ersetzen**
+
+Den Block
+
+```html
+<section class="screen" data-screen="result">
+  <h1>Ergebnis — Platzhalter</h1>
+</section>
+```
+
+ersetzen durch:
+
+```html
+<section class="screen" data-screen="result">
+  <div class="result-header">
+    <div>
+      <span class="result-eyebrow">Output · 01</span>
+      <h2 class="result-title">Empfohlene monatliche Sparrate</h2>
+    </div>
+    <button class="btn-tonal">🖨 Drucken</button>
+  </div>
+
+  <div class="hero-card">
+    <div class="hero-label">Monatlich · Real · Heutige Kaufkraft</div>
+    <div class="hero-number">485<span class="unit">€</span></div>
+    <div class="hero-caption">
+      <span class="hero-bar"></span>
+      <span>Konservatives Profil · 32 Jahre Anspardauer</span>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Sparquote</div>
+      <div class="stat-value">15,2 %</div>
+      <div class="stat-hint">vom aktuellen Netto-Einkommen (3.200 €)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Rentenlücke pro Monat</div>
+      <div class="stat-value">1.180 €</div>
+      <div class="stat-hint">In 32 Jahren entspricht das ca. 2.230 € nominal</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Kapitalbedarf bei Renteneintritt</div>
+      <div class="stat-value">312.000 €</div>
+      <div class="stat-hint">Real, über 30 Jahre Auszahlung</div>
+    </div>
+  </div>
+
+  <div class="compare-card">
+    <h3 class="compare-title">A/B-Vergleich · Profile bei identischen Eingaben</h3>
+    <p class="compare-sub">Konservativ rechnet mit 3 % real, Investor mit 5 % real.</p>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Profil</th>
+          <th style="text-align:right">Sparrate / Monat</th>
+          <th style="text-align:right">Sparquote</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Konservativ <span class="active-badge">Aktiv</span></td>
+          <td class="num">485 €</td>
+          <td class="num">15,2 %</td>
+        </tr>
+        <tr>
+          <td>Investor</td>
+          <td class="num">412 €</td>
+          <td class="num">12,9 %</td>
+        </tr>
+        <tr>
+          <td>Δ Differenz</td>
+          <td class="num delta">−73 €</td>
+          <td class="num delta">−2,3 pp</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="tip-card">
+    <span class="tip-icon">💡</span>
+    <div>
+      <div class="tip-label">Lesehinweis</div>
+      <div class="tip-body">Der Hauptbetrag gilt in heutiger Kaufkraft. Um real gleich zu bleiben, musst du ihn jedes Jahr um die Inflation anpassen (z. B. +2 %). Steigt dein Gehalt mit der Inflation, bleibt die Sparquote konstant.</div>
+    </div>
+  </div>
+</section>
+```
+
+- [ ] **Step 3: Im Browser prüfen**
+
+Tab „Ergebnis" anklicken. Erwartet:
+
+- Header oben: Indigo-Eyebrow „Output · 01", Title „Empfohlene monatliche Sparrate", Tonal-Button rechts
+- Riesige Hero-Card in Indigo (Primary-Container) mit Display-Zahl „485 €" und Caption darunter
+- Drei Stat-Cards in Reihe (gehobene Surface)
+- A/B-Tabelle mit AKTIV-Badge auf Konservativ, Δ-Zeile in Plum (Tertiary)
+- Tip-Card unten in Plum (Tertiary-Container) mit 💡-Icon
+
+Die Plum-Akzente erscheinen genau zweimal: in der Δ-Zeile und in der Tip-Card. Falls mehr Plum sichtbar ist, korrigieren — Spec erlaubt nur sparsamen Einsatz.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add ".superpowers/brainstorm/15720-1778171744/content/werkstatt-m3-mockup.html"
+git commit -m "feat(mockup): Ergebnis-Screen mit Hero-Card, Stats, A/B-Tabelle und Tip"
+```
+
+---
+
+## Task 5 — Cross-Screen-Polish und Endabnahme
+
+**Files:**
+- Modify: `.superpowers/brainstorm/15720-1778171744/content/werkstatt-m3-mockup.html` (gegebenenfalls)
+
+Ziel: Sicherstellen, dass die Akzentregeln aus der Spec (Abschnitt „Wichtige Stellen deutlich machen") erfüllt sind und die drei Screens als Einheit wirken.
+
+- [ ] **Step 1: Akzentregel-Check durchführen**
+
+Für jeden Screen prüfen (Browser-Walkthrough):
+
+1. **Welcome:** Eine Hero-Stelle = die Display-Headline. Aktiver State = aktiver Tab im Tab-Bar (Primary-Container). Kein Tertiary nötig.
+2. **Wizard:** Eine Hero-Stelle = der Slider-Wert in Primary. Aktive States = aktiver Step-Chip + ausgewählter Choice-Chip. Kein Tertiary.
+3. **Ergebnis:** Hero = Display-Zahl in Primary-Container-Hero-Card. Tertiary genau **zweimal** (Δ-Zeile + Tip-Card). Sekundäre Stats in `surface-container-high`.
+
+Falls eine Regel verletzt ist (zu viel Tertiary, fehlender aktiver State, unklare Hero-Stelle), Inline-Korrektur und Step 2 wiederholen.
+
+- [ ] **Step 2: Tab-Wechsel-Smoke-Test**
+
+Im Browser zyklisch durch alle drei Tabs klicken: Welcome → Wizard → Ergebnis → Welcome. Erwartet: Kein Layout-Flackern, keine Console-Errors (DevTools öffnen, Console-Tab prüfen), Roboto-Flex-Schrift sofort gerendert ohne FOUT.
+
+- [ ] **Step 3: Vergleich mit der aktuellen Werkstatt**
+
+Ein zweites Browser-Tab mit der echten App öffnen (Dev-Server starten falls nicht aktiv: `npm run dev`, dann `http://localhost:5173`). Für jedes der drei Mockup-Screens den entsprechenden echten Screen daneben legen. Visuell vergleichen — der M3-Look soll deutlich unterschiedlich, aber inhaltlich identisch sein. Notieren, falls einzelne Elemente fehlen oder Inhalte abweichen.
+
+- [ ] **Step 4: Commit (falls Korrekturen)**
+
+Falls in Step 1–3 noch Anpassungen nötig waren:
+
+```bash
+git add ".superpowers/brainstorm/15720-1778171744/content/werkstatt-m3-mockup.html"
+git commit -m "polish(mockup): Akzentregeln und Cross-Screen-Konsistenz nachgezogen"
+```
+
+Andernfalls überspringen.
+
+- [ ] **Step 5: Hand-off an User**
+
+User informieren: „Mockup unter `http://localhost:51332` fertig. Drei Tabs: Welcome / Wizard / Ergebnis. Bitte durchklicken und entscheiden:
+
+- **Fortsetzen:** Material You als neue Designsprache übernehmen → separater Plan zur React/Tailwind-Implementierung
+- **Verwerfen:** Werkstatt-Look bleibt
+- **Mischform:** einzelne M3-Bausteine adaptieren (welche?)"
+
+Auf User-Entscheidung warten. Plan endet hier.
+
+---
+
+## Self-Review-Notiz
+
+Spec-Coverage geprüft:
+
+- ✅ 3 Screens (Welcome, Wizard, Ergebnis) → Tasks 2, 3, 4
+- ✅ M3-Tokens vollständig in `:root` → Task 1
+- ✅ Roboto Flex via Google Fonts → Task 1
+- ✅ Komponenten-Mapping (Filled Button, Tonal Button, Text Button, Filled Text Field, Linear Progress, Step-Chips, Choice-Chips, Tip-Card auf Tertiary, Hero auf Primary-Container) → Tasks 2-4
+- ✅ Akzentregeln (1 Hero pro Screen, max 1 Tertiary-Fläche pro Screen — auf Ergebnis-Screen 2 erlaubt: Δ + Tip-Card) → Task 5
+- ✅ Lieferung als eine HTML-Datei im Visual-Companion-Content-Dir → Task 1
+- ✅ Erfolgskriterium (User-Entscheidung Fortsetzen / Verwerfen / Mischform) → Task 5 Step 5
+
+Keine Platzhalter, alle Code-Blöcke ausgeschrieben, alle Befehle konkret.

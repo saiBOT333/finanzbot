@@ -56,7 +56,7 @@ export function PensionInformationStep() {
 
   return (
     <div className="space-y-5">
-      <p className="font-sans text-[14px] leading-relaxed text-ink-700">
+      <p className="font-sans text-[14px] leading-relaxed text-on-surface-variant">
         Die Deutsche Rentenversicherung schickt dir jedes Jahr eine{" "}
         <strong className="font-semibold">Renteninformation</strong> — darin steht, wie hoch deine
         Rente voraussichtlich wird. Trag den Wert hier ein, damit das Tool deine echte Lücke
@@ -64,18 +64,18 @@ export function PensionInformationStep() {
       </p>
 
       {hasStored && (
-        <div className="border-l-[3px] border-emerald-700 bg-paper-50 px-4 py-3">
+        <div className="border-l-[3px] border-success bg-surface-container px-4 py-3">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="eyebrow-muted">Wert übernommen</p>
-              <p className="mt-1 font-mono text-xl font-semibold tabular-nums text-ink-900">
+              <p className="m3-eyebrow-muted">Wert übernommen</p>
+              <p className="mt-1 text-xl font-semibold tabular-nums text-on-surface">
                 {formatEUR(stored)}
-                <span className="ml-1.5 font-sans text-[11px] uppercase tracking-instrument text-ink-500">
+                <span className="ml-1.5 font-sans text-[11px] uppercase tracking-[0.04em] text-on-surface-variant">
                   / Monat · heute
                 </span>
               </p>
             </div>
-            <Button variant="ghost" size="sm" onClick={clear}>
+            <Button variant="text" size="sm" onClick={clear}>
               Ändern
             </Button>
           </div>
@@ -84,8 +84,8 @@ export function PensionInformationStep() {
 
       {!hasStored && (
         <>
-          <div className="space-y-4 border border-ink-900 bg-white p-4">
-            <p className="font-sans text-[12.5px] leading-relaxed text-ink-700">
+          <div className="space-y-4 border border-on-surface-variant bg-surface p-4">
+            <p className="font-sans text-[12.5px] leading-relaxed text-on-surface-variant">
               Such auf dem Renteninfo-Brief den Wert{" "}
               <strong className="font-semibold">
                 „voraussichtliche Regelaltersrente, wenn Sie wie bisher Beiträge zahlen"
@@ -122,15 +122,15 @@ export function PensionInformationStep() {
             />
 
             {yearsToRetirement <= 0 && (
-              <p className="font-mono text-[10.5px] uppercase tracking-instrument text-brick-700">
+              <p className="text-[10.5px] uppercase tracking-[0.04em] text-error">
                 ▲ Bitte erst Schritt 01 (Alter &amp; Renteneintritt) ausfüllen
               </p>
             )}
 
             {projection && grossWithoutAdjustment !== undefined && (
-              <div className="border border-ink-100 bg-paper-50 px-4 py-3">
-                <p className="eyebrow-muted">Hochrechnung</p>
-                <dl className="mt-2 divide-y divide-ink-100 font-mono text-[12px] text-ink-700">
+              <div className="border border-outline-variant bg-surface-container px-4 py-3">
+                <p className="m3-eyebrow-muted">Hochrechnung</p>
+                <dl className="mt-2 divide-y divide-outline-variant text-[12px] text-on-surface-variant">
                   <CalcRow
                     label="Brutto ohne Anpassung"
                     value={formatEUR(grossWithoutAdjustment)}
@@ -158,18 +158,18 @@ export function PensionInformationStep() {
             )}
           </div>
 
-          <div className="border-l-[3px] border-mustard-400 bg-paper-50 px-4 py-3">
-            <p className="font-mono text-[10.5px] font-medium uppercase tracking-instrument text-mustard-600">
+          <div className="border-l-[3px] border-primary bg-surface-container px-4 py-3">
+            <p className="text-[10.5px] font-medium uppercase tracking-[0.04em] text-primary">
               ◇ Renteninformation gerade nicht zur Hand?
             </p>
-            <p className="mt-2 font-sans text-[12.5px] leading-relaxed text-ink-700">
+            <p className="mt-2 font-sans text-[12.5px] leading-relaxed text-on-surface-variant">
               Ohne deinen Wert rechnen wir mit{" "}
-              <strong className="font-mono">{formatEUR(fallbackEstimate)} / Monat</strong> —
+              <strong className="tabular-nums">{formatEUR(fallbackEstimate)} / Monat</strong> —
               pauschal {formatPercent(PENSION_DEFAULTS.statePensionFactor)} deines Netto-Einkommens.
               Diese Faustformel ist <em>sehr</em> grob; gerade bei kürzeren Erwerbsbiografien oder
               höheren Einkommen kann der echte Wert deutlich abweichen.
             </p>
-            <p className="mt-2 font-sans text-[12.5px] leading-relaxed text-ink-500">
+            <p className="mt-2 font-sans text-[12.5px] leading-relaxed text-on-surface-variant">
               Du kannst trotzdem weitermachen, das Ergebnis ist dann eine Schätzung — die Renteninfo
               solltest du nachreichen, sobald du sie hast.
             </p>
@@ -191,11 +191,11 @@ function CalcRow({
 }) {
   return (
     <div className="flex items-center justify-between gap-3 py-1.5">
-      <dt className="text-ink-500">{label}</dt>
+      <dt className="text-on-surface-variant">{label}</dt>
       <dd
         className={[
           "tabular-nums",
-          highlight ? "font-semibold text-mustard-600" : "font-medium text-ink-900",
+          highlight ? "font-semibold text-primary" : "font-medium text-on-surface",
         ].join(" ")}
       >
         {value}

@@ -96,7 +96,7 @@ export function NumberInput({
             }}
           />
           {unit && (
-            <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center font-mono text-[11px] uppercase tracking-instrument text-ink-500">
+            <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[12px] uppercase tracking-[0.04em] text-on-surface-variant">
               {unit}
             </span>
           )}

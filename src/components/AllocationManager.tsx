@@ -45,18 +45,18 @@ export function AllocationManager({ allocation, onChange, emptyHint }: Props) {
   return (
     <div className="space-y-3">
       {allocation.length === 0 ? (
-        <p className="border border-ink-100 bg-paper-50 p-3 font-sans text-[13px] text-ink-700">
+        <p className="border border-outline-variant bg-surface-container p-3 font-sans text-[13px] text-on-surface-variant">
           {emptyHint ?? "Noch keine Allokation gesetzt — füg Anteile in % hinzu."}
         </p>
       ) : (
-        <ul className="divide-y divide-ink-100 border border-ink-900 bg-white">
+        <ul className="divide-y divide-outline-variant border border-on-surface-variant bg-surface">
           {allocation.map((a, i) => {
             const def = getAssetTypeDef(a.type);
             const r = effectiveRealReturn(a);
             return (
               <li key={a.id} className="px-4 py-3">
-                <div className="mb-2 flex items-baseline gap-2 font-mono text-[10.5px] uppercase tracking-instrument text-ink-500">
-                  <span className="text-mustard-600">
+                <div className="mb-2 flex items-baseline gap-2 text-[10.5px] uppercase tracking-[0.04em] text-on-surface-variant">
+                  <span className="text-primary">
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <span aria-hidden>—</span>
@@ -114,11 +114,11 @@ export function AllocationManager({ allocation, onChange, emptyHint }: Props) {
                   </div>
                 </div>
                 <div className="mt-3 flex items-center justify-between gap-3">
-                  <p className="font-sans text-[12px] leading-relaxed text-ink-500">
+                  <p className="font-sans text-[12px] leading-relaxed text-on-surface-variant">
                     {def.hint}
                   </p>
                   <Button
-                    variant="ghost"
+                    variant="text"
                     size="sm"
                     onClick={() => remove(a.id)}
                     aria-label={`Position ${def.label} entfernen`}
@@ -133,18 +133,18 @@ export function AllocationManager({ allocation, onChange, emptyHint }: Props) {
       )}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <Button variant="secondary" size="sm" onClick={add}>
+        <Button variant="outlined" size="sm" onClick={add}>
           + Anteil hinzufügen
         </Button>
         <div className="flex flex-col items-start gap-0.5 sm:items-end">
           <span
             className={[
-              "font-mono text-[11px] uppercase tracking-instrument",
-              valid ? "text-ink-700" : "text-brick-600",
+              "text-[11px] uppercase tracking-[0.04em]",
+              valid ? "text-on-surface-variant" : "text-error",
             ].join(" ")}
           >
             Summe ·{" "}
-            <strong className="text-ink-900">
+            <strong className="text-on-surface">
               {formatPercent(totalPercent / 100)}
             </strong>
             {!valid && allocation.length > 0 && (
@@ -152,9 +152,9 @@ export function AllocationManager({ allocation, onChange, emptyHint }: Props) {
             )}
           </span>
           {valid && (
-            <span className="font-mono text-[10.5px] uppercase tracking-instrument text-ink-500">
+            <span className="text-[10.5px] uppercase tracking-[0.04em] text-on-surface-variant">
               Gewichtete reale Rendite ≈{" "}
-              <strong className="text-mustard-600">{formatPercent(effective)}</strong>
+              <strong className="text-primary">{formatPercent(effective)}</strong>
             </span>
           )}
         </div>

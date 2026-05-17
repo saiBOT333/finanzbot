@@ -10,19 +10,14 @@ export function WelcomeScreen({ onStart }: Props) {
     <Card>
       <div className="space-y-7">
         <div className="space-y-3">
-          <div className="flex items-baseline gap-3">
-            <span className="section-number">00</span>
-            <span aria-hidden className="text-ink-300">—</span>
-            <p className="eyebrow-ink">Modul Vorsorge · Setup</p>
-          </div>
-          <h2 className="font-display text-4xl font-semibold leading-[1.02] tracking-[-0.02em] text-ink-900 sm:text-5xl">
+          <span className="m3-eyebrow">Modul Vorsorge · Setup</span>
+          <h2 className="text-[44px] sm:text-[56px] font-bold leading-[1.05] tracking-[-0.02em] text-on-surface max-w-[18ch]">
             Wie viel musst du sparen,
             <br />
             damit die Rente reicht
-            <span className="text-mustard-400">?</span>
+            <span className="text-primary">?</span>
           </h2>
-          <div aria-hidden className="hairline w-full" />
-          <p className="max-w-prose font-sans text-[14px] leading-[1.7] text-ink-700">
+          <p className="max-w-prose text-[16px] leading-[1.6] text-on-surface-variant">
             In fünf Schritten errechnen wir deine Rentenlücke und die monatliche Sparrate, mit
             der du sie schließt — nach der konservativen Finanztip-Methodik (gemischtes
             Portfolio, real gerechnet, Annuität über 30 Jahre). Anlage-Allokation,
@@ -30,7 +25,7 @@ export function WelcomeScreen({ onStart }: Props) {
           </p>
         </div>
 
-        <ul className="divide-y divide-ink-100 border-y border-ink-100 font-sans text-[13px] leading-relaxed text-ink-700">
+        <ul className="rounded-m3-md bg-surface-container">
           <Spec n="01" label="Dauer">
             <strong className="font-semibold">~2 Minuten</strong> für den ersten Durchlauf.
           </Spec>
@@ -49,7 +44,7 @@ export function WelcomeScreen({ onStart }: Props) {
         </ul>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="font-mono text-[10.5px] uppercase tracking-instrument text-ink-500">
+          <p className="text-[12px] tracking-[0.04em] text-on-surface-variant">
             Keine Anlageberatung · Orientierungshilfe
           </p>
           <Button onClick={onStart} className="w-full sm:w-auto">
@@ -71,14 +66,11 @@ function Spec({
   children: React.ReactNode;
 }) {
   return (
-    <li className="grid grid-cols-[40px_110px_1fr] items-baseline gap-3 py-3 sm:grid-cols-[44px_140px_1fr]">
-      <span
-        aria-hidden
-        className="font-mono text-[11px] font-medium tabular-nums text-mustard-600"
-      >
+    <li className="grid grid-cols-[40px_140px_1fr] items-baseline gap-3 px-6 py-4 text-[14px] text-on-surface border-b border-outline-variant last:border-b-0 sm:grid-cols-[44px_160px_1fr]">
+      <span aria-hidden className="font-semibold text-primary text-[14px] tabular-nums">
         {n}
       </span>
-      <span className="font-mono text-[10.5px] uppercase tracking-instrument text-ink-500">
+      <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-on-surface-variant">
         {label}
       </span>
       <span>{children}</span>

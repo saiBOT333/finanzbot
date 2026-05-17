@@ -1,18 +1,33 @@
 import type { HTMLAttributes, ReactNode } from "react";
 
+type Variant = "filled" | "outlined" | "hero";
+
 type CardProps = HTMLAttributes<HTMLDivElement> & {
   children: ReactNode;
+  variant?: Variant;
+};
+
+const variants: Record<Variant, string> = {
+  filled: "bg-surface-container",
+  outlined: "bg-surface border border-outline-variant",
+  hero: "bg-primary-container text-on-primary-container",
 };
 
 /**
- * Werkstatt-Card: reines Weiß auf Off-White-Hintergrund, harter 1px-Rahmen.
- * Keine abgerundeten Ecken — die App soll wie ein kalibriertes Werkzeug
- * wirken, nicht wie eine Consumer-App.
+ * M3 Tonal Card — abgerundete Surface ohne harte Linien.
+ * - filled: Standard-Tonal-Surface (surface-container)
+ * - outlined: hellere Surface mit dünner outline-variant
+ * - hero: Primary-Container für die Schlüsselzahl auf dem Ergebnis-Screen
  */
-export function Card({ className = "", children, ...rest }: CardProps) {
+export function Card({
+  className = "",
+  variant = "filled",
+  children,
+  ...rest
+}: CardProps) {
   return (
     <div
-      className={`relative border border-ink-900 bg-white px-6 py-6 sm:px-8 sm:py-7 ${className}`.trim()}
+      className={`relative rounded-m3-lg p-6 sm:p-8 ${variants[variant]} ${className}`.trim()}
       {...rest}
     >
       {children}

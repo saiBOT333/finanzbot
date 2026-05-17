@@ -1,6 +1,6 @@
 import type { ButtonHTMLAttributes } from "react";
 
-type Variant = "primary" | "secondary" | "ghost";
+type Variant = "filled" | "tonal" | "text" | "outlined";
 type Size = "md" | "sm";
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -9,33 +9,33 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const base =
-  "inline-flex items-center justify-center font-mono uppercase tracking-instrument transition-all disabled:cursor-not-allowed disabled:opacity-40";
+  "inline-flex items-center justify-center gap-2 font-medium tracking-[0.01em] transition-colors disabled:cursor-not-allowed disabled:opacity-40 rounded-m3-button focus-visible:outline-none";
 
 const variants: Record<Variant, string> = {
-  // Primary: schwarz mit Senf-Akzent-Linie unten — wirkt wie ein Schalter.
-  primary:
-    "bg-ink-900 text-paper-50 border border-ink-900 hover:bg-mustard-400 hover:text-ink-900 hover:border-mustard-400 active:bg-mustard-500",
-  // Secondary: 1px schwarz, transparent, ALL-CAPS Mono.
-  secondary:
-    "bg-transparent text-ink-900 border border-ink-900 hover:bg-ink-900 hover:text-paper-50 active:bg-ink-800",
-  // Ghost: nur Text, Hover unterstreicht in Senf.
-  ghost:
-    "bg-transparent text-ink-700 border border-transparent hover:text-ink-900 hover:underline underline-offset-4 decoration-mustard-400 decoration-2",
+  filled:
+    "bg-primary text-on-primary hover:brightness-110 active:brightness-95",
+  tonal:
+    "bg-secondary-container text-on-secondary-container hover:brightness-95",
+  text: "bg-transparent text-primary hover:bg-primary-container",
+  outlined:
+    "bg-transparent text-primary border border-outline hover:bg-primary-container",
 };
 
 const sizes: Record<Size, string> = {
-  md: "h-10 px-5 text-[11px] font-medium",
-  sm: "h-8 px-3 text-[10px] font-medium",
+  md: "h-11 px-6 text-[15px]",
+  sm: "h-9 px-4 text-[14px]",
 };
 
 export function Button({
-  variant = "primary",
+  variant = "filled",
   size = "md",
   className = "",
+  type = "button",
   ...rest
 }: ButtonProps) {
   return (
     <button
+      type={type}
       className={`${base} ${variants[variant]} ${sizes[size]} ${className}`.trim()}
       {...rest}
     />

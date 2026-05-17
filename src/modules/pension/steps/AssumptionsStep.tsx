@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { NumberInput } from "../../../components/NumberInput";
 import { Button } from "../../../components/ui/Button";
-import { Select } from "../../../components/ui/Select";
 import { Field } from "../../../components/ui/Field";
+import { ChoiceChip } from "../../../components/ui/ChoiceChip";
+import { Slider } from "../../../components/ui/Slider";
 import { InfoTooltip } from "../../../components/InfoTooltip";
 import { AssetsManager } from "../../../components/AssetsManager";
 import { AllocationManager } from "../../../components/AllocationManager";
@@ -11,6 +12,9 @@ import { PENSION_DEFAULTS } from "../defaults";
 import { formatEUR } from "../../../lib/format";
 import { pensionStore, PENSION_MODULE_DEFAULTS } from "../state";
 import { tooltips } from "../tooltips";
+
+const pct = (n: number, decimals = 1) =>
+  `${n.toFixed(decimals).replace(".", ",")} %`;
 
 export function AssumptionsStep() {
   const [open, setOpen] = useState(false);
@@ -21,13 +25,13 @@ export function AssumptionsStep() {
 
   return (
     <div className="space-y-4">
-      <div className="border-l-[3px] border-mustard-400 bg-paper-50 px-4 py-3">
-        <p className="eyebrow-muted">Standard-Annahmen aktiv</p>
-        <p className="mt-1.5 font-sans text-[13px] leading-relaxed text-ink-700">
+      <div className="border-l-[3px] border-primary bg-surface-container px-4 py-3">
+        <p className="m3-eyebrow-muted">Standard-Annahmen aktiv</p>
+        <p className="mt-1.5 font-sans text-[13px] leading-relaxed text-on-surface-variant">
           Konservative Finanztip-Methodik: gemischtes Portfolio,{" "}
-          <span className="font-mono">3 %</span> real Anspar,{" "}
-          <span className="font-mono">1 %</span> real Auszahl, Annuität über{" "}
-          <span className="font-mono">30 Jahre</span>. Du kannst alle Annahmen unten frei anpassen
+          <span className="tabular-nums">3 %</span> real Anspar,{" "}
+          <span className="tabular-nums">1 %</span> real Auszahl, Annuität über{" "}
+          <span className="tabular-nums">30 Jahre</span>. Du kannst alle Annahmen unten frei anpassen
           — inklusive Auszahlungsmethode und Anlage-Allokation.
         </p>
       </div>
@@ -35,7 +39,7 @@ export function AssumptionsStep() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="font-mono text-[11px] font-medium uppercase tracking-instrument text-mustard-600 hover:underline underline-offset-4 decoration-2"
+        className="text-[11px] font-medium uppercase tracking-[0.04em] text-primary hover:underline underline-offset-4 decoration-2"
       >
         {open ? "▾ Annahmen ausblenden" : "▸ Annahmen anpassen"}
       </button>
@@ -43,7 +47,7 @@ export function AssumptionsStep() {
       {open && (
         <div className="space-y-6">
           <Section title="Erwartete gesetzliche Rente">
-            <p className="font-sans text-[12px] leading-relaxed text-ink-500">
+            <p className="font-sans text-[12px] leading-relaxed text-on-surface-variant">
               Aus Schritt 3 übernommen — falls du sie hier korrigieren willst:
             </p>
             <NumberInput
@@ -65,25 +69,31 @@ export function AssumptionsStep() {
 
           <Section title="Berechnungsmethode">
             <Field
-              label="So wird das Kapital im Ruhestand verbraucht"
-              adornment={<InfoTooltip content={tooltips.payoutMethod} label="Erklärung Methode" />}
+              label={
+                <span className="inline-flex items-center gap-2">
+                  So wird das Kapital im Ruhestand verbraucht
+                  <InfoTooltip content={tooltips.payoutMethod} label="Erklärung Methode" />
+                </span>
+              }
             >
-              {(id) => (
-                <Select
-                  id={id}
-                  value={m.payoutMethod}
-                  onChange={(e) =>
-                    pensionStore.set({
-                      payoutMethod: e.target.value as "annuity" | "safe-withdrawal",
-                    })
-                  }
-                >
-                  <option value="annuity">Annuität — Vermögen über X Jahre aufbrauchen</option>
-                  <option value="safe-withdrawal">Sichere Entnahmerate — feste % pro Jahr (Vermögen reicht unbegrenzt)</option>
-                </Select>
+              {() => (
+                <div className="flex flex-wrap gap-2">
+                  <ChoiceChip
+                    selected={m.payoutMethod === "annuity"}
+                    onClick={() => pensionStore.set({ payoutMethod: "annuity" })}
+                  >
+                    Annuität · X Jahre aufbrauchen
+                  </ChoiceChip>
+                  <ChoiceChip
+                    selected={m.payoutMethod === "safe-withdrawal"}
+                    onClick={() => pensionStore.set({ payoutMethod: "safe-withdrawal" })}
+                  >
+                    Sichere Entnahmerate · unbegrenzt
+                  </ChoiceChip>
+                </div>
               )}
             </Field>
-            <p className="border-l-[2px] border-ink-100 pl-3 font-sans text-[12px] leading-relaxed text-ink-500">
+            <p className="border-l-[2px] border-outline-variant pl-3 text-[12px] leading-relaxed text-on-surface-variant">
               {m.payoutMethod === "annuity"
                 ? "Annuität: dein Kapital ist nach X Jahren komplett aufgebraucht. Niedrigerer Kapitalbedarf, aber Risiko, dich zu überleben."
                 : "Sichere Entnahmerate: du entnimmst jedes Jahr eine feste Quote, das Kapital lebt theoretisch unbegrenzt. Höherer Kapitalbedarf, dafür Sicherheit gegen Langlebigkeitsrisiko."}
@@ -102,23 +112,21 @@ export function AssumptionsStep() {
                 />
               </div>
             ) : (
-              <NumberInput
+              <Slider
                 label="Sichere Entnahmerate"
-                value={m.safeWithdrawalRate * 100}
-                onChange={(v) =>
-                  v !== undefined && pensionStore.set({ safeWithdrawalRate: v / 100 })
-                }
-                unit="%"
+                value={Math.round(m.safeWithdrawalRate * 1000) / 10}
+                onChange={(v) => pensionStore.set({ safeWithdrawalRate: v / 100 })}
                 min={0.5}
                 max={10}
-                tooltip={tooltips.safeWithdrawalRate}
-                hint="3,5 % gilt als 'sichere Entnahmerate' nach Trinity-Studie"
+                step={0.1}
+                display={pct(Math.round(m.safeWithdrawalRate * 1000) / 10)}
+                ariaLabel="Sichere Entnahmerate in Prozent"
               />
             )}
           </Section>
 
           <Section title="Anlage-Allokation in der Sparphase">
-            <p className="font-sans text-[12px] leading-relaxed text-ink-500">
+            <p className="font-sans text-[12px] leading-relaxed text-on-surface-variant">
               Anteile in %, die du regelmäßig in jede Anlageform investierst. Aus den
               gewichteten realen Renditen ergibt sich die Anspar-Rendite.
             </p>
@@ -129,7 +137,7 @@ export function AssumptionsStep() {
           </Section>
 
           <Section title="Anlage-Allokation in der Rente">
-            <p className="font-sans text-[12px] leading-relaxed text-ink-500">
+            <p className="font-sans text-[12px] leading-relaxed text-on-surface-variant">
               Im Alter ist die Aktien-Quote oft niedriger. Hier die geplante
               Allokation während der Auszahlphase.
             </p>
@@ -140,35 +148,35 @@ export function AssumptionsStep() {
           </Section>
 
           <Section title="Inflation und Steuern">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <NumberInput
-                label="Inflation"
-                value={m.inflation * 100}
-                onChange={(v) =>
-                  v !== undefined && pensionStore.set({ inflation: v / 100 })
-                }
-                unit="%"
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              <Slider
+                label="Inflation p. a."
+                value={Math.round(m.inflation * 1000) / 10}
+                onChange={(v) => pensionStore.set({ inflation: v / 100 })}
                 min={0}
                 max={20}
-                tooltip={tooltips.inflation}
+                step={0.1}
+                display={pct(Math.round(m.inflation * 1000) / 10)}
+                ariaLabel="Inflation in Prozent pro Jahr"
               />
-              <NumberInput
+              <Slider
                 label="Steuer-Puffer auf Kapital"
-                value={m.taxBufferPct * 100}
-                onChange={(v) =>
-                  v !== undefined && pensionStore.set({ taxBufferPct: v / 100 })
-                }
-                unit="%"
+                value={Math.round(m.taxBufferPct * 100)}
+                onChange={(v) => pensionStore.set({ taxBufferPct: v / 100 })}
                 min={0}
                 max={50}
-                tooltip={tooltips.taxBufferPct}
-                hint="Faustformel Finanzfluss: 10–15 %"
+                step={1}
+                display={pct(Math.round(m.taxBufferPct * 100), 0)}
+                ariaLabel="Steuerpuffer in Prozent"
               />
             </div>
+            <p className="text-[12px] text-on-surface-variant">
+              Faustformel Finanzfluss: 10–15 % Steuer-Puffer.
+            </p>
           </Section>
 
           <Section title="Bestehendes Vermögen">
-            <p className="font-sans text-[12px] leading-relaxed text-ink-500">{tooltips.existingAssets}</p>
+            <p className="font-sans text-[12px] leading-relaxed text-on-surface-variant">{tooltips.existingAssets}</p>
             <AssetsManager
               assets={profile.assets ?? []}
               onChange={(assets) => setProfile({ assets })}
@@ -177,7 +185,7 @@ export function AssumptionsStep() {
 
           <div>
             <Button
-              variant="ghost"
+              variant="text"
               size="sm"
               onClick={() => pensionStore.replace(PENSION_MODULE_DEFAULTS)}
             >
@@ -193,9 +201,9 @@ export function AssumptionsStep() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="space-y-3">
-      <div className="flex items-baseline gap-2 border-b border-ink-100 pb-2">
-        <span aria-hidden className="h-[3px] w-6 bg-mustard-400" />
-        <h3 className="font-mono text-[10.5px] font-medium uppercase tracking-instrument text-ink-700">
+      <div className="flex items-baseline gap-2 border-b border-outline-variant pb-2">
+        <span aria-hidden className="h-[3px] w-6 bg-primary" />
+        <h3 className="text-[10.5px] font-medium uppercase tracking-[0.04em] text-on-surface-variant">
           {title}
         </h3>
       </div>
