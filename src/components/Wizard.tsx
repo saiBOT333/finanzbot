@@ -112,9 +112,11 @@ export function Wizard({ steps, onFinish, finishLabel = "Fertig" }: WizardProps)
           <Button variant="text" onClick={handleBack} disabled={index === 0}>
             ← Zurück
           </Button>
-          <Button onClick={handleNext} disabled={!canProceed}>
-            {isLast ? finishLabel : "Weiter →"}
-          </Button>
+          {(!isLast || onFinish) && (
+            <Button onClick={handleNext} disabled={!canProceed}>
+              {isLast ? finishLabel : "Weiter →"}
+            </Button>
+          )}
         </div>
       </div>
     </div>
