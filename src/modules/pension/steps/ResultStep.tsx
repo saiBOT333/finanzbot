@@ -329,16 +329,18 @@ function ArgumentStep({ n, children }: { n: string; children: React.ReactNode })
 
 function Stat({ label, value, hint, tooltip }: StatProps) {
   return (
-    <Card className="!px-5 !py-4 sm:!px-5 sm:!py-4">
-      <div className="flex items-center gap-1.5">
-        <span className="m3-eyebrow-muted">{label}</span>
+    <Card className="!px-5 !py-5 sm:!px-6 sm:!py-5 flex flex-col">
+      <div className="flex items-baseline gap-1.5 min-h-[3.25rem] sm:min-h-[3.75rem]">
+        <span className="text-[11px] font-medium uppercase tracking-[0.06em] text-on-surface-variant">
+          {label}
+        </span>
         {tooltip && <InfoTooltip content={tooltip} label={`Erklärung zu ${label}`} />}
       </div>
-      <div className="mt-2 text-xl font-semibold tabular-nums text-on-surface sm:text-2xl">
+      <div className="mt-2 text-[26px] font-semibold leading-none tabular-nums text-on-surface sm:text-[28px]">
         {value}
       </div>
       {hint && (
-        <div className="mt-1.5 font-sans text-[11.5px] leading-snug text-on-surface-variant">{hint}</div>
+        <div className="mt-2 text-[12px] leading-snug text-on-surface-variant">{hint}</div>
       )}
     </Card>
   );

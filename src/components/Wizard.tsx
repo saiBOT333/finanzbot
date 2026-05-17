@@ -77,11 +77,11 @@ export function Wizard({ steps, onFinish, finishLabel = "Fertig" }: WizardProps)
                   disabled={!reachable}
                   aria-current={status === "active" ? "step" : undefined}
                   title={s.title}
-                  className={`inline-flex items-center gap-2 rounded-m3-pill px-3.5 py-1.5 text-[13px] font-medium transition-colors ${tone} ${reachable ? "cursor-pointer hover:brightness-95" : "cursor-not-allowed opacity-60"}`}
+                  className={`inline-flex items-center gap-1.5 rounded-m3-pill px-2.5 py-1 text-[12px] font-medium transition-colors ${tone} ${reachable ? "cursor-pointer hover:brightness-95" : "cursor-not-allowed opacity-60"}`}
                 >
                   <span
                     aria-hidden
-                    className={`inline-flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-semibold ${numTone}`}
+                    className={`inline-flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-semibold ${numTone}`}
                   >
                     {status === "done" ? "✓" : i + 1}
                   </span>
