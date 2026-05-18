@@ -96,6 +96,22 @@ export function ResultStep() {
   const explanation = explainPension(inputs, result);
   const usingDefaultStatePension = m.expectedStatePension === null;
 
+  // Der Browser nimmt document.title als PDF-Dateinamen. Vor dem Druck auf
+  // einen sprechenden, eindeutigen Namen setzen, danach wiederherstellen.
+  const handlePrint = () => {
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const stamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
+    const previousTitle = document.title;
+    document.title = `Vorsorge-Ergebnis-${stamp}`;
+    const restore = () => {
+      document.title = previousTitle;
+      window.removeEventListener("afterprint", restore);
+    };
+    window.addEventListener("afterprint", restore);
+    window.print();
+  };
+
   return (
     <div className="space-y-6">
       {usingDefaultStatePension && (
@@ -130,7 +146,7 @@ export function ResultStep() {
           <Button
             variant="tonal"
             size="sm"
-            onClick={() => window.print()}
+            onClick={handlePrint}
             title="Ergebnis als PDF speichern (über den Druckdialog)"
           >
             📄 Als PDF speichern
