@@ -7,6 +7,8 @@ import { useProfile, setProfile } from "../../../lib/profile/useProfile";
 import { calculatePension } from "../calculations";
 import { explainPension } from "../explain";
 import { PensionRechenweg } from "../PensionRechenweg";
+import { PensionPrintSheet } from "../PensionPrintSheet";
+import { savingsRateMessage } from "../savingsRate";
 import { pensionStore } from "../state";
 import { allocationToBuckets, withDefaults } from "../defaults";
 import { SAVINGS_RATE_BENCHMARKS } from "../constants";
@@ -129,10 +131,9 @@ export function ResultStep() {
             variant="tonal"
             size="sm"
             onClick={() => window.print()}
-            data-print="hide"
-            title="Ergebnis drucken oder als PDF speichern"
+            title="Ergebnis als PDF speichern (über den Druckdialog)"
           >
-            🖨 Drucken
+            📄 Als PDF speichern
           </Button>
         </div>
 
@@ -240,6 +241,12 @@ export function ResultStep() {
       </Card>
 
       <PensionRechenweg explanation={explanation} />
+
+      <PensionPrintSheet
+        result={result}
+        explanation={explanation}
+        usingDefaultStatePension={usingDefaultStatePension}
+      />
     </div>
   );
 }
@@ -261,14 +268,7 @@ function SparquoteEinordnung({ pct }: { pct: number }) {
   const recLeft = (recMin / max) * 100;
   const recWidth = ((recMax - recMin) / max) * 100;
 
-  const message =
-    pct < avg
-      ? "Liegt unter dem deutschen Durchschnitt — leicht zu erreichen. Achtung: vermutlich rechnest du mit eher optimistischen Annahmen."
-      : pct < recMin
-        ? "Über dem deutschen Durchschnitt, aber unter der Finanzfluss-Empfehlung für eine ausreichende Altersvorsorge."
-        : pct <= recMax
-          ? "Im empfohlenen Korridor — solide Altersvorsorge laut Finanzfluss."
-          : "Hohe Sparquote — prüfe, ob deine Annahmen (Lücke, Bezugsdauer, Rendite) realistisch sind.";
+  const message = savingsRateMessage(pct);
 
   const accent =
     pct < recMin
