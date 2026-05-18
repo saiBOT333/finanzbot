@@ -102,7 +102,7 @@ export function Wizard({ steps, onFinish, finishLabel = "Fertig" }: WizardProps)
 
       <div className="space-y-5">{step.content}</div>
 
-      <div className="space-y-3 pt-6" data-print="hide">
+      <div className="space-y-3 pt-6">
         {!canProceed && step.blockReason && (
           <p className="rounded-m3-md bg-error-container px-4 py-3 text-[13px] text-on-surface">
             ▲ {step.blockReason}
@@ -112,9 +112,11 @@ export function Wizard({ steps, onFinish, finishLabel = "Fertig" }: WizardProps)
           <Button variant="text" onClick={handleBack} disabled={index === 0}>
             ← Zurück
           </Button>
-          <Button onClick={handleNext} disabled={!canProceed}>
-            {isLast ? finishLabel : "Weiter →"}
-          </Button>
+          {(!isLast || onFinish) && (
+            <Button onClick={handleNext} disabled={!canProceed}>
+              {isLast ? finishLabel : "Weiter →"}
+            </Button>
+          )}
         </div>
       </div>
     </div>

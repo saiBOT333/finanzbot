@@ -46,5 +46,5 @@ export function PensionWizard() {
     },
   ];
 
-  return <Wizard steps={steps} finishLabel="Fertig" />;
+  return <Wizard steps={steps} />;
 }

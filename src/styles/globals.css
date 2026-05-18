@@ -120,48 +120,30 @@
   }
 }
 
+/* Druckbogen-Eigenheiten:
+ * - statische Schrift: variable Roboto Flex erzeugt beim Chrome-PDF-Export
+ *   Glyph-Artefakte (dünne Doppelstriche an i, l, "-").
+ * - print-color-adjust: exact erzwingt den Farbdruck, damit Indigo-Band,
+ *   Tint-Panels und Zebra-Streifen auch ohne aktivierte "Hintergrundgrafiken"
+ *   im PDF erscheinen. */
+.print-sheet {
+  font-family: Arial, Helvetica, sans-serif;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
 /* ──────────────────────────────────────────────────────────────────────────
- * Print stylesheet (M3)
+ * Druck — nur der Druckbogen (.print-sheet, per Portal an <body>) wird
+ * gedruckt; die App (#root) wird ausgeblendet, sodass der Bogen am
+ * Seitenanfang sitzt.
  * ──────────────────────────────────────────────────────────────────────── */
 @media print {
-  body {
-    background: white !important;
-    color: black !important;
-  }
-
-  header,
-  footer,
-  ol[aria-label],
-  [data-print="hide"] {
+  #root {
     display: none !important;
   }
+}
 
-  .container-page {
-    @apply max-w-full px-0 py-0;
-  }
-
-  /* Alle Tonal-Surfaces im Druck zu hellem Grau, Hero-Card weiß. */
-  [class*="bg-primary-container"],
-  [class*="bg-tertiary-container"],
-  [class*="bg-surface-container"] {
-    background: #f4f4f4 !important;
-    color: black !important;
-  }
-  [class*="bg-primary"]:not([class*="container"]) {
-    background: white !important;
-    color: black !important;
-    border: 1px solid #cccccc;
-  }
-  [class*="text-primary"],
-  [class*="text-tertiary"] {
-    color: black !important;
-  }
-  [class*="shadow-"] {
-    box-shadow: none !important;
-  }
-
-  h2,
-  h3 {
-    page-break-after: avoid;
-  }
+@page {
+  size: A4;
+  margin: 0;
 }
