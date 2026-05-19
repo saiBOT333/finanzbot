@@ -193,8 +193,9 @@ export function ResultStep() {
           tooltip={tooltips.gapToday}
         />
         <Stat
-          label="Kapitalbedarf bei Renteneintritt"
+          label="Kapitalbedarf (heutige Kaufkraft)"
           value={formatEUR(result.capitalNeeded)}
+          hint={`Bei Renteneintritt in ${result.yearsToRetirement} Jahren entspricht das nominal ca. ${formatEUR(result.capitalNeededNominal)}`}
           tooltip={tooltips.capitalNeeded}
         />
         <Stat
@@ -225,9 +226,12 @@ export function ResultStep() {
             Lücke von <span className="tabular-nums">{formatEUR(result.gapToday)}</span> monatlich.
           </ArgumentStep>
           <ArgumentStep n="03">
-            Über {inputs.payoutYears} Jahre Rente brauchst du dafür ein Kapital von{" "}
-            <span className="tabular-nums">{formatEUR(result.capitalNeeded)}</span> bei
-            Renteneintritt.
+            {inputs.payoutMethod === "annuity"
+              ? `Über ${inputs.payoutYears} Jahre Rente brauchst du dafür ein Kapital von `
+              : `Bei einer Entnahmerate von ${formatPercent(inputs.safeWithdrawalRate)} pro Jahr brauchst du dafür ein Kapital von `}
+            <span className="tabular-nums">{formatEUR(result.capitalNeeded)}</span> in heutiger
+            Kaufkraft — bei Renteneintritt sind das nominal rund{" "}
+            <span className="tabular-nums">{formatEUR(result.capitalNeededNominal)}</span>.
           </ArgumentStep>
           <ArgumentStep n="04">
             Mit <span className="tabular-nums">{formatEUR(result.monthlySavings, true)}</span> pro

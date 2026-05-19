@@ -28,11 +28,12 @@ export function AssumptionsStep() {
       <div className="border-l-[3px] border-primary bg-surface-container px-4 py-3">
         <p className="m3-eyebrow-muted">Standard-Annahmen aktiv</p>
         <p className="mt-1.5 font-sans text-[13px] leading-relaxed text-on-surface-variant">
-          Konservative Finanztip-Methodik: gemischtes Portfolio,{" "}
+          Konservative Standard-Annahmen: gemischtes Portfolio,{" "}
           <span className="tabular-nums">3 %</span> real Anspar,{" "}
           <span className="tabular-nums">1 %</span> real Auszahl, Annuität über{" "}
-          <span className="tabular-nums">30 Jahre</span>. Du kannst alle Annahmen unten frei anpassen
-          — inklusive Auszahlungsmethode und Anlage-Allokation.
+          <span className="tabular-nums">30 Jahre</span>,{" "}
+          <span className="tabular-nums">12 %</span> Steuer-Puffer. Du kannst alle Annahmen unten
+          frei anpassen — inklusive Auszahlungsmethode und Anlage-Allokation.
         </p>
       </div>
 
@@ -136,16 +137,18 @@ export function AssumptionsStep() {
             />
           </Section>
 
-          <Section title="Anlage-Allokation in der Rente">
-            <p className="font-sans text-[12px] leading-relaxed text-on-surface-variant">
-              Im Alter ist die Aktien-Quote oft niedriger. Hier die geplante
-              Allokation während der Auszahlphase.
-            </p>
-            <AllocationManager
-              allocation={m.payoutAllocation}
-              onChange={(payoutAllocation) => pensionStore.set({ payoutAllocation })}
-            />
-          </Section>
+          {m.payoutMethod === "annuity" && (
+            <Section title="Anlage-Allokation in der Rente">
+              <p className="font-sans text-[12px] leading-relaxed text-on-surface-variant">
+                Im Alter ist die Aktien-Quote oft niedriger. Hier die geplante
+                Allokation während der Auszahlphase.
+              </p>
+              <AllocationManager
+                allocation={m.payoutAllocation}
+                onChange={(payoutAllocation) => pensionStore.set({ payoutAllocation })}
+              />
+            </Section>
+          )}
 
           <Section title="Inflation und Steuern">
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">

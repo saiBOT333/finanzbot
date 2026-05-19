@@ -35,13 +35,25 @@ export const PENSION_RAISE_RANGE = { min: 0, max: 0.03 } as const;
 /** Bedarfsquote: ~80 % des heutigen Netto reichen im Ruhestand. */
 export const REPLACEMENT_RATE_DEFAULT = 0.8;
 
-/** Faustformel für die erwartete Netto-Rente: ~48 % vom heutigen Netto-Einkommen. */
+/**
+ * Faustformel-Default für die erwartete Netto-Rente: ~48 % vom heutigen Netto.
+ * Achtung — konzeptionell unscharf: die offiziellen 48 % sind das Brutto-
+ * Rentenniveau (Standardrente / Durchschnittsbrutto), hier grob als
+ * individuelle Netto-Ersatzquote verwendet. Nur ein Startwert; der belastbare
+ * Wert kommt aus der echten Renteninformation (siehe projectedNetPensionToday).
+ */
 export const STATE_PENSION_FACTOR = 0.48;
 
 /** "Sichere Entnahmerate" nach Trinity-Studie. */
 export const SAFE_WITHDRAWAL_RATE = 0.035;
 
-/** Faustformel-Puffer für die Kapitalertragssteuer (Mitte von Finanzfluss' 10–15 %). */
+/**
+ * Faustformel-Puffer für die Kapitalertragssteuer (Mitte von Finanzfluss'
+ * 10–15 %). Bewusste Vereinfachung: die Steuer von 26,375 % fällt real nur auf
+ * die Gewinne an — hier wird sie als pauschaler Aufschlag auf das Gesamtkapital
+ * gerechnet. Bei langen Sparhorizonten (hoher Gewinnanteil) eher konservativ
+ * zu niedrig.
+ */
 export const TAX_BUFFER_DEFAULT = 0.12;
 
 /** Finanztip-Empfehlung: rechne mit 30 Jahren Rentenzeit (≈ 100 Lebensjahre). */

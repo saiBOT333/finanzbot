@@ -58,8 +58,11 @@ export function explainPension(
   const r = result.effectiveSavingReturn;
   const rPay = result.effectivePayoutReturn;
   const rMonthly = Math.pow(1 + r, 1 / 12) - 1;
+  const rPayMonthly = Math.pow(1 + rPay, 1 / 12) - 1;
   const months = result.yearsToRetirement * 12;
   const useAnnuity = payoutMethod === "annuity";
+  const payoutMonths = payoutYears * 12;
+  const rPayMonthlyStr = `${(rPayMonthly * 100).toFixed(4).replace(".", ",")} %`;
 
   const inputsTable: ExplanationInput[] = [
     { label: "Aktuelles Alter", symbol: "a", value: `${formatNumber(currentAge)} Jahre`, isDefault: false },
@@ -144,10 +147,10 @@ export function explainPension(
     ? {
         index: 4,
         title: "Kapitalbedarf vor Steuer (Annuität)",
-        formula: "K₀ = L × 12 × (1 − (1 + rₐ)^−T) / rₐ",
-        substituted: `K₀ = ${formatEUR(result.gapToday)} × 12 × (1 − (1 + ${formatPercent(rPay)})^−${payoutYears}) / ${formatPercent(rPay)}`,
+        formula: "K₀ = L × (1 − (1 + rₐₘ)^−m) / rₐₘ",
+        substituted: `K₀ = ${formatEUR(result.gapToday)} × (1 − (1 + ${rPayMonthlyStr})^−${payoutMonths}) / ${rPayMonthlyStr}`,
         result: `K₀ = ${formatEUR(result.capitalNeededBeforeTax)}`,
-        note: "Barwert einer monatlichen Rente von L über T Jahre bei realer Rendite rₐ in der Auszahlphase. Damit ist das Vermögen am Ende von T Jahren genau aufgebraucht — Finanztip-Methode.",
+        note: `Barwert einer monatlich entnommenen Rente L über T Jahre. rₐₘ ist die monatliche reale Auszahlrendite — (1 + rₐ)^(1/12) − 1 — und m = T × 12 = ${payoutMonths} Monate. Damit ist das Kapital am Ende von T Jahren genau aufgebraucht — Finanztip-Methode.`,
       }
     : {
         index: 4,
@@ -189,7 +192,7 @@ export function explainPension(
       formula: "K = K₀ × (1 + τ)",
       substituted: `K = ${formatEUR(result.capitalNeededBeforeTax)} × (1 + ${formatPercent(taxBufferPct)})`,
       result: `K = ${formatEUR(result.capitalNeeded)}    (Puffer: ${formatEUR(result.taxBufferAmount)})`,
-      note: "Aufschlag für die Kapitalertragssteuer von 26,375 % auf die späteren Gewinne. Finanzfluss-Faustformel: 10–15 % zusätzliches Vermögen einplanen.",
+      note: "Aufschlag für die Kapitalertragssteuer von 26,375 %. Bewusste Vereinfachung: die Steuer fällt real nur auf die Gewinne an, der Puffer wird hier als pauschaler Prozentsatz auf das Gesamtkapital gerechnet — Finanzfluss-Faustformel: 10–15 % zusätzliches Vermögen einplanen.",
     },
     {
       index: 6,
@@ -255,5 +258,12 @@ export function explainPension(
   const closing =
     "Alle Geldbeträge in der Hauptrechnung sind in heutiger Kaufkraft. Reale Rendite r heißt: Rendite NACH Abzug der Inflation. So lassen sich Sparrate und Rentenlücke direkt vergleichen, ohne Inflation doppelt zu berücksichtigen.";
 
-  return { inputs: inputsTable, steps, closing };
+  // The weighted payout return rₐ only feeds the annuity capital step. Under
+  // the safe-withdrawal method it is unused — drop it so the trace shows no
+  // input that doesn't influence a result.
+  const visibleInputs = useAnnuity
+    ? inputsTable
+    : inputsTable.filter((i) => i.symbol !== "rₐ");
+
+  return { inputs: visibleInputs, steps, closing };
 }

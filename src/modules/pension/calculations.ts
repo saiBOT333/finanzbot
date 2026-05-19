@@ -38,7 +38,7 @@ function weightedAverage(buckets: Array<{ weight: number; rate: number }>): numb
  *   1.  B  = N × q                       Bedarf monatlich heute
  *   2.  L  = B − R                       Rentenlücke monatlich heute
  *   3.  n  = a₊ − a                      Jahre bis Rente
- *   4a. Annuität:        K₀ = L × 12 × (1 − (1 + rₐ)^−T) / rₐ
+ *   4a. Annuität:        K₀ = L × (1 − (1 + rₐₘ)^−(T·12)) / rₐₘ   (rₐₘ = monatl. rₐ)
  *   4b. Safe-Withdrawal: K₀ = L × 12 / w
  *   5.  K  = K₀ × (1 + τ)                Steuer-Puffer auf Kapital
  *   6.  K₀ₙ = K₀ᵥ × (1 + r)^n            heutiges Vermögen, real aufgezinst
@@ -102,13 +102,24 @@ export function calculatePension(inputs: PensionInputs): PensionResult {
     return { kind: "no-gap", needToday, expectedStatePension };
   }
 
+  // Annuity capital uses a MONTHLY annuity (payment, rate and periods all
+  // monthly) so the withdrawal timing matches reality. An annual annuity
+  // treats the whole year's gap as a single year-end payment and understates
+  // the capital need by ~0.5–1.5 %.
+  const monthlyPayoutBuckets = payoutBuckets.map((b) => ({
+    weight: b.weight,
+    rate: annualToMonthlyRate(b.rate),
+  }));
   const capitalNeededBeforeTax =
     payoutMethod === "annuity"
-      ? weightedPresentValueAnnuity(gapToday * 12, payoutBuckets, payoutYears)
+      ? weightedPresentValueAnnuity(gapToday, monthlyPayoutBuckets, payoutYears * 12)
       : (gapToday * 12) / safeWithdrawalRate;
 
   const taxBufferAmount = capitalNeededBeforeTax * taxBufferPct;
   const capitalNeeded = capitalNeededBeforeTax + taxBufferAmount;
+  // Same figure expressed in nominal euros at retirement — display anchor only,
+  // so the user can reconcile the real number with a back-of-envelope estimate.
+  const capitalNeededNominal = capitalNeeded * Math.pow(1 + inflation, yearsToRetirement);
 
   // Each existing asset compounds at its own real return — Tagesgeld stagniert,
   // ETF wächst kräftig. Summe ergibt das gesamte zukünftige Vermögen.
@@ -155,6 +166,7 @@ export function calculatePension(inputs: PensionInputs): PensionResult {
     capitalNeededBeforeTax,
     taxBufferAmount,
     capitalNeeded,
+    capitalNeededNominal,
     existingFV,
     remainingCapital,
     monthlySavings,

@@ -21,13 +21,13 @@ export const tooltips: Record<string, string> = {
   safeWithdrawalRate:
     "Anteil deines Anfangsvermögens, den du jedes Jahr entnimmst. 3,5 % gilt als 'sichere Entnahmerate' bei langfristigem Anlegen — Vermögen wächst weiter und reicht voraussichtlich unbegrenzt.",
   taxBufferPct:
-    "Aufschlag auf den Kapitalbedarf, um die spätere Kapitalertragssteuer (26,375 % auf Gewinne) zu kompensieren. Finanzfluss-Faustformel: 10–15 % zusätzliches Vermögen einplanen.",
+    "Aufschlag auf den Kapitalbedarf, um die spätere Kapitalertragssteuer (26,375 % auf Gewinne) zu kompensieren. Finanzfluss-Faustformel: 10–15 % zusätzliches Vermögen einplanen. Vereinfachung: die Steuer trifft real nur die Gewinne, hier wird sie pauschal aufs Gesamtkapital gerechnet.",
   existingAssets:
     "Trag dein bestehendes Vermögen nach Anlageform getrennt ein. Jede Position wächst dann mit ihrer eigenen realen Rendite — Tagesgeld stagniert, ETF wächst kräftig. Macht die Hochrechnung deutlich realistischer als ein einzelner Mittelwert.",
   gapToday:
     "Die Differenz zwischen dem, was du im Ruhestand brauchst, und dem, was die gesetzliche Rente liefert – pro Monat, in heutiger Kaufkraft.",
   capitalNeeded:
-    "Das Vermögen, das du bei Rentenbeginn brauchst, damit du die monatliche Lücke decken kannst — inklusive Steuer-Puffer, falls aktiviert.",
+    "Das Vermögen, das du bei Rentenbeginn brauchst, um die monatliche Lücke zu decken — angegeben in heutiger Kaufkraft (inkl. Steuer-Puffer, falls aktiviert). Der Betrag, der dann tatsächlich nominal auf dem Depotauszug stehen muss, liegt wegen der Inflation deutlich höher — siehe Hinweis unter der Zahl.",
   monthlySavings:
     "Was du ab heute jeden Monat zusätzlich zur Seite legen müsstest – in heutiger Kaufkraft. Da das Modell real rechnet, muss dieser Betrag jedes Jahr mit der Inflation angepasst werden (z. B. +2 %). Steigt dein Gehalt mit der Inflation, bleibt die Sparquote konstant.",
   fixedNominalSavings:
