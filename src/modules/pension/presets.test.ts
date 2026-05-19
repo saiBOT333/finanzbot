@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { DEFAULT_PENSION_STATE } from "./presets";
+import { TAX_BUFFER_DEFAULT } from "./constants";
 import { calculatePension } from "./calculations";
 import { allocationToBuckets, withDefaults } from "./defaults";
 import { PENSION_MODULE_DEFAULTS, type PensionModuleState } from "./state";
@@ -26,20 +27,20 @@ describe("DEFAULT_PENSION_STATE", () => {
     expect(DEFAULT_PENSION_STATE).toEqual(def);
   });
 
-  it("uses Annuität with 30 years and 0 % tax buffer (Finanztip-Methodik)", () => {
+  it("uses Annuität with 30 years and the 12 % capital-gains-tax buffer", () => {
     expect(DEFAULT_PENSION_STATE.payoutMethod).toBe("annuity");
     expect(DEFAULT_PENSION_STATE.payoutYears).toBe(30);
-    expect(DEFAULT_PENSION_STATE.taxBufferPct).toBe(0);
+    expect(DEFAULT_PENSION_STATE.taxBufferPct).toBe(TAX_BUFFER_DEFAULT);
   });
 
-  it("produces a Finanztip-style monthly savings (~ 460 €) for the 35 J / 3.000 € fixture", () => {
+  it("produces a plausible monthly savings (~ 525 €) for the 35 J / 3.000 € fixture", () => {
     const state: PensionModuleState = {
       ...DEFAULT_PENSION_STATE,
       expectedStatePension: 1440,
     };
     const r = calculatePension(fixtureInputs(state));
     if (r.kind !== "ok") throw new Error("expected ok");
-    expect(r.monthlySavings).toBeGreaterThan(420);
-    expect(r.monthlySavings).toBeLessThan(520);
+    expect(r.monthlySavings).toBeGreaterThan(490);
+    expect(r.monthlySavings).toBeLessThan(560);
   });
 });

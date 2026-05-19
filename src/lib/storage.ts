@@ -55,10 +55,17 @@ export function buildExport(
   };
 }
 
+function isPlainObject(value: unknown): boolean {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 export function isExportPayload(value: unknown): value is ExportPayload {
-  if (!value || typeof value !== "object") return false;
+  if (!isPlainObject(value)) return false;
   const v = value as Record<string, unknown>;
-  return v.version === 1 && typeof v.exportedAt === "string" && "profile" in v && "modules" in v;
+  if (v.version !== 1 || typeof v.exportedAt !== "string") return false;
+  // profile and modules must be objects — the importer writes them straight
+  // to storage, so a string or array here would corrupt the persisted state.
+  return isPlainObject(v.profile) && isPlainObject(v.modules);
 }
 
 export function downloadJSON(filename: string, data: unknown): void {

@@ -38,6 +38,8 @@ export type PensionResult =
       capitalNeededBeforeTax: number;
       taxBufferAmount: number;
       capitalNeeded: number;
+      /** capitalNeeded converted to nominal euros at retirement — display anchor. */
+      capitalNeededNominal: number;
       existingFV: number;
       remainingCapital: number;
       monthlySavings: number;

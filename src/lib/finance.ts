@@ -45,17 +45,18 @@ export type WeightedBucket = { weight: number; rate: number };
 
 /**
  * Weighted future value of a savings annuity that is split across buckets.
- * Each bucket compounds at its own rate. Mathematically equivalent to:
- *   Σ (weight_i × FV-Annuity(rate_i, n))
- * — multiplied by the per-period payment.
+ * Each bucket compounds at its own rate. Bucket weights are normalised to
+ * sum to 1, so callers may pass raw shares (e.g. 60/40) without pre-scaling.
  */
 export function weightedFutureValueAnnuity(
   payment: number,
   buckets: WeightedBucket[],
   n: number,
 ): number {
+  const totalWeight = buckets.reduce((s, b) => s + b.weight, 0);
+  if (totalWeight === 0) return 0;
   return buckets.reduce(
-    (sum, b) => sum + b.weight * futureValueAnnuity(payment, b.rate, n),
+    (sum, b) => sum + (b.weight / totalWeight) * futureValueAnnuity(payment, b.rate, n),
     0,
   );
 }
@@ -63,15 +64,17 @@ export function weightedFutureValueAnnuity(
 /**
  * Weighted present value of a payout annuity drawn from buckets that yield
  * different rates. Used to size the capital needed at retirement when the
- * portfolio mix is non-uniform.
+ * portfolio mix is non-uniform. Bucket weights are normalised to sum to 1.
  */
 export function weightedPresentValueAnnuity(
   payment: number,
   buckets: WeightedBucket[],
   n: number,
 ): number {
+  const totalWeight = buckets.reduce((s, b) => s + b.weight, 0);
+  if (totalWeight === 0) return 0;
   return buckets.reduce(
-    (sum, b) => sum + b.weight * presentValueAnnuity(payment, b.rate, n),
+    (sum, b) => sum + (b.weight / totalWeight) * presentValueAnnuity(payment, b.rate, n),
     0,
   );
 }
