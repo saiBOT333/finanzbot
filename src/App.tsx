@@ -5,8 +5,7 @@ import { ChoiceChip } from "./components/ui/ChoiceChip";
 import { WelcomeScreen } from "./components/WelcomeScreen";
 import { modules } from "./modules/registry";
 import { profileStore } from "./lib/profile/store";
-import { buildExport, downloadJSON, isExportPayload } from "./lib/storage";
-import type { Profile } from "./lib/profile/types";
+import { KEYS, buildExport, downloadJSON, isExportPayload, writeJSON } from "./lib/storage";
 
 const WELCOME_KEY = "finanzbot:welcomeSeen";
 
@@ -46,26 +45,28 @@ export function App() {
   const handleImportClick = () => fileInputRef.current?.click();
 
   const handleImportFile = async (file: File) => {
+    let data: unknown;
     try {
-      const text = await file.text();
-      const data = JSON.parse(text) as unknown;
-      if (!isExportPayload(data)) {
-        alert("Diese Datei sieht nicht wie ein FinanzBot-Export aus.");
-        return;
-      }
-      profileStore.replace((data.profile ?? {}) as Profile);
-      for (const m of modules) {
-        const moduleData = (data.modules as Record<string, unknown> | undefined)?.[m.id];
-        if (moduleData && typeof moduleData === "object") {
-          m.store.replace(moduleData as object);
-        }
-      }
-      markWelcomeSeen();
-      setWelcomeSeen(true);
-      alert("Daten importiert.");
+      data = JSON.parse(await file.text());
     } catch {
       alert("Datei konnte nicht gelesen werden.");
+      return;
     }
+    if (!isExportPayload(data)) {
+      alert("Diese Datei sieht nicht wie ein FinanzBot-Export aus.");
+      return;
+    }
+    // Write to storage and reload: on the next start every store rebuilds
+    // through its normal path (defaults merge + migration), so exports from
+    // older app versions are upgraded instead of being written verbatim —
+    // a verbatim write with missing fields crashes the app.
+    writeJSON(KEYS.profile, data.profile);
+    for (const [id, moduleData] of Object.entries(data.modules)) {
+      writeJSON(KEYS.moduleKey(id), moduleData);
+    }
+    markWelcomeSeen();
+    alert("Daten importiert.");
+    window.location.reload();
   };
 
   const handleReset = () => {
