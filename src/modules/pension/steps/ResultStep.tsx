@@ -220,7 +220,7 @@ export function ResultStep() {
           value={formatEUR(result.existingFV)}
           hint={
             result.existingFV > 0
-              ? "Dein Startkapital wächst real auf diesen Betrag"
+              ? `Heutige Kaufkraft bei Renteneintritt. Nominal in ${result.yearsToRetirement} Jahren entspricht das ca. ${formatEUR(result.existingFVNominal)}`
               : "Du startest ohne Vorsorge-Kapital"
           }
         />
