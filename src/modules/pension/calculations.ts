@@ -127,6 +127,7 @@ export function calculatePension(inputs: PensionInputs): PensionResult {
     (sum, a) => sum + compound(a.amount, a.realReturn, yearsToRetirement),
     0,
   );
+  const existingFVNominal = existingFV * Math.pow(1 + inflation, yearsToRetirement);
   const remainingCapital = Math.max(0, capitalNeeded - existingFV);
 
   // Each savings bucket compounds independently at its own monthly real rate.
@@ -168,6 +169,7 @@ export function calculatePension(inputs: PensionInputs): PensionResult {
     capitalNeeded,
     capitalNeededNominal,
     existingFV,
+    existingFVNominal,
     remainingCapital,
     monthlySavings,
     fixedNominalSavings,

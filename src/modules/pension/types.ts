@@ -41,6 +41,8 @@ export type PensionResult =
       /** capitalNeeded converted to nominal euros at retirement — display anchor. */
       capitalNeededNominal: number;
       existingFV: number;
+      /** existingFV converted to nominal euros at retirement — display anchor. */
+      existingFVNominal: number;
       remainingCapital: number;
       monthlySavings: number;
       /** Fixed nominal monthly savings — constant in nominal euros, no annual inflation adjustment needed. */
