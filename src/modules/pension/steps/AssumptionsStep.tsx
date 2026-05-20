@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { NumberInput } from "../../../components/NumberInput";
 import { Button } from "../../../components/ui/Button";
 import { Field } from "../../../components/ui/Field";
@@ -9,7 +9,8 @@ import { AssetsManager } from "../../../components/AssetsManager";
 import { AllocationManager } from "../../../components/AllocationManager";
 import { useProfile, setProfile } from "../../../lib/profile/useProfile";
 import { PENSION_DEFAULTS } from "../defaults";
-import { formatEUR } from "../../../lib/format";
+import { formatEUR, formatPercent } from "../../../lib/format";
+import { weightedRealReturn } from "../../../lib/assets";
 import { pensionStore, PENSION_MODULE_DEFAULTS } from "../state";
 import { tooltips } from "../tooltips";
 
@@ -22,6 +23,13 @@ export function AssumptionsStep() {
   const m = pensionStore.useState();
 
   const autoStatePension = (profile.netIncomeMonthly ?? 0) * PENSION_DEFAULTS.statePensionFactor;
+
+  const savingsReturn = weightedRealReturn(m.savingsAllocation);
+  const assetsCount = profile.assets?.length ?? 0;
+  const payoutSummary =
+    m.payoutMethod === "annuity"
+      ? `Annuität · ${m.payoutYears} J.`
+      : `Sichere Entnahme · ${pct(m.safeWithdrawalRate * 100)}`;
 
   return (
     <div className="space-y-4">
@@ -46,29 +54,22 @@ export function AssumptionsStep() {
       </button>
 
       {open && (
-        <div className="space-y-6">
-          <Section title="Erwartete gesetzliche Rente">
+        <div className="space-y-3">
+          <AccordionSection
+            title="Ansparen"
+            summary={`ø ${formatPercent(savingsReturn)} real`}
+          >
             <p className="font-sans text-[12px] leading-relaxed text-on-surface-variant">
-              Aus Schritt 3 übernommen — falls du sie hier korrigieren willst:
+              Anteile in %, die du regelmäßig in jede Anlageform investierst. Aus den
+              gewichteten realen Renditen ergibt sich die Anspar-Rendite.
             </p>
-            <NumberInput
-              label="Erwartete Netto-Rente (heutige Kaufkraft)"
-              value={m.expectedStatePension ?? autoStatePension}
-              onChange={(v) =>
-                pensionStore.set({ expectedStatePension: v === undefined ? null : v })
-              }
-              unit="€"
-              min={0}
-              tooltip={tooltips.expectedStatePension}
-              hint={
-                m.expectedStatePension === null
-                  ? `Geschätzt aus deinem Netto (${formatEUR(autoStatePension)} ≈ 48 %). Trag den echten Wert in Schritt 3 ein.`
-                  : undefined
-              }
+            <AllocationManager
+              allocation={m.savingsAllocation}
+              onChange={(savingsAllocation) => pensionStore.set({ savingsAllocation })}
             />
-          </Section>
+          </AccordionSection>
 
-          <Section title="Berechnungsmethode">
+          <AccordionSection title="Auszahlung" summary={payoutSummary}>
             <Field
               label={
                 <span className="inline-flex items-center gap-2">
@@ -124,34 +125,57 @@ export function AssumptionsStep() {
                 ariaLabel="Sichere Entnahmerate in Prozent"
               />
             )}
-          </Section>
 
-          <Section title="Anlage-Allokation in der Sparphase">
-            <p className="font-sans text-[12px] leading-relaxed text-on-surface-variant">
-              Anteile in %, die du regelmäßig in jede Anlageform investierst. Aus den
-              gewichteten realen Renditen ergibt sich die Anspar-Rendite.
-            </p>
-            <AllocationManager
-              allocation={m.savingsAllocation}
-              onChange={(savingsAllocation) => pensionStore.set({ savingsAllocation })}
+            {m.payoutMethod === "annuity" && (
+              <div className="space-y-3 pt-2">
+                <p className="font-sans text-[12px] leading-relaxed text-on-surface-variant">
+                  Im Alter ist die Aktien-Quote oft niedriger. Hier die geplante
+                  Allokation während der Auszahlphase.
+                </p>
+                <AllocationManager
+                  allocation={m.payoutAllocation}
+                  onChange={(payoutAllocation) => pensionStore.set({ payoutAllocation })}
+                />
+              </div>
+            )}
+          </AccordionSection>
+
+          <AccordionSection
+            title="Bestehendes Vermögen"
+            summary={assetsCount === 0 ? "Keine" : `${assetsCount} ${assetsCount === 1 ? "Posten" : "Posten"}`}
+          >
+            <p className="font-sans text-[12px] leading-relaxed text-on-surface-variant">{tooltips.existingAssets}</p>
+            <AssetsManager
+              assets={profile.assets ?? []}
+              onChange={(assets) => setProfile({ assets })}
             />
-          </Section>
+          </AccordionSection>
 
-          {m.payoutMethod === "annuity" && (
-            <Section title="Anlage-Allokation in der Rente">
+          <AccordionSection
+            title="Rahmen-Annahmen"
+            summary={`Inflation ${pct(m.inflation * 100)} · Steuer ${pct(m.taxBufferPct * 100, 0)}`}
+          >
+            <div className="space-y-3">
               <p className="font-sans text-[12px] leading-relaxed text-on-surface-variant">
-                Im Alter ist die Aktien-Quote oft niedriger. Hier die geplante
-                Allokation während der Auszahlphase.
+                Aus Schritt 3 übernommen — falls du die gesetzliche Rente hier korrigieren willst:
               </p>
-              <AllocationManager
-                allocation={m.payoutAllocation}
-                onChange={(payoutAllocation) => pensionStore.set({ payoutAllocation })}
+              <NumberInput
+                label="Erwartete Netto-Rente (heutige Kaufkraft)"
+                value={m.expectedStatePension ?? autoStatePension}
+                onChange={(v) =>
+                  pensionStore.set({ expectedStatePension: v === undefined ? null : v })
+                }
+                unit="€"
+                min={0}
+                tooltip={tooltips.expectedStatePension}
+                hint={
+                  m.expectedStatePension === null
+                    ? `Geschätzt aus deinem Netto (${formatEUR(autoStatePension)} ≈ 48 %). Trag den echten Wert in Schritt 3 ein.`
+                    : undefined
+                }
               />
-            </Section>
-          )}
-
-          <Section title="Inflation und Steuern">
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            </div>
+            <div className="grid grid-cols-1 gap-6 pt-2 sm:grid-cols-2">
               <Slider
                 label="Inflation p. a."
                 value={Math.round(m.inflation * 1000) / 10}
@@ -176,17 +200,9 @@ export function AssumptionsStep() {
             <p className="text-[12px] text-on-surface-variant">
               Faustformel Finanzfluss: 10–15 % Steuer-Puffer.
             </p>
-          </Section>
+          </AccordionSection>
 
-          <Section title="Bestehendes Vermögen">
-            <p className="font-sans text-[12px] leading-relaxed text-on-surface-variant">{tooltips.existingAssets}</p>
-            <AssetsManager
-              assets={profile.assets ?? []}
-              onChange={(assets) => setProfile({ assets })}
-            />
-          </Section>
-
-          <div>
+          <div className="pt-1">
             <Button
               variant="text"
               size="sm"
@@ -201,17 +217,46 @@ export function AssumptionsStep() {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function AccordionSection({
+  title,
+  summary,
+  defaultOpen = false,
+  children,
+}: {
+  title: string;
+  summary?: ReactNode;
+  defaultOpen?: boolean;
+  children: ReactNode;
+}) {
+  const [expanded, setExpanded] = useState(defaultOpen);
+  const regionId = `accordion-${title.replace(/\s+/g, "-").toLowerCase()}`;
   return (
-    <div className="space-y-3">
-      <div className="flex items-baseline gap-2 border-b border-outline-variant pb-2">
+    <div className="border border-outline-variant">
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
+        aria-controls={regionId}
+        className="flex w-full items-center gap-3 bg-surface-container px-3 py-2.5 text-left hover:bg-surface-container-high"
+      >
+        <span aria-hidden className="font-mono text-[11px] text-on-surface-variant">
+          {expanded ? "▾" : "▸"}
+        </span>
         <span aria-hidden className="h-[3px] w-6 bg-primary" />
-        <h3 className="text-[10.5px] font-medium uppercase tracking-[0.04em] text-on-surface-variant">
+        <h3 className="flex-1 text-[10.5px] font-medium uppercase tracking-[0.04em] text-on-surface-variant">
           {title}
         </h3>
-      </div>
-      {children}
+        {summary !== undefined && (
+          <span className="font-sans text-[11px] tabular-nums text-on-surface-variant">
+            {summary}
+          </span>
+        )}
+      </button>
+      {expanded && (
+        <div id={regionId} className="space-y-3 px-3 py-3">
+          {children}
+        </div>
+      )}
     </div>
   );
 }
-
