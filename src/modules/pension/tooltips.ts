@@ -25,13 +25,15 @@ export const tooltips: Record<string, string> = {
   existingAssets:
     "Trag dein bestehendes Vermögen nach Anlageform getrennt ein. Jede Position wächst dann mit ihrer eigenen realen Rendite — Tagesgeld stagniert, ETF wächst kräftig. Macht die Hochrechnung deutlich realistischer als ein einzelner Mittelwert.",
   gapToday:
-    "Die Differenz zwischen dem, was du im Ruhestand brauchst, und dem, was die gesetzliche Rente liefert – pro Monat, in heutiger Kaufkraft.",
+    "Die monatliche Lücke zwischen Bedarf und gesetzlicher Rente, ausgedrückt in heutiger Kaufkraft. Real (heute) = gemessen in heutigen Preisen, also direkt vergleichbar mit deinem jetzigen Lebensniveau. Die Zahl im Hinweis ist derselbe Betrag nominal — die Euro-Summe, die du in N Jahren tatsächlich überweisen musst, weil bis dahin alles teurer geworden ist. Beide Zahlen beschreiben dasselbe Lebensniveau.",
   capitalNeeded:
-    "Das Vermögen, das du bei Rentenbeginn brauchst, um die monatliche Lücke zu decken — angegeben in heutiger Kaufkraft (inkl. Steuer-Puffer, falls aktiviert). Der Betrag, der dann tatsächlich nominal auf dem Depotauszug stehen muss, liegt wegen der Inflation deutlich höher — siehe Hinweis unter der Zahl.",
+    "Das Vermögen, das du bei Rentenbeginn brauchst, um die monatliche Lücke zu decken — in heutiger Kaufkraft (inkl. Steuer-Puffer, falls aktiviert). Real (heute) = ausgedrückt in heutigen Preisen, damit du den Betrag einschätzen kannst. Die Zahl im Hinweis ist derselbe Wert nominal — also was am Tag X tatsächlich auf dem Depotauszug stehen muss. Klingt nach mehr, ist durch die Inflation aber derselbe Kaufkraft-Wert.",
+  existingFV:
+    "Was dein heutiges Vermögen bis zum Renteneintritt mit seiner realen Rendite wert sein wird — ausgedrückt in heutiger Kaufkraft. Real (heute) = vergleichbar mit heutigen Preisen, sodass du es direkt gegen den Kapitalbedarf halten kannst. Die Zahl im Hinweis ist derselbe Wert nominal — die Euro-Summe, die dann tatsächlich auf dem Depotauszug steht.",
   monthlySavings:
-    "Was du ab heute jeden Monat zusätzlich zur Seite legen müsstest – in heutiger Kaufkraft. Da das Modell real rechnet, muss dieser Betrag jedes Jahr mit der Inflation angepasst werden (z. B. +2 %). Steigt dein Gehalt mit der Inflation, bleibt die Sparquote konstant.",
+    "Was du ab heute jeden Monat zusätzlich sparen müsstest — in heutiger Kaufkraft. Real (heute) heißt: das Modell rechnet inflationsbereinigt, deshalb musst du diesen Betrag jedes Jahr um die Inflation anpassen (z. B. +2 %). Steigt dein Gehalt mit der Inflation, bleibt deine Sparquote konstant. Die Alternative rechts daneben (Nominal fix) ist derselbe Plan ohne jährliche Anpassung — höherer Startbetrag, dafür einmal eingerichtet und vergessen.",
   fixedNominalSavings:
-    "Alternativ: ein fester Nominalbetrag, den du die gesamte Sparphase gleichbleibend einzahlst – ohne jährliche Anpassung. Er liegt höher als der reale Startwert, weil frühe Zahlungen mehr Zinseszins sammeln müssen, um die inflationsbedingte Abschwächung späterer Zahlungen auszugleichen.",
+    "Nominale Variante: ein gleichbleibender Euro-Betrag über die gesamte Sparphase, ohne jährliche Inflationsanpassung. Er liegt höher als der reale Startwert, weil die frühen Zahlungen mehr Zinseszins sammeln müssen, um die inflationsbedingte Abschwächung der späteren Zahlungen auszugleichen. Vorteil: einmal als Dauerauftrag einrichten und nicht mehr anfassen.",
   savingsRatePct: "Anteil deines aktuellen Netto-Einkommens, den du dafür sparen müsstest.",
   savingsRateContext:
     "Zum Vergleich: der deutsche Durchschnitt spart ~11 % vom Netto, Finanzfluss empfiehlt für die Altersvorsorge realistisch 15–20 %.",
