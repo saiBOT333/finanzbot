@@ -139,9 +139,15 @@ export function ResultStep() {
         <div className="flex items-start justify-between gap-3">
           <div>
             <span className="m3-eyebrow bg-primary text-on-primary">Output · 01</span>
-            <p className="mt-2 text-[12px] uppercase tracking-[0.08em] opacity-85">
-              Empfohlene monatliche Sparrate
-            </p>
+            <div className="mt-2 flex items-center gap-1.5">
+              <p className="text-[12px] uppercase tracking-[0.08em] opacity-85">
+                Empfohlene monatliche Sparrate
+              </p>
+              <InfoTooltip
+                content={tooltips.monthlySavings}
+                label="Erklärung zu Empfohlene monatliche Sparrate"
+              />
+            </div>
           </div>
           <Button
             variant="tonal"
@@ -176,7 +182,13 @@ export function ResultStep() {
             </p>
           </div>
           <div>
-            <p className="text-[11px] uppercase tracking-[0.08em] opacity-85">Alternativ · Nominal fix</p>
+            <div className="flex items-center gap-1.5">
+              <p className="text-[11px] uppercase tracking-[0.08em] opacity-85">Alternativ · Nominal fix</p>
+              <InfoTooltip
+                content={tooltips.fixedNominalSavings}
+                label="Erklärung zu Alternativ · Nominal fix"
+              />
+            </div>
             <p className="mt-1 text-2xl font-semibold tabular-nums">
               {formatEUR(result.fixedNominalSavings, true)}
             </p>
@@ -223,6 +235,7 @@ export function ResultStep() {
               ? `Heutige Kaufkraft bei Renteneintritt. Nominal in ${result.yearsToRetirement} Jahren entspricht das ca. ${formatEUR(result.existingFVNominal)}`
               : "Du startest ohne Vorsorge-Kapital"
           }
+          tooltip={tooltips.existingFV}
         />
       </div>
 
