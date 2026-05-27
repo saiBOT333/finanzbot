@@ -120,3 +120,38 @@ describe("adjustGrossForEarlyRetirement", () => {
     expect(r.adjustedGross).toBe(0);
   });
 });
+
+describe("projectedNetPensionToday mit Korrektur", () => {
+  it("Eintritt zur Regelaltersgrenze: Korrektur ist Identität, Pipeline-Felder vorhanden", () => {
+    const r = projectedNetPensionToday(2000, 0.015, 0.2, 0.02, 30, {
+      retirementAge: 67,
+      regelalter: 67,
+      contributionStartAge: 20,
+    });
+    expect(r.grossBeforeAdjustment).toBe(2000);
+    expect(r.abschlagPct).toBe(0);
+    expect(r.beitragsFaktor).toBe(1);
+    expect(r.grossAdjusted).toBe(2000);
+    expect(r.grossNominal).toBeCloseTo(2000 * Math.pow(1.015, 30), 4);
+    expect(r.netNominal).toBeCloseTo(r.grossNominal * 0.8, 4);
+    expect(r.netReal).toBeCloseTo(r.netNominal / Math.pow(1.02, 30), 4);
+  });
+
+  it("4 Jahre vorzeitig: Brutto wird vor der Anpassung gekürzt", () => {
+    const r = projectedNetPensionToday(2000, 0.015, 0.2, 0.02, 26, {
+      retirementAge: 63,
+      regelalter: 67,
+      contributionStartAge: 20,
+    });
+    const expectedAdjusted = 2000 * (1 - 0.144) * (43 / 47);
+    expect(r.grossAdjusted).toBeCloseTo(expectedAdjusted, 4);
+    expect(r.grossNominal).toBeCloseTo(expectedAdjusted * Math.pow(1.015, 26), 4);
+  });
+
+  it("Fehlende Korrektur-Parameter: Aufruf wie früher (Backwards-Kompatibilität)", () => {
+    const r = projectedNetPensionToday(2000, 0.015, 0.2, 0.02, 30);
+    expect(r.grossAdjusted).toBe(2000);
+    expect(r.abschlagPct).toBe(0);
+    expect(r.beitragsFaktor).toBe(1);
+  });
+});
