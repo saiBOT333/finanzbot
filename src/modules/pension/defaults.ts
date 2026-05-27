@@ -1,6 +1,6 @@
 import {
   INFLATION_DEFAULT,
-  PAYOUT_YEARS_DEFAULT,
+  PLANNING_AGE_DEFAULT,
   PENSION_GROSS_TO_NET_DEDUCTION,
   REPLACEMENT_RATE_DEFAULT,
   RETIREMENT_AGE_DEFAULT,
@@ -21,7 +21,8 @@ export const PENSION_DEFAULTS = {
   statePensionFactor: STATE_PENSION_FACTOR,
   inflation: INFLATION_DEFAULT,
   payoutMethod: "annuity" as PayoutMethod,
-  payoutYears: PAYOUT_YEARS_DEFAULT,
+  /** Default-Bezugsdauer = Planungsalter − Regelaltersgrenze. Wird überschrieben durch ResultStep. */
+  payoutYears: PLANNING_AGE_DEFAULT - RETIREMENT_AGE_DEFAULT,
   safeWithdrawalRate: SAFE_WITHDRAWAL_RATE,
   taxBufferPct: TAX_BUFFER_DEFAULT,
   /** Brutto → Netto Faktor (= 1 − Pauschalabzug). */
