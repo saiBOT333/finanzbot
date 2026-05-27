@@ -25,8 +25,15 @@ export function PensionInformationStep() {
   const retirementAge = profile.retirementAge ?? PENSION_DEFAULTS.retirementAge;
   const currentYear = new Date().getFullYear();
   const birthYear = profile.age !== undefined ? currentYear - profile.age : undefined;
-  const regelalter = birthYear !== undefined ? regelaltersgrenze(birthYear) : 67;
+  const regelalter = birthYear !== undefined ? regelaltersgrenze(birthYear) : PENSION_DEFAULTS.retirementAge;
   const contributionStartAge = m.contributionStartAge;
+
+  const formatYearsDiff = (years: number): string => {
+    const rounded = Math.round(years * 12) / 12;
+    if (Number.isInteger(rounded)) return `${rounded.toFixed(0)} J.`;
+    const months = Math.round(years * 12);
+    return `${months} Mon.`;
+  };
 
   const yearsToRetirement = Math.max(
     0,
@@ -94,7 +101,7 @@ export function PensionInformationStep() {
           {retirementAge >= regelalter && (
             <div className="border-l-[3px] border-outline-variant bg-surface-container px-3 py-2">
               <p className="font-sans text-[11.5px] leading-relaxed text-on-surface-variant">
-                Du gehst zur Regelaltersgrenze ({regelalter.toFixed(0)}) oder später in Rente —
+                Du gehst zur Regelaltersgrenze ({Number.isInteger(regelalter) ? regelalter : regelalter.toFixed(1)}) oder später in Rente —
                 keine Abschläge, kein Beitragsjahre-Abschlag in der Hochrechnung.
               </p>
             </div>
@@ -173,16 +180,16 @@ export function PensionInformationStep() {
                     value={formatEUR(grossWithoutAdjustment)}
                   />
                   {projection.abschlagPct > 0 && (
-                    <>
-                      <CalcRow
-                        label={`− ${formatPercent(projection.abschlagPct)} Abschlag (${(regelalter - retirementAge).toFixed(0)} J. vorzeitig)`}
-                        value={`${formatEUR(grossWithoutAdjustment * (1 - projection.abschlagPct))} brutto`}
-                      />
-                      <CalcRow
-                        label={`× ${formatPercent(projection.beitragsFaktor)} Beitragsjahre (${(retirementAge - contributionStartAge).toFixed(0)}/${(regelalter - contributionStartAge).toFixed(0)})`}
-                        value={`${formatEUR(projection.grossAdjusted)} brutto angepasst`}
-                      />
-                    </>
+                    <CalcRow
+                      label={`− ${formatPercent(projection.abschlagPct)} Abschlag (${formatYearsDiff(regelalter - retirementAge)} vorzeitig)`}
+                      value={`${formatEUR(grossWithoutAdjustment * (1 - projection.abschlagPct))} brutto`}
+                    />
+                  )}
+                  {projection.beitragsFaktor < 1 && (
+                    <CalcRow
+                      label={`× ${formatPercent(projection.beitragsFaktor)} Beitragsjahre (${formatYearsDiff(retirementAge - contributionStartAge)}/${formatYearsDiff(regelalter - contributionStartAge)})`}
+                      value={`${formatEUR(projection.grossAdjusted)} brutto angepasst`}
+                    />
                   )}
                   <CalcRow
                     label={`× (1 + ${formatPercent(raise)})^${yearsToRetirement}`}
