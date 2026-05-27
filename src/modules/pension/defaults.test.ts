@@ -146,6 +146,8 @@ describe("projectedNetPensionToday mit Korrektur", () => {
     const expectedAdjusted = 2000 * (1 - 0.144) * (43 / 47);
     expect(r.grossAdjusted).toBeCloseTo(expectedAdjusted, 4);
     expect(r.grossNominal).toBeCloseTo(expectedAdjusted * Math.pow(1.015, 26), 4);
+    expect(r.netNominal).toBeCloseTo(r.grossNominal * 0.8, 4);
+    expect(r.netReal).toBeCloseTo(r.netNominal / Math.pow(1.02, 26), 4);
   });
 
   it("Fehlende Korrektur-Parameter: Aufruf wie früher (Backwards-Kompatibilität)", () => {
@@ -153,5 +155,8 @@ describe("projectedNetPensionToday mit Korrektur", () => {
     expect(r.grossAdjusted).toBe(2000);
     expect(r.abschlagPct).toBe(0);
     expect(r.beitragsFaktor).toBe(1);
+    expect(r.grossNominal).toBeCloseTo(2000 * Math.pow(1.015, 30), 4);
+    expect(r.netNominal).toBeCloseTo(r.grossNominal * 0.8, 4);
+    expect(r.netReal).toBeCloseTo(r.netNominal / Math.pow(1.02, 30), 4);
   });
 });
