@@ -109,13 +109,19 @@ export function AssumptionsStep() {
                   value={m.planningAge}
                   onChange={(v) => v !== undefined && pensionStore.set({ planningAge: v })}
                   unit="Jahre"
-                  min={(profile.retirementAge ?? 0) + 1}
+                  min={(profile.retirementAge ?? PENSION_DEFAULTS.retirementAge) + 1}
                   max={120}
                   tooltip={tooltips.planningAge}
                 />
-                <p className="text-[11px] tabular-nums text-on-surface-variant">
-                  Bei Renteneintritt mit {profile.retirementAge ?? "—"} = {derivedPayoutYears} Jahre Rentenzeit
-                </p>
+                {profile.retirementAge !== undefined ? (
+                  <p className="text-[11px] tabular-nums text-on-surface-variant">
+                    Bei Renteneintritt mit {profile.retirementAge} = {derivedPayoutYears} Jahre Rentenzeit
+                  </p>
+                ) : (
+                  <p className="text-[11px] text-on-surface-variant">
+                    Trage zuerst dein Renteneintrittsalter in Schritt 01 ein, um die Rentenzeit zu sehen.
+                  </p>
+                )}
               </div>
             ) : (
               <Slider
