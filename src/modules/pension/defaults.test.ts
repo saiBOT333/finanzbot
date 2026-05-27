@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { applyPensionDeduction, projectedNetPensionToday, regelaltersgrenze } from "./defaults";
+import {
+  adjustGrossForEarlyRetirement,
+  applyPensionDeduction,
+  projectedNetPensionToday,
+  regelaltersgrenze,
+} from "./defaults";
 
 describe("applyPensionDeduction", () => {
   it("applies the 20 % flat deduction (Finanztip rule of thumb)", () => {
@@ -74,5 +79,44 @@ describe("regelaltersgrenze", () => {
   it("Jahrgang 1964 und später: 67", () => {
     expect(regelaltersgrenze(1964)).toBe(67);
     expect(regelaltersgrenze(2000)).toBe(67);
+  });
+});
+
+describe("adjustGrossForEarlyRetirement", () => {
+  it("Eintritt zur Regelaltersgrenze: keine Korrektur", () => {
+    const r = adjustGrossForEarlyRetirement(2000, 67, 67, 20);
+    expect(r.adjustedGross).toBe(2000);
+    expect(r.abschlagPct).toBe(0);
+    expect(r.beitragsFaktor).toBe(1);
+  });
+
+  it("Eintritt nach Regelaltersgrenze: keine Korrektur (Zuschläge sind Out-of-Scope)", () => {
+    const r = adjustGrossForEarlyRetirement(2000, 70, 67, 20);
+    expect(r.adjustedGross).toBe(2000);
+    expect(r.abschlagPct).toBe(0);
+    expect(r.beitragsFaktor).toBe(1);
+  });
+
+  it("4 Jahre vorzeitig (63 vs 67), Beitragsbeginn 20: Abschlag 14,4 %, Beitragsfaktor 43/47", () => {
+    const r = adjustGrossForEarlyRetirement(2000, 63, 67, 20);
+    expect(r.abschlagPct).toBeCloseTo(0.144, 6);
+    expect(r.beitragsFaktor).toBeCloseTo(43 / 47, 6);
+    expect(r.adjustedGross).toBeCloseTo(2000 * (1 - 0.144) * (43 / 47), 4);
+  });
+
+  it("Abschlag wird bei mehr als 4 Jahren vorzeitig auf 14,4 % gedeckelt", () => {
+    const r = adjustGrossForEarlyRetirement(2000, 60, 67, 20);
+    expect(r.abschlagPct).toBe(0.144);
+  });
+
+  it("Späterer Beitragsbeginn senkt den Beitragsfaktor zusätzlich", () => {
+    const r = adjustGrossForEarlyRetirement(2000, 63, 67, 27);
+    expect(r.beitragsFaktor).toBeCloseTo(36 / 40, 6); // 63-27=36 ist tatsächlich, 67-27=40 geplant
+  });
+
+  it("Retirement <= contributionStart führt zu Beitragsfaktor 0 (Edge Case)", () => {
+    const r = adjustGrossForEarlyRetirement(2000, 19, 67, 20);
+    expect(r.beitragsFaktor).toBe(0);
+    expect(r.adjustedGross).toBe(0);
   });
 });

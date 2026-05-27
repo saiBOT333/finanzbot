@@ -123,3 +123,40 @@ export function regelaltersgrenze(birthYear: number): number {
       : 12 + (birthYear - 1958) * 2; // 14, 16, 18, 20, 22 Monate
   return 65 + monthsExtra / 12;
 }
+
+/**
+ * Reduziert die Renteninfo-Brutto-Rente um:
+ *  - Abschläge: 0,3 % pro Monat vorzeitig (zwischen retirementAge und
+ *    regelaltersgrenze), gedeckelt bei 14,4 % (48 Monate × 0,3 %).
+ *  - Beitragsjahre-Faktor: tatsächliche / geplante Beitragsmonate, linear.
+ *
+ * Bei Eintritt zur Regelaltersgrenze oder später bleibt die Brutto-Rente
+ * unverändert. Zuschläge für späteren Eintritt sind bewusst NICHT modelliert
+ * (separater Scope, betrifft Edge-Case-Nutzer).
+ */
+export function adjustGrossForEarlyRetirement(
+  grossWithoutAdjustment: number,
+  retirementAge: number,
+  regelalter: number,
+  contributionStartAge: number,
+): { adjustedGross: number; abschlagPct: number; beitragsFaktor: number } {
+  if (retirementAge >= regelalter) {
+    return {
+      adjustedGross: grossWithoutAdjustment,
+      abschlagPct: 0,
+      beitragsFaktor: 1,
+    };
+  }
+  const monthsEarly = (regelalter - retirementAge) * 12;
+  const abschlagPct = Math.min(0.144, monthsEarly * 0.003);
+
+  const plannedContributionMonths = (regelalter - contributionStartAge) * 12;
+  const actualContributionMonths = (retirementAge - contributionStartAge) * 12;
+  const beitragsFaktor =
+    plannedContributionMonths <= 0
+      ? 0
+      : Math.max(0, actualContributionMonths / plannedContributionMonths);
+
+  const adjustedGross = grossWithoutAdjustment * (1 - abschlagPct) * beitragsFaktor;
+  return { adjustedGross, abschlagPct, beitragsFaktor };
+}
