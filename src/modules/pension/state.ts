@@ -1,6 +1,7 @@
 import { createModuleStore } from "../../lib/moduleStore";
 import { newAllocationId, type Allocation } from "../../lib/assets";
 import { DEFAULT_PENSION_STATE } from "./presets";
+import { RETIREMENT_AGE_DEFAULT } from "./constants";
 import type { PayoutMethod } from "./types";
 
 export type PensionModuleState = {
@@ -66,12 +67,19 @@ function migrate(stored: Partial<PensionModuleState> & {
   }
 
   // Legacy: payoutYears wurde durch planningAge ersetzt.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const legacyPayoutYears = (stored as any).payoutYears as number | undefined;
-  if (cleaned.planningAge === undefined && legacyPayoutYears !== undefined) {
-    // Ohne Profil-Zugriff im Store-Loader: konservativ 67 als Default-Renteneintritt
-    // nehmen. Wer das überschreiben will, ändert das Planungsalter im UI.
-    cleaned.planningAge = 67 + legacyPayoutYears;
+  // `stored.payoutYears` ist im Parameter-Typ deklariert — kein `any`-Cast nötig.
+  const legacyPayoutYears = stored.payoutYears;
+  if (
+    cleaned.planningAge === undefined &&
+    typeof legacyPayoutYears === "number" &&
+    Number.isFinite(legacyPayoutYears) &&
+    legacyPayoutYears > 0 &&
+    legacyPayoutYears <= 60
+  ) {
+    // Ohne Profil-Zugriff im Store-Loader: konservativ RETIREMENT_AGE_DEFAULT als
+    // Default-Renteneintritt nehmen. Wer das überschreiben will, ändert das
+    // Planungsalter im UI.
+    cleaned.planningAge = RETIREMENT_AGE_DEFAULT + legacyPayoutYears;
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   delete (cleaned as any).payoutYears;
