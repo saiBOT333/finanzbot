@@ -13,7 +13,10 @@ export type PensionModuleState = {
   /** Mix during the payout phase — typically more defensive than during saving. */
   payoutAllocation: Allocation;
   payoutMethod: PayoutMethod;
-  payoutYears: number;
+  /** Bis zu welchem Lebensalter die Auszahlphase reichen soll. Default 90. */
+  planningAge: number;
+  /** Alter, ab dem in die DRV eingezahlt wurde. Default 20 (linear). */
+  contributionStartAge: number;
   safeWithdrawalRate: number;
   taxBufferPct: number;
 };
@@ -33,6 +36,7 @@ export const PENSION_MODULE_DEFAULTS: PensionModuleState = {
 function migrate(stored: Partial<PensionModuleState> & {
   realReturn?: number;
   payoutRealReturn?: number;
+  payoutYears?: number;
 }): Partial<PensionModuleState> {
   const cleaned: Partial<PensionModuleState> = { ...stored };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -60,6 +64,22 @@ function migrate(stored: Partial<PensionModuleState> & {
       },
     ];
   }
+
+  // Legacy: payoutYears wurde durch planningAge ersetzt.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const legacyPayoutYears = (stored as any).payoutYears as number | undefined;
+  if (cleaned.planningAge === undefined && legacyPayoutYears !== undefined) {
+    // Ohne Profil-Zugriff im Store-Loader: konservativ 67 als Default-Renteneintritt
+    // nehmen. Wer das überschreiben will, ändert das Planungsalter im UI.
+    cleaned.planningAge = 67 + legacyPayoutYears;
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  delete (cleaned as any).payoutYears;
+
+  if (cleaned.contributionStartAge === undefined) {
+    cleaned.contributionStartAge = 20;
+  }
+
   return cleaned;
 }
 

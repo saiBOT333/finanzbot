@@ -28,7 +28,8 @@ export const DEFAULT_PENSION_STATE: Omit<PensionModuleState, "expectedStatePensi
   savingsAllocation: defaultSavings,
   payoutAllocation: defaultPayout,
   payoutMethod: "annuity",
-  payoutYears: 30,
+  planningAge: 90,
+  contributionStartAge: 20,
   safeWithdrawalRate: 0.035,
   taxBufferPct: TAX_BUFFER_DEFAULT,
 };
