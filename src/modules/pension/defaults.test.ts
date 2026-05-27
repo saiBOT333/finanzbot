@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { applyPensionDeduction, projectedNetPensionToday } from "./defaults";
+import { applyPensionDeduction, projectedNetPensionToday, regelaltersgrenze } from "./defaults";
 
 describe("applyPensionDeduction", () => {
   it("applies the 20 % flat deduction (Finanztip rule of thumb)", () => {
@@ -52,5 +52,27 @@ describe("projectedNetPensionToday — Finanztip Daniela cross-check", () => {
     expect(high.netReal).toBeLessThan(low.netReal);
     expect(high.netNominal).toBeLessThan(low.netNominal);
     expect(high.grossNominal).toBe(low.grossNominal); // gross is identical
+  });
+});
+
+describe("regelaltersgrenze", () => {
+  it("Jahrgang 1946 und früher: 65", () => {
+    expect(regelaltersgrenze(1946)).toBe(65);
+    expect(regelaltersgrenze(1900)).toBe(65);
+  });
+
+  it("Jahrgänge 1947–1958: + 1 Monat pro Jahr", () => {
+    expect(regelaltersgrenze(1947)).toBeCloseTo(65 + 1 / 12, 6);
+    expect(regelaltersgrenze(1958)).toBeCloseTo(66, 6);
+  });
+
+  it("Jahrgänge 1959–1963: + 2 Monate pro Jahr", () => {
+    expect(regelaltersgrenze(1959)).toBeCloseTo(66 + 2 / 12, 6);
+    expect(regelaltersgrenze(1963)).toBeCloseTo(66 + 10 / 12, 6);
+  });
+
+  it("Jahrgang 1964 und später: 67", () => {
+    expect(regelaltersgrenze(1964)).toBe(67);
+    expect(regelaltersgrenze(2000)).toBe(67);
   });
 });

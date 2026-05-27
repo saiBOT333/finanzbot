@@ -104,3 +104,22 @@ export function projectedNetPensionToday(
   const netReal = netNominal / Math.pow(1 + inflation, yearsToRetirement);
   return { grossNominal, netNominal, netReal };
 }
+
+/**
+ * Regelaltersgrenze nach SGB VI § 235.
+ *  - Jahrgänge bis 1946: 65
+ *  - Jahrgänge 1947–1958: +1 Monat pro Jahr (65y 1m … 66y 0m)
+ *  - Jahrgänge 1959–1963: +2 Monate pro Jahr (66y 2m … 66y 10m)
+ *  - Jahrgänge ab 1964: 67
+ *
+ * Quelle: Deutsche Rentenversicherung.
+ */
+export function regelaltersgrenze(birthYear: number): number {
+  if (birthYear <= 1946) return 65;
+  if (birthYear >= 1964) return 67;
+  const monthsExtra =
+    birthYear <= 1958
+      ? birthYear - 1946 // 1 … 12 Monate
+      : 12 + (birthYear - 1958) * 2; // 14, 16, 18, 20, 22 Monate
+  return 65 + monthsExtra / 12;
+}
