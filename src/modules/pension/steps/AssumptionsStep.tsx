@@ -26,9 +26,10 @@ export function AssumptionsStep() {
 
   const savingsReturn = weightedRealReturn(m.savingsAllocation);
   const assetsCount = profile.assets?.length ?? 0;
+  const derivedPayoutYears = Math.max(0, m.planningAge - (profile.retirementAge ?? 0));
   const payoutSummary =
     m.payoutMethod === "annuity"
-      ? `Annuität · ${m.payoutYears} J.`
+      ? `Annuität · bis Alter ${m.planningAge}`
       : `Sichere Entnahme · ${pct(m.safeWithdrawalRate * 100)}`;
 
   return (
@@ -102,16 +103,19 @@ export function AssumptionsStep() {
             </p>
 
             {m.payoutMethod === "annuity" ? (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
                 <NumberInput
-                  label="Rentenbezugsdauer"
-                  value={m.payoutYears}
-                  onChange={(v) => v !== undefined && pensionStore.set({ payoutYears: v })}
+                  label="Planen bis Alter"
+                  value={m.planningAge}
+                  onChange={(v) => v !== undefined && pensionStore.set({ planningAge: v })}
                   unit="Jahre"
-                  min={1}
-                  max={60}
-                  tooltip={tooltips.payoutYears}
+                  min={(profile.retirementAge ?? 0) + 1}
+                  max={120}
+                  tooltip={tooltips.planningAge}
                 />
+                <p className="text-[11px] tabular-nums text-on-surface-variant">
+                  Bei Renteneintritt mit {profile.retirementAge ?? "—"} = {derivedPayoutYears} Jahre Rentenzeit
+                </p>
               </div>
             ) : (
               <Slider
