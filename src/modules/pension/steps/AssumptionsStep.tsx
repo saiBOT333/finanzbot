@@ -39,8 +39,8 @@ export function AssumptionsStep() {
         <p className="mt-1.5 font-sans text-[13px] leading-relaxed text-on-surface-variant">
           Konservative Standard-Annahmen: gemischtes Portfolio,{" "}
           <span className="tabular-nums">3 %</span> real Anspar,{" "}
-          <span className="tabular-nums">1 %</span> real Auszahl, Annuität über{" "}
-          <span className="tabular-nums">30 Jahre</span>,{" "}
+          <span className="tabular-nums">1 %</span> real Auszahl, Annuität bis Alter{" "}
+          <span className="tabular-nums">90</span>,{" "}
           <span className="tabular-nums">12 %</span> Steuer-Puffer. Du kannst alle Annahmen unten
           frei anpassen — inklusive Auszahlungsmethode und Anlage-Allokation.
         </p>

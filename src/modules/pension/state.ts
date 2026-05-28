@@ -1,7 +1,7 @@
 import { createModuleStore } from "../../lib/moduleStore";
 import { newAllocationId, type Allocation } from "../../lib/assets";
 import { DEFAULT_PENSION_STATE } from "./presets";
-import { RETIREMENT_AGE_DEFAULT } from "./constants";
+import { CONTRIBUTION_START_AGE_DEFAULT, RETIREMENT_AGE_DEFAULT } from "./constants";
 import type { PayoutMethod } from "./types";
 
 export type PensionModuleState = {
@@ -85,7 +85,7 @@ function migrate(stored: Partial<PensionModuleState> & {
   delete (cleaned as any).payoutYears;
 
   if (cleaned.contributionStartAge === undefined) {
-    cleaned.contributionStartAge = 20;
+    cleaned.contributionStartAge = CONTRIBUTION_START_AGE_DEFAULT;
   }
 
   return cleaned;
