@@ -1,6 +1,6 @@
 import {
   INFLATION_DEFAULT,
-  PAYOUT_YEARS_DEFAULT,
+  PLANNING_AGE_DEFAULT,
   PENSION_GROSS_TO_NET_DEDUCTION,
   REPLACEMENT_RATE_DEFAULT,
   RETIREMENT_AGE_DEFAULT,
@@ -21,7 +21,8 @@ export const PENSION_DEFAULTS = {
   statePensionFactor: STATE_PENSION_FACTOR,
   inflation: INFLATION_DEFAULT,
   payoutMethod: "annuity" as PayoutMethod,
-  payoutYears: PAYOUT_YEARS_DEFAULT,
+  /** Default-Bezugsdauer = Planungsalter − Regelaltersgrenze. Wird überschrieben durch ResultStep. */
+  payoutYears: PLANNING_AGE_DEFAULT - RETIREMENT_AGE_DEFAULT,
   safeWithdrawalRate: SAFE_WITHDRAWAL_RATE,
   taxBufferPct: TAX_BUFFER_DEFAULT,
   /** Brutto → Netto Faktor (= 1 − Pauschalabzug). */
@@ -74,19 +75,18 @@ export function applyPensionDeduction(grossMonthly: number, deductionPct: number
 }
 
 /**
- * Project a statutory pension from "without adjustment" (the value the DRV
- * prints when assuming the current pension value stays put) all the way to
- * today's purchasing power. All four pipeline stages are returned so the UI
- * can show each one.
+ * Project a statutory pension from "without adjustment" (DRV-Renteninfo)
+ * all the way to today's purchasing power. Pipeline:
  *
- *   1. grossNominal = grossWithoutAdjustment × (1 + raise)^years
+ *   0. grossAdjusted = grossWithoutAdjustment × (1 − abschlag) × beitragsFaktor
+ *      (Identität bei Eintritt zur Regelaltersgrenze oder ohne adjust-Optionen)
+ *   1. grossNominal = grossAdjusted × (1 + raise)^years
  *   2. netNominal   = grossNominal × (1 − deductionPct)
  *   3. netReal      = netNominal / (1 + inflation)^years
  *
- * Cross-check with Daniela (Finanztip):
- *   grossWithoutAdjustment ~1.988 € · raise 1.5 % · 35 years
- *   → grossNominal ~3.347 € · netNominal ~2.677 € (20 % deduction)
- *   → netReal ~1.339 € (within ~1 % of Saidi's "1.360 €" approximation)
+ * Alle vier Pipeline-Stages werden zurückgegeben, damit das UI sie auflisten
+ * kann. Bei `yearsToRetirement <= 0` wird die Hochrechnung übersprungen
+ * (Eintritt heute), die Korrektur greift trotzdem.
  */
 export function projectedNetPensionToday(
   grossWithoutAdjustment: number,
@@ -94,13 +94,109 @@ export function projectedNetPensionToday(
   deductionPct: number,
   inflation: number,
   yearsToRetirement: number,
-): { grossNominal: number; netNominal: number; netReal: number } {
+  adjust?: {
+    retirementAge: number;
+    regelalter: number;
+    contributionStartAge: number;
+  },
+): {
+  grossBeforeAdjustment: number;
+  abschlagPct: number;
+  beitragsFaktor: number;
+  grossAdjusted: number;
+  grossNominal: number;
+  netNominal: number;
+  netReal: number;
+} {
+  const correction = adjust
+    ? adjustGrossForEarlyRetirement(
+        grossWithoutAdjustment,
+        adjust.retirementAge,
+        adjust.regelalter,
+        adjust.contributionStartAge,
+      )
+    : { adjustedGross: grossWithoutAdjustment, abschlagPct: 0, beitragsFaktor: 1 };
+
+  const grossAdjusted = correction.adjustedGross;
+
   if (yearsToRetirement <= 0) {
-    const netNominal = applyPensionDeduction(grossWithoutAdjustment, deductionPct);
-    return { grossNominal: grossWithoutAdjustment, netNominal, netReal: netNominal };
+    const netNominal = applyPensionDeduction(grossAdjusted, deductionPct);
+    return {
+      grossBeforeAdjustment: grossWithoutAdjustment,
+      abschlagPct: correction.abschlagPct,
+      beitragsFaktor: correction.beitragsFaktor,
+      grossAdjusted,
+      grossNominal: grossAdjusted,
+      netNominal,
+      netReal: netNominal,
+    };
   }
-  const grossNominal = grossWithoutAdjustment * Math.pow(1 + raise, yearsToRetirement);
+  const grossNominal = grossAdjusted * Math.pow(1 + raise, yearsToRetirement);
   const netNominal = applyPensionDeduction(grossNominal, deductionPct);
   const netReal = netNominal / Math.pow(1 + inflation, yearsToRetirement);
-  return { grossNominal, netNominal, netReal };
+  return {
+    grossBeforeAdjustment: grossWithoutAdjustment,
+    abschlagPct: correction.abschlagPct,
+    beitragsFaktor: correction.beitragsFaktor,
+    grossAdjusted,
+    grossNominal,
+    netNominal,
+    netReal,
+  };
+}
+
+/**
+ * Regelaltersgrenze nach SGB VI § 235.
+ *  - Jahrgänge bis 1946: 65
+ *  - Jahrgänge 1947–1958: +1 Monat pro Jahr (65y 1m … 66y 0m)
+ *  - Jahrgänge 1959–1963: +2 Monate pro Jahr (66y 2m … 66y 10m)
+ *  - Jahrgänge ab 1964: 67
+ *
+ * Quelle: Deutsche Rentenversicherung.
+ */
+export function regelaltersgrenze(birthYear: number): number {
+  if (birthYear <= 1946) return 65;
+  if (birthYear >= 1964) return 67;
+  const monthsExtra =
+    birthYear <= 1958
+      ? birthYear - 1946 // 1 … 12 Monate
+      : 12 + (birthYear - 1958) * 2; // 14, 16, 18, 20, 22 Monate
+  return 65 + monthsExtra / 12;
+}
+
+/**
+ * Reduziert die Renteninfo-Brutto-Rente um:
+ *  - Abschläge: 0,3 % pro Monat vorzeitig (zwischen retirementAge und
+ *    regelaltersgrenze), gedeckelt bei 14,4 % (48 Monate × 0,3 %).
+ *  - Beitragsjahre-Faktor: tatsächliche / geplante Beitragsmonate, linear.
+ *
+ * Bei Eintritt zur Regelaltersgrenze oder später bleibt die Brutto-Rente
+ * unverändert. Zuschläge für späteren Eintritt sind bewusst NICHT modelliert
+ * (separater Scope, betrifft Edge-Case-Nutzer).
+ */
+export function adjustGrossForEarlyRetirement(
+  grossWithoutAdjustment: number,
+  retirementAge: number,
+  regelalter: number,
+  contributionStartAge: number,
+): { adjustedGross: number; abschlagPct: number; beitragsFaktor: number } {
+  if (retirementAge >= regelalter) {
+    return {
+      adjustedGross: grossWithoutAdjustment,
+      abschlagPct: 0,
+      beitragsFaktor: 1,
+    };
+  }
+  const monthsEarly = (regelalter - retirementAge) * 12;
+  const abschlagPct = Math.min(0.144, monthsEarly * 0.003);
+
+  const plannedContributionMonths = (regelalter - contributionStartAge) * 12;
+  const actualContributionMonths = (retirementAge - contributionStartAge) * 12;
+  const beitragsFaktor =
+    plannedContributionMonths <= 0
+      ? 0
+      : Math.max(0, actualContributionMonths / plannedContributionMonths);
+
+  const adjustedGross = grossWithoutAdjustment * (1 - abschlagPct) * beitragsFaktor;
+  return { adjustedGross, abschlagPct, beitragsFaktor };
 }

@@ -3,7 +3,7 @@ import { NumberInput } from "../../../components/NumberInput";
 import { Button } from "../../../components/ui/Button";
 import { formatEUR, formatPercent } from "../../../lib/format";
 import { useProfile } from "../../../lib/profile/useProfile";
-import { PENSION_DEFAULTS, projectedNetPensionToday } from "../defaults";
+import { PENSION_DEFAULTS, projectedNetPensionToday, regelaltersgrenze } from "../defaults";
 import {
   PENSION_DEDUCTION_RANGE,
   PENSION_GROSS_TO_NET_DEDUCTION,
@@ -21,6 +21,19 @@ import { pensionStore } from "../state";
 export function PensionInformationStep() {
   const profile = useProfile();
   const m = pensionStore.useState();
+
+  const retirementAge = profile.retirementAge ?? PENSION_DEFAULTS.retirementAge;
+  const currentYear = new Date().getFullYear();
+  const birthYear = profile.age !== undefined ? currentYear - profile.age : undefined;
+  const regelalter = birthYear !== undefined ? regelaltersgrenze(birthYear) : PENSION_DEFAULTS.retirementAge;
+  const contributionStartAge = m.contributionStartAge;
+
+  const formatYearsDiff = (years: number): string => {
+    const rounded = Math.round(years * 12) / 12;
+    if (Number.isInteger(rounded)) return `${rounded.toFixed(0)} J.`;
+    const months = Math.round(years * 12);
+    return `${months} Mon.`;
+  };
 
   const yearsToRetirement = Math.max(
     0,
@@ -41,6 +54,7 @@ export function PensionInformationStep() {
         deduction,
         inflation,
         yearsToRetirement,
+        { retirementAge, regelalter, contributionStartAge },
       )
     : undefined;
 
@@ -84,6 +98,14 @@ export function PensionInformationStep() {
 
       {!hasStored && (
         <>
+          {retirementAge >= regelalter && (
+            <div className="border-l-[3px] border-outline-variant bg-surface-container px-3 py-2">
+              <p className="font-sans text-[11.5px] leading-relaxed text-on-surface-variant">
+                Du gehst zur Regelaltersgrenze ({Number.isInteger(regelalter) ? regelalter : regelalter.toFixed(1)}) oder später in Rente —
+                keine Abschläge, kein Beitragsjahre-Abschlag in der Hochrechnung.
+              </p>
+            </div>
+          )}
           <div className="space-y-4 border border-on-surface-variant bg-surface p-4">
             <p className="font-sans text-[12.5px] leading-relaxed text-on-surface-variant">
               Such auf dem Renteninfo-Brief den Wert{" "}
@@ -121,6 +143,28 @@ export function PensionInformationStep() {
               hint="20 % = Faustformel Finanztip (mittlere Rente). 12 % bei niedriger Rente, 30 %+ bei höherer Rente mit Nebeneinkünften."
             />
 
+            <details className="pt-1">
+              <summary className="cursor-pointer text-[11px] font-medium uppercase tracking-[0.04em] text-primary hover:underline underline-offset-4 decoration-2">
+                ▸ Abweichende Erwerbsbiografie?
+              </summary>
+              <div className="mt-3 space-y-2">
+                <NumberInput
+                  label="Beitragsbeginn (Alter)"
+                  value={contributionStartAge}
+                  onChange={(v) =>
+                    v !== undefined && pensionStore.set({ contributionStartAge: v })
+                  }
+                  unit="Jahre"
+                  min={14}
+                  max={Math.max(14, retirementAge - 1)}
+                  hint="Default 20: durchgängig ab Ausbildung/Studium gerechnet. Höher setzen bei Spätstart in DRV-Pflichteinzahlung (z. B. langes Studium, Selbstständigkeit, Auslandsjahre)."
+                />
+                <p className="text-[11px] text-on-surface-variant">
+                  Wirkt sich auf den Beitragsjahre-Faktor in der Hochrechnung aus.
+                </p>
+              </div>
+            </details>
+
             {yearsToRetirement <= 0 && (
               <p className="text-[10.5px] uppercase tracking-[0.04em] text-error">
                 ▲ Bitte erst Schritt 01 (Alter &amp; Renteneintritt) ausfüllen
@@ -135,6 +179,18 @@ export function PensionInformationStep() {
                     label="Brutto ohne Anpassung"
                     value={formatEUR(grossWithoutAdjustment)}
                   />
+                  {projection.abschlagPct > 0 && (
+                    <CalcRow
+                      label={`− ${formatPercent(projection.abschlagPct)} Abschlag (${formatYearsDiff(regelalter - retirementAge)} vorzeitig)`}
+                      value={`${formatEUR(grossWithoutAdjustment * (1 - projection.abschlagPct))} brutto`}
+                    />
+                  )}
+                  {projection.beitragsFaktor < 1 && (
+                    <CalcRow
+                      label={`× ${formatPercent(projection.beitragsFaktor)} Beitragsjahre (${formatYearsDiff(retirementAge - contributionStartAge)}/${formatYearsDiff(regelalter - contributionStartAge)})`}
+                      value={`${formatEUR(projection.grossAdjusted)} brutto angepasst`}
+                    />
+                  )}
                   <CalcRow
                     label={`× (1 + ${formatPercent(raise)})^${yearsToRetirement}`}
                     value={`${formatEUR(projection.grossNominal)} brutto in ${yearsToRetirement} J.`}

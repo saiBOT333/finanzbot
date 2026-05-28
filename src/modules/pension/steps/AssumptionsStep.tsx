@@ -26,9 +26,10 @@ export function AssumptionsStep() {
 
   const savingsReturn = weightedRealReturn(m.savingsAllocation);
   const assetsCount = profile.assets?.length ?? 0;
+  const derivedPayoutYears = Math.max(0, m.planningAge - (profile.retirementAge ?? 0));
   const payoutSummary =
     m.payoutMethod === "annuity"
-      ? `Annuität · ${m.payoutYears} J.`
+      ? `Annuität · bis Alter ${m.planningAge}`
       : `Sichere Entnahme · ${pct(m.safeWithdrawalRate * 100)}`;
 
   return (
@@ -38,8 +39,8 @@ export function AssumptionsStep() {
         <p className="mt-1.5 font-sans text-[13px] leading-relaxed text-on-surface-variant">
           Konservative Standard-Annahmen: gemischtes Portfolio,{" "}
           <span className="tabular-nums">3 %</span> real Anspar,{" "}
-          <span className="tabular-nums">1 %</span> real Auszahl, Annuität über{" "}
-          <span className="tabular-nums">30 Jahre</span>,{" "}
+          <span className="tabular-nums">1 %</span> real Auszahl, Annuität bis Alter{" "}
+          <span className="tabular-nums">90</span>,{" "}
           <span className="tabular-nums">12 %</span> Steuer-Puffer. Du kannst alle Annahmen unten
           frei anpassen — inklusive Auszahlungsmethode und Anlage-Allokation.
         </p>
@@ -102,16 +103,25 @@ export function AssumptionsStep() {
             </p>
 
             {m.payoutMethod === "annuity" ? (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
                 <NumberInput
-                  label="Rentenbezugsdauer"
-                  value={m.payoutYears}
-                  onChange={(v) => v !== undefined && pensionStore.set({ payoutYears: v })}
+                  label="Planen bis Alter"
+                  value={m.planningAge}
+                  onChange={(v) => v !== undefined && pensionStore.set({ planningAge: v })}
                   unit="Jahre"
-                  min={1}
-                  max={60}
-                  tooltip={tooltips.payoutYears}
+                  min={(profile.retirementAge ?? PENSION_DEFAULTS.retirementAge) + 1}
+                  max={120}
+                  tooltip={tooltips.planningAge}
                 />
+                {profile.retirementAge !== undefined ? (
+                  <p className="text-[11px] tabular-nums text-on-surface-variant">
+                    Bei Renteneintritt mit {profile.retirementAge} = {derivedPayoutYears} Jahre Rentenzeit
+                  </p>
+                ) : (
+                  <p className="text-[11px] text-on-surface-variant">
+                    Trage zuerst dein Renteneintrittsalter in Schritt 01 ein, um die Rentenzeit zu sehen.
+                  </p>
+                )}
               </div>
             ) : (
               <Slider

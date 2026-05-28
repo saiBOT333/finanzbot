@@ -250,3 +250,28 @@ describe("calculatePension — Finanzfluss cross-check (Carlotta)", () => {
     expect(safe.capitalNeeded).toBeGreaterThan(annuity.capitalNeeded);
   });
 });
+
+describe("Wunschrentenalter wirkt korrekt aufs Ergebnis", () => {
+  // Fester Bezugsfall: 36-Jähriger, 3.000 € Netto, 1.500 € erwartete
+  // gesetzliche Rente (heute), Standard-Annahmen.
+  const baseInputs = withDefaults({
+    currentAge: 36,
+    netIncomeMonthly: 3000,
+    expectedStatePension: 1500,
+  });
+
+  it("Default-Rentenalter 67 ergibt eine endliche, positive Sparrate", () => {
+    const r = calculatePension({ ...baseInputs, retirementAge: 67, payoutYears: 23 });
+    expect(r.kind).toBe("ok");
+    if (r.kind !== "ok") return;
+    expect(r.monthlySavings).toBeGreaterThan(0);
+  });
+
+  it("Renteneintritt mit 63 statt 67 (gleiche Rente, payoutYears +4) erhöht Sparrate und Kapitalbedarf", () => {
+    const a = calculatePension({ ...baseInputs, retirementAge: 67, payoutYears: 23 });
+    const b = calculatePension({ ...baseInputs, retirementAge: 63, payoutYears: 27 });
+    if (a.kind !== "ok" || b.kind !== "ok") throw new Error("setup");
+    expect(b.capitalNeeded).toBeGreaterThan(a.capitalNeeded);
+    expect(b.monthlySavings).toBeGreaterThan(a.monthlySavings);
+  });
+});

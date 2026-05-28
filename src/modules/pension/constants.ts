@@ -56,8 +56,19 @@ export const SAFE_WITHDRAWAL_RATE = 0.035;
  */
 export const TAX_BUFFER_DEFAULT = 0.12;
 
-/** Finanztip-Empfehlung: rechne mit 30 Jahren Rentenzeit (≈ 100 Lebensjahre). */
-export const PAYOUT_YEARS_DEFAULT = 30;
+/**
+ * Default-Planungsalter für die Auszahlphase. Bewusster Puffer über die
+ * durchschnittliche Restlebenserwartung mit 67 (≈ 85–88 Jahre laut DESTATIS),
+ * damit das Langlebigkeitsrisiko abgedeckt ist. Im UI überschreibbar.
+ */
+export const PLANNING_AGE_DEFAULT = 90;
+
+/**
+ * Default-Beitragsbeginn (Alter), an dem laut Modell die Einzahlung in die DRV
+ * losging. Linear angenommen — wer Studium, Kinderpause oder späten
+ * Selbstständigkeits-Einstieg hatte, überschreibt das im Renteninfo-Schritt.
+ */
+export const CONTRIBUTION_START_AGE_DEFAULT = 20;
 
 /** Reguläres Renteneintrittsalter in Deutschland. */
 export const RETIREMENT_AGE_DEFAULT = 67;

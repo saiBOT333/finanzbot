@@ -33,7 +33,7 @@ export function ResultStep() {
       realReturn: effectiveRealReturn(a),
     })),
     payoutMethod: m.payoutMethod,
-    payoutYears: m.payoutYears,
+    payoutYears: Math.max(0, m.planningAge - (profile.retirementAge ?? 0)),
     safeWithdrawalRate: m.safeWithdrawalRate,
     taxBufferPct: m.taxBufferPct,
   });

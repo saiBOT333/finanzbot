@@ -1,6 +1,7 @@
 import { createModuleStore } from "../../lib/moduleStore";
 import { newAllocationId, type Allocation } from "../../lib/assets";
 import { DEFAULT_PENSION_STATE } from "./presets";
+import { CONTRIBUTION_START_AGE_DEFAULT, RETIREMENT_AGE_DEFAULT } from "./constants";
 import type { PayoutMethod } from "./types";
 
 export type PensionModuleState = {
@@ -13,7 +14,10 @@ export type PensionModuleState = {
   /** Mix during the payout phase — typically more defensive than during saving. */
   payoutAllocation: Allocation;
   payoutMethod: PayoutMethod;
-  payoutYears: number;
+  /** Bis zu welchem Lebensalter die Auszahlphase reichen soll. Default 90. */
+  planningAge: number;
+  /** Alter, ab dem in die DRV eingezahlt wurde. Default 20 (linear). */
+  contributionStartAge: number;
   safeWithdrawalRate: number;
   taxBufferPct: number;
 };
@@ -33,6 +37,7 @@ export const PENSION_MODULE_DEFAULTS: PensionModuleState = {
 function migrate(stored: Partial<PensionModuleState> & {
   realReturn?: number;
   payoutRealReturn?: number;
+  payoutYears?: number;
 }): Partial<PensionModuleState> {
   const cleaned: Partial<PensionModuleState> = { ...stored };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -60,6 +65,29 @@ function migrate(stored: Partial<PensionModuleState> & {
       },
     ];
   }
+
+  // Legacy: payoutYears wurde durch planningAge ersetzt.
+  // `stored.payoutYears` ist im Parameter-Typ deklariert — kein `any`-Cast nötig.
+  const legacyPayoutYears = stored.payoutYears;
+  if (
+    cleaned.planningAge === undefined &&
+    typeof legacyPayoutYears === "number" &&
+    Number.isFinite(legacyPayoutYears) &&
+    legacyPayoutYears > 0 &&
+    legacyPayoutYears <= 60
+  ) {
+    // Ohne Profil-Zugriff im Store-Loader: konservativ RETIREMENT_AGE_DEFAULT als
+    // Default-Renteneintritt nehmen. Wer das überschreiben will, ändert das
+    // Planungsalter im UI.
+    cleaned.planningAge = RETIREMENT_AGE_DEFAULT + legacyPayoutYears;
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  delete (cleaned as any).payoutYears;
+
+  if (cleaned.contributionStartAge === undefined) {
+    cleaned.contributionStartAge = CONTRIBUTION_START_AGE_DEFAULT;
+  }
+
   return cleaned;
 }
 

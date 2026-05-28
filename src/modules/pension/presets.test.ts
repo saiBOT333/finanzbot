@@ -15,7 +15,9 @@ const fixtureInputs = (state: PensionModuleState) =>
     savingsBuckets: allocationToBuckets(state.savingsAllocation),
     payoutBuckets: allocationToBuckets(state.payoutAllocation),
     payoutMethod: state.payoutMethod,
-    payoutYears: state.payoutYears,
+    // Default-Bezugsdauer für die Fixture; Store-Schema kennt das Feld nicht mehr,
+    // PensionInputs aber schon (wird in Tasks 6/7 final umgestellt).
+    payoutYears: 30,
     safeWithdrawalRate: state.safeWithdrawalRate,
     taxBufferPct: state.taxBufferPct,
   });
@@ -27,9 +29,10 @@ describe("DEFAULT_PENSION_STATE", () => {
     expect(DEFAULT_PENSION_STATE).toEqual(def);
   });
 
-  it("uses Annuität with 30 years and the 12 % capital-gains-tax buffer", () => {
+  it("uses Annuität bis Planungsalter 90 (Beitrag ab 20) und den 12 % CGS-Puffer", () => {
     expect(DEFAULT_PENSION_STATE.payoutMethod).toBe("annuity");
-    expect(DEFAULT_PENSION_STATE.payoutYears).toBe(30);
+    expect(DEFAULT_PENSION_STATE.planningAge).toBe(90);
+    expect(DEFAULT_PENSION_STATE.contributionStartAge).toBe(20);
     expect(DEFAULT_PENSION_STATE.taxBufferPct).toBe(TAX_BUFFER_DEFAULT);
   });
 
