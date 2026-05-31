@@ -2,6 +2,7 @@ import { Wizard, type WizardStep } from "../../components/Wizard";
 import { useProfile } from "../../lib/profile/useProfile";
 import { BestandStep, isBestandComplete } from "./steps/BestandStep";
 import { ZielquoteStep } from "./steps/ZielquoteStep";
+import { ErgebnisStep } from "./steps/ErgebnisStep";
 
 export function PortfolioWizard() {
   const profile = useProfile();
@@ -26,7 +27,7 @@ export function PortfolioWizard() {
     {
       id: "ergebnis",
       title: "3. Ergebnis",
-      content: <div>Schritt Ergebnis — Platzhalter</div>,
+      content: <ErgebnisStep />,
       canProceed: true,
     },
   ];
