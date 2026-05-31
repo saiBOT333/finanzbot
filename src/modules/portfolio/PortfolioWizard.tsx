@@ -1,6 +1,7 @@
 import { Wizard, type WizardStep } from "../../components/Wizard";
 import { useProfile } from "../../lib/profile/useProfile";
 import { BestandStep, isBestandComplete } from "./steps/BestandStep";
+import { ZielquoteStep } from "./steps/ZielquoteStep";
 
 export function PortfolioWizard() {
   const profile = useProfile();
@@ -19,7 +20,7 @@ export function PortfolioWizard() {
     {
       id: "zielquote",
       title: "2. Zielquote",
-      content: <div>Schritt Zielquote — Platzhalter</div>,
+      content: <ZielquoteStep />,
       canProceed: true,
     },
     {
