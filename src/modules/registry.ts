@@ -1,5 +1,6 @@
 import type { ComponentType } from "react";
 import { pensionModule, PensionWizard, pensionStore } from "./pension";
+import { portfolioModule, PortfolioWizard, portfolioStore } from "./portfolio";
 import type { ModuleStore } from "../lib/moduleStore";
 
 export type ModuleEntry = {
@@ -18,6 +19,11 @@ export const modules: ModuleEntry[] = [
     ...pensionModule,
     Component: PensionWizard,
     store: pensionStore as unknown as ModuleStore<object>,
+  },
+  {
+    ...portfolioModule,
+    Component: PortfolioWizard,
+    store: portfolioStore as unknown as ModuleStore<object>,
   },
 ];
 
