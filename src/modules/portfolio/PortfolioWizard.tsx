@@ -1,12 +1,20 @@
 import { Wizard, type WizardStep } from "../../components/Wizard";
+import { useProfile } from "../../lib/profile/useProfile";
+import { BestandStep, isBestandComplete } from "./steps/BestandStep";
 
 export function PortfolioWizard() {
+  const profile = useProfile();
+  const assetCount = profile.assets?.length ?? 0;
+
   const steps: WizardStep[] = [
     {
       id: "bestand",
       title: "1. Bestand",
-      content: <div>Schritt Bestand — Platzhalter</div>,
-      canProceed: true,
+      content: <BestandStep />,
+      canProceed: isBestandComplete(assetCount),
+      blockReason: isBestandComplete(assetCount)
+        ? undefined
+        : "Bitte mindestens eine Position eintragen.",
     },
     {
       id: "zielquote",
