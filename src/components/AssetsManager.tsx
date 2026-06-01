@@ -11,15 +11,18 @@ import {
   totalAmount,
   type Asset,
   type AssetType,
+  type RiskClass,
 } from "../lib/assets";
 import { formatEUR, formatPercent } from "../lib/format";
 
 type Props = {
   assets: readonly Asset[];
   onChange: (next: Asset[]) => void;
+  /** Wenn true, wird je Asset ein Dropdown für riskClassOverride angezeigt. */
+  showRiskOverride?: boolean;
 };
 
-export function AssetsManager({ assets, onChange }: Props) {
+export function AssetsManager({ assets, onChange, showRiskOverride = false }: Props) {
   const update = (id: string, patch: Partial<Asset>) =>
     onChange(assets.map((a) => (a.id === id ? { ...a, ...patch } : a)));
 
@@ -110,7 +113,7 @@ export function AssetsManager({ assets, onChange }: Props) {
                   </div>
                   <div className="sm:col-span-2">
                     <NumberInput
-                      label="Reale Rendite"
+                      label="Rendite"
                       value={r * 100}
                       onChange={(v) =>
                         update(a.id, {
@@ -128,6 +131,29 @@ export function AssetsManager({ assets, onChange }: Props) {
                     />
                   </div>
                 </div>
+                {showRiskOverride && (
+                  <div className="mt-3 sm:max-w-xs">
+                    <Field label="Risiko-Einstufung">
+                      {(id) => (
+                        <Select
+                          id={id}
+                          value={a.riskClassOverride ?? "default"}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            update(a.id, {
+                              riskClassOverride: v === "default" ? undefined : (v as RiskClass),
+                            });
+                          }}
+                        >
+                          <option value="default">Standard (aus Asset-Typ)</option>
+                          <option value="risky">Riskant (Aktien)</option>
+                          <option value="safe">Sicher (Anleihen/Cash)</option>
+                          <option value="excluded">Außerhalb der Quote</option>
+                        </Select>
+                      )}
+                    </Field>
+                  </div>
+                )}
                 <div className="mt-3 flex items-center justify-between gap-3">
                   <p className="font-sans text-[12px] leading-relaxed text-on-surface-variant">
                     {def.hint}

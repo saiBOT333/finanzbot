@@ -9,10 +9,18 @@
 export type AssetType =
   | "cash"
   | "bonds"
+  | "bonds-etf"
+  | "money-market"
   | "etf-world"
   | "etf-mixed"
+  | "stocks"
+  | "crypto"
+  | "commodities"
   | "real-estate"
+  | "company-pension"
   | "other";
+
+export type RiskClass = "risky" | "safe" | "excluded";
 
 export type AssetTypeDef = {
   id: AssetType;
@@ -31,9 +39,21 @@ export const ASSET_TYPES: AssetTypeDef[] = [
   },
   {
     id: "bonds",
-    label: "Festgeld / Anleihen-ETF",
-    hint: "Festverzinslich, geringe Schwankung. Real ca. 1 % langfristig.",
+    label: "Festgeld / Termingeld",
+    hint: "Festverzinsliche Einlagen mit fester Laufzeit. Real ca. 1 % langfristig.",
     defaultRealReturn: 0.01,
+  },
+  {
+    id: "bonds-etf",
+    label: "Anleihen-ETF",
+    hint: "Breit gestreute Staats-/Unternehmensanleihen, börsentäglich handelbar. Real ca. 1 %.",
+    defaultRealReturn: 0.01,
+  },
+  {
+    id: "money-market",
+    label: "Geldmarkt-Fonds",
+    hint: "Kurzlaufende Geldmarktpapiere, sehr geringe Schwankung, nahe Leitzins.",
+    defaultRealReturn: 0,
   },
   {
     id: "etf-world",
@@ -48,9 +68,33 @@ export const ASSET_TYPES: AssetTypeDef[] = [
     defaultRealReturn: 0.03,
   },
   {
+    id: "stocks",
+    label: "Einzelaktien",
+    hint: "Einzelne Aktien statt breitem ETF. Langfristig ähnliche Erwartung wie Welt-ETF, aber höheres Einzelrisiko.",
+    defaultRealReturn: 0.05,
+  },
+  {
+    id: "crypto",
+    label: "Kryptowährungen",
+    hint: "Hochvolatil, keine seriöse Langfristprognose. Default bewusst konservativ.",
+    defaultRealReturn: 0,
+  },
+  {
+    id: "commodities",
+    label: "Gold / Rohstoffe",
+    hint: "Diversifizierer, keine laufenden Erträge. Langfristig real ~1 %, hohe Schwankung.",
+    defaultRealReturn: 0.01,
+  },
+  {
     id: "real-estate",
     label: "Immobilie (ohne Mieteinnahmen)",
     hint: "Reine Wertsteigerung selbstgenutzter Immobilien — real ~2 %.",
+    defaultRealReturn: 0.02,
+  },
+  {
+    id: "company-pension",
+    label: "bAV / Riester / Rürup",
+    hint: "Betriebliche oder geförderte Altersvorsorge. Illiquide, nicht frei umschichtbar.",
     defaultRealReturn: 0.02,
   },
   {
@@ -73,6 +117,8 @@ export type Asset = {
   amount: number;
   /** Optional: überschreibt den Default-Realwert des Typs. */
   realReturnOverride?: number;
+  /** Optional: überschreibt die Default-Risikoklassifikation aus dem AssetType. */
+  riskClassOverride?: RiskClass;
 };
 
 export function effectiveRealReturn(asset: Asset | AllocationEntry): number {
