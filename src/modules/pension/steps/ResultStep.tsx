@@ -10,7 +10,7 @@ import { PensionRechenweg } from "../PensionRechenweg";
 import { PensionPrintSheet } from "../PensionPrintSheet";
 import { savingsRateMessage } from "../savingsRate";
 import { pensionStore } from "../state";
-import { allocationToBuckets, withDefaults } from "../defaults";
+import { allocationToBuckets, derivePayoutYears, withDefaults } from "../defaults";
 import { SAVINGS_RATE_BENCHMARKS } from "../constants";
 import { tooltips } from "../tooltips";
 import { effectiveRealReturn } from "../../../lib/assets";
@@ -33,7 +33,7 @@ export function ResultStep() {
       realReturn: effectiveRealReturn(a),
     })),
     payoutMethod: m.payoutMethod,
-    payoutYears: Math.max(0, m.planningAge - (profile.retirementAge ?? 0)),
+    payoutYears: derivePayoutYears(m.planningAge, profile.retirementAge),
     safeWithdrawalRate: m.safeWithdrawalRate,
     taxBufferPct: m.taxBufferPct,
   });

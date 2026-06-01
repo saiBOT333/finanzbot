@@ -2,9 +2,11 @@ import { describe, it, expect } from "vitest";
 import {
   adjustGrossForEarlyRetirement,
   applyPensionDeduction,
+  derivePayoutYears,
   projectedNetPensionToday,
   regelaltersgrenze,
 } from "./defaults";
+import { RETIREMENT_AGE_DEFAULT } from "./constants";
 
 describe("applyPensionDeduction", () => {
   it("applies the 20 % flat deduction (Finanztip rule of thumb)", () => {
@@ -17,6 +19,23 @@ describe("applyPensionDeduction", () => {
 
   it("supports a high deduction (e. g. 30 % for high pensions with side income)", () => {
     expect(applyPensionDeduction(1000, 0.3)).toBe(700);
+  });
+});
+
+describe("derivePayoutYears", () => {
+  it("zieht das Rentenalter vom Planungsalter ab", () => {
+    expect(derivePayoutYears(90, 67)).toBe(23);
+  });
+
+  it("fehlendes Rentenalter fällt auf RETIREMENT_AGE_DEFAULT zurück (nicht auf 0)", () => {
+    // Regression: ein fehlendes profile.retirementAge darf NICHT planningAge − 0
+    // ergeben — das blähte die Auszahldauer auf ~90 Jahre und alle Folgesummen
+    // um Faktor ~2,5 auf.
+    expect(derivePayoutYears(90, undefined)).toBe(90 - RETIREMENT_AGE_DEFAULT);
+  });
+
+  it("nie negativ, wenn das Rentenalter über dem Planungsalter liegt", () => {
+    expect(derivePayoutYears(65, 67)).toBe(0);
   });
 });
 
