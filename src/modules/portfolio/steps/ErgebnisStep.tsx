@@ -7,14 +7,14 @@ import { formatEUR } from "../../../lib/format";
 function StackedBar({ riskyPercent }: { riskyPercent: number }) {
   const safePercent = 100 - riskyPercent;
   return (
-    <div className="flex h-6 w-full overflow-hidden border border-outline-variant">
+    <div className="flex h-6 w-full overflow-hidden rounded-m3-pill border border-outline-variant">
       <div
-        className="bg-primary"
+        className="bg-error"
         style={{ width: `${riskyPercent}%` }}
         aria-label={`Aktien ${riskyPercent.toFixed(0)} %`}
       />
       <div
-        className="bg-surface-variant"
+        className="bg-success"
         style={{ width: `${safePercent}%` }}
         aria-label={`Sicher ${safePercent.toFixed(0)} %`}
       />

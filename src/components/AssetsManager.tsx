@@ -113,7 +113,7 @@ export function AssetsManager({ assets, onChange, showRiskOverride = false }: Pr
                   </div>
                   <div className="sm:col-span-2">
                     <NumberInput
-                      label="Reale Rendite"
+                      label="Rendite"
                       value={r * 100}
                       onChange={(v) =>
                         update(a.id, {

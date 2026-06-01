@@ -93,12 +93,35 @@
     line-height: 0.95;
   }
 
-  /* M3 Slider — Thumb-Styles (kann nicht über Tailwind allein, weil Vendor-Selektoren). */
+  /* M3 Slider — Track-Basis + Thumb-Styles (kann nicht über Tailwind allein, weil Vendor-Selektoren). */
+  .m3-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 9999px;
+    background: var(--m3-outline-variant);
+    cursor: pointer;
+  }
+  .m3-slider:focus {
+    outline: none;
+  }
+  .m3-slider::-webkit-slider-runnable-track {
+    height: 8px;
+    border-radius: 9999px;
+    background: transparent;
+  }
+  .m3-slider::-moz-range-track {
+    height: 8px;
+    border-radius: 9999px;
+    background: transparent;
+  }
   .m3-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
     width: 18px;
     height: 18px;
+    margin-top: -5px;
     border-radius: 50%;
     background: var(--m3-primary);
     border: 3px solid var(--m3-surface);

@@ -23,8 +23,9 @@ export function ZielquoteStep() {
 
       <div className="flex items-end gap-4">
         <div className="flex-1">
-          <label className="mb-1 block text-[12px] uppercase tracking-[0.04em] text-on-surface-variant">
-            Gewünschte Aktienquote
+          <label className="mb-1 flex justify-between text-[12px] uppercase tracking-[0.04em] text-on-surface-variant">
+            <span className="text-error">Aktien (Risiko)</span>
+            <span className="text-success">Sicher</span>
           </label>
           <input
             type="range"
@@ -33,7 +34,10 @@ export function ZielquoteStep() {
             step={1}
             value={state.targetEquityPercent}
             onChange={(e) => setTarget(Number(e.target.value))}
-            className="w-full"
+            className="m3-slider"
+            style={{
+              background: `linear-gradient(to right, var(--m3-error) 0%, var(--m3-error) ${state.targetEquityPercent}%, var(--m3-success) ${state.targetEquityPercent}%, var(--m3-success) 100%)`,
+            }}
             aria-label="Gewünschte Aktienquote"
           />
         </div>
