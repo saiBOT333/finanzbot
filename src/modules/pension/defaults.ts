@@ -75,6 +75,16 @@ export function applyPensionDeduction(grossMonthly: number, deductionPct: number
 }
 
 /**
+ * Bezugsdauer der Auszahlphase = Planungsalter − Renteneintritt (nie negativ).
+ * Fehlt das Renteneintrittsalter im Profil, gilt derselbe Default wie in
+ * `withDefaults` (RETIREMENT_AGE_DEFAULT) — sonst entstünde `planningAge − 0`
+ * und damit eine absurd lange Auszahlphase.
+ */
+export function derivePayoutYears(planningAge: number, retirementAge: number | undefined): number {
+  return Math.max(0, planningAge - (retirementAge ?? RETIREMENT_AGE_DEFAULT));
+}
+
+/**
  * Project a statutory pension from "without adjustment" (DRV-Renteninfo)
  * all the way to today's purchasing power. Pipeline:
  *
