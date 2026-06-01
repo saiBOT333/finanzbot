@@ -1,9 +1,21 @@
+import { useEffect } from "react";
 import { NumberInput } from "../../../components/NumberInput";
 import { useProfile, setProfile } from "../../../lib/profile/useProfile";
+import { RETIREMENT_AGE_DEFAULT } from "../constants";
 import { tooltips } from "../tooltips";
 
 export function BasicsStep() {
   const profile = useProfile();
+
+  // Den angezeigten Standard auch persistieren, sobald der Schritt sichtbar ist.
+  // Sonst bleibt retirementAge `undefined`, obwohl im Feld schon "67" steht —
+  // nachgelagerte Berechnungen würden dann mit einem fehlenden Wert rechnen.
+  useEffect(() => {
+    if (profile.retirementAge === undefined) {
+      setProfile({ retirementAge: RETIREMENT_AGE_DEFAULT });
+    }
+  }, [profile.retirementAge]);
+
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <NumberInput
@@ -19,7 +31,7 @@ export function BasicsStep() {
       />
       <NumberInput
         label="Geplanter Renteneintritt"
-        value={profile.retirementAge ?? 67}
+        value={profile.retirementAge ?? RETIREMENT_AGE_DEFAULT}
         onChange={(v) => setProfile({ retirementAge: v })}
         unit="Jahre"
         min={0}
