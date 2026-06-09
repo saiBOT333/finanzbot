@@ -88,7 +88,11 @@ export function calculatePension(inputs: PensionInputs): PensionResult {
     return { kind: "already-retired" };
   }
   if (payoutMethod === "annuity" && payoutYears <= 0) {
-    return { kind: "invalid", reason: "Die Rentenbezugsdauer muss positiv sein." };
+    return {
+      kind: "invalid",
+      reason:
+        "Die Rentenbezugsdauer muss positiv sein. Setze das Planungsalter (Schritt 04, Auszahlung) über den Renteneintritt.",
+    };
   }
   if (payoutMethod === "safe-withdrawal" && safeWithdrawalRate <= 0) {
     return { kind: "invalid", reason: "Die Entnahmerate muss positiv sein." };

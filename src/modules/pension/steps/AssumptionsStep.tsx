@@ -26,7 +26,10 @@ export function AssumptionsStep() {
 
   const savingsReturn = weightedRealReturn(m.savingsAllocation);
   const assetsCount = profile.assets?.length ?? 0;
-  const derivedPayoutYears = Math.max(0, m.planningAge - (profile.retirementAge ?? 0));
+  const derivedPayoutYears = Math.max(
+    0,
+    m.planningAge - (profile.retirementAge ?? PENSION_DEFAULTS.retirementAge),
+  );
   const payoutSummary =
     m.payoutMethod === "annuity"
       ? `Annuität · bis Alter ${m.planningAge}`

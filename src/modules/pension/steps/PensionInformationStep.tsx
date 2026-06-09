@@ -24,6 +24,8 @@ export function PensionInformationStep() {
 
   const retirementAge = profile.retirementAge ?? PENSION_DEFAULTS.retirementAge;
   const currentYear = new Date().getFullYear();
+  // Je nach Geburtstag bis zu 1 Jahrgang daneben — kostet bei der
+  // Regelaltersgrenze maximal 2 Monate, bewusst kein eigenes Eingabefeld.
   const birthYear = profile.age !== undefined ? currentYear - profile.age : undefined;
   const regelalter = birthYear !== undefined ? regelaltersgrenze(birthYear) : PENSION_DEFAULTS.retirementAge;
   const contributionStartAge = m.contributionStartAge;
@@ -46,7 +48,9 @@ export function PensionInformationStep() {
   const [raise, setRaise] = useState<number>(PENSION_RAISE_DEFAULT);
   const [deduction, setDeduction] = useState<number>(PENSION_GROSS_TO_NET_DEDUCTION);
 
-  const ready = grossWithoutAdjustment !== undefined && yearsToRetirement > 0;
+  // yearsToRetirement === 0 (Eintritt heute) ist gültig —
+  // projectedNetPensionToday überspringt dann nur die Hochrechnung.
+  const ready = grossWithoutAdjustment !== undefined;
   const projection = ready
     ? projectedNetPensionToday(
         grossWithoutAdjustment!,
@@ -102,7 +106,8 @@ export function PensionInformationStep() {
             <div className="border-l-[3px] border-outline-variant bg-surface-container px-3 py-2">
               <p className="font-sans text-[11.5px] leading-relaxed text-on-surface-variant">
                 Du gehst zur Regelaltersgrenze ({Number.isInteger(regelalter) ? regelalter : regelalter.toFixed(1)}) oder später in Rente —
-                keine Abschläge, kein Beitragsjahre-Abschlag in der Hochrechnung.
+                keine Abschläge, kein Beitragsjahre-Abschlag in der Hochrechnung. Die
+                Regelaltersgrenze schätzen wir aus deinem Jahrgang (auf das Kalenderjahr genau).
               </p>
             </div>
           )}
@@ -164,12 +169,6 @@ export function PensionInformationStep() {
                 </p>
               </div>
             </details>
-
-            {yearsToRetirement <= 0 && (
-              <p className="text-[10.5px] uppercase tracking-[0.04em] text-error">
-                ▲ Bitte erst Schritt 01 (Alter &amp; Renteneintritt) ausfüllen
-              </p>
-            )}
 
             {projection && grossWithoutAdjustment !== undefined && (
               <div className="border border-outline-variant bg-surface-container px-4 py-3">
