@@ -42,13 +42,16 @@ export function ResultStep() {
 
   // Mirror the recommended savings rate into the shared profile so future
   // modules (e.g. ETF simulator) can use it as a default.
-  const computedCapacity =
+  const computedRecommendation =
     result.kind === "ok" ? Math.round(result.monthlySavings) : undefined;
   useEffect(() => {
-    if (computedCapacity !== undefined && profile.monthlySavingsCapacity !== computedCapacity) {
-      setProfile({ monthlySavingsCapacity: computedCapacity });
+    if (
+      computedRecommendation !== undefined &&
+      profile.recommendedMonthlySavings !== computedRecommendation
+    ) {
+      setProfile({ recommendedMonthlySavings: computedRecommendation });
     }
-  }, [computedCapacity, profile.monthlySavingsCapacity]);
+  }, [computedRecommendation, profile.recommendedMonthlySavings]);
 
   if (result.kind === "invalid") {
     return (

@@ -1,11 +1,23 @@
 import { useEffect } from "react";
 import { NumberInput } from "../../../components/NumberInput";
 import { useProfile, setProfile } from "../../../lib/profile/useProfile";
+import { pensionStore } from "../state";
 import { RETIREMENT_AGE_DEFAULT } from "../constants";
 import { tooltips } from "../tooltips";
 
 export function BasicsStep() {
   const profile = useProfile();
+  const m = pensionStore.useState();
+
+  // Das Planungsalter (Ende der Auszahlphase) muss über dem Renteneintritt
+  // liegen — sonst wäre die Bezugsdauer 0 und die Annuität unberechenbar.
+  // Beim Erhöhen des Renteneintritts ziehen wir es deshalb mit.
+  const setRetirementAge = (v: number | undefined) => {
+    setProfile({ retirementAge: v });
+    if (v !== undefined && m.planningAge <= v) {
+      pensionStore.set({ planningAge: v + 1 });
+    }
+  };
 
   // Den angezeigten Standard auch persistieren, sobald der Schritt sichtbar ist.
   // Sonst bleibt retirementAge `undefined`, obwohl im Feld schon "67" steht —
@@ -32,7 +44,7 @@ export function BasicsStep() {
       <NumberInput
         label="Geplanter Renteneintritt"
         value={profile.retirementAge ?? RETIREMENT_AGE_DEFAULT}
-        onChange={(v) => setProfile({ retirementAge: v })}
+        onChange={setRetirementAge}
         unit="Jahre"
         min={0}
         max={120}

@@ -8,6 +8,12 @@ export type Profile = {
   /** Existing capital, broken down by bucket so each can grow at its own rate. */
   assets?: Asset[];
   monthlySavingsCapacity?: number;
+  /**
+   * Empfohlene monatliche Sparrate aus dem Rentenrechner (Ergebnis-Spiegel).
+   * Bewusst getrennt von `monthlySavingsCapacity` (was sich der Nutzer leisten
+   * kann) — die Empfehlung darf Nutzereingaben nie überschreiben.
+   */
+  recommendedMonthlySavings?: number;
 };
 
 export const EMPTY_PROFILE: Profile = {};
