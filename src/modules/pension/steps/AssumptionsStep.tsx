@@ -8,7 +8,7 @@ import { InfoTooltip } from "../../../components/InfoTooltip";
 import { AssetsManager } from "../../../components/AssetsManager";
 import { AllocationManager } from "../../../components/AllocationManager";
 import { useProfile, setProfile } from "../../../lib/profile/useProfile";
-import { PENSION_DEFAULTS } from "../defaults";
+import { PENSION_DEFAULTS, deriveExpectedStatePension } from "../defaults";
 import { formatEUR, formatPercent } from "../../../lib/format";
 import { weightedRealReturn } from "../../../lib/assets";
 import { pensionStore, PENSION_MODULE_DEFAULTS } from "../state";
@@ -22,7 +22,7 @@ export function AssumptionsStep() {
   const profile = useProfile();
   const m = pensionStore.useState();
 
-  const autoStatePension = (profile.netIncomeMonthly ?? 0) * PENSION_DEFAULTS.statePensionFactor;
+  const statePension = deriveExpectedStatePension(profile, m, new Date().getFullYear());
 
   const savingsReturn = weightedRealReturn(m.savingsAllocation);
   const assetsCount = profile.assets?.length ?? 0;
@@ -174,7 +174,7 @@ export function AssumptionsStep() {
               </p>
               <NumberInput
                 label="Erwartete Netto-Rente (heutige Kaufkraft)"
-                value={m.expectedStatePension ?? autoStatePension}
+                value={m.expectedStatePension ?? statePension.monthly}
                 onChange={(v) =>
                   pensionStore.set({ expectedStatePension: v === undefined ? null : v })
                 }
@@ -182,9 +182,11 @@ export function AssumptionsStep() {
                 min={0}
                 tooltip={tooltips.expectedStatePension}
                 hint={
-                  m.expectedStatePension === null
-                    ? `Geschätzt aus deinem Netto (${formatEUR(autoStatePension)} ≈ 48 %). Trag den echten Wert in Schritt 3 ein.`
-                    : undefined
+                  statePension.source === "fallback"
+                    ? `Geschätzt aus deinem Netto (${formatEUR(statePension.monthly)} ≈ 48 %). Trag den echten Wert in Schritt 3 ein.`
+                    : statePension.source === "renteninfo"
+                      ? "Live aus deiner Renteninformation (Schritt 3) abgeleitet. Ein Wert hier überschreibt die Ableitung."
+                      : "Manueller Wert — die Renteninfo-Ableitung aus Schritt 3 ist damit übersteuert. Feld leeren, um sie wieder zu aktivieren."
                 }
               />
             </div>

@@ -38,18 +38,18 @@ Kein Einfluss auf die Rechenlogik. Befunde 3 + 7.
 
 ---
 
-## Phase 2 — Renteninfo entkoppeln (Session 2)
+## Phase 2 — Renteninfo entkoppeln (Session 2) ✅
 
 Befund 1. State-Refactoring: persistierte Rohwerte + Live-Ableitung statt eingefrorenem Snapshot.
 
 **Files:** `state.ts`, `presets.ts`, `defaults.ts` (+ Tests), `steps/PensionInformationStep.tsx`, `steps/AssumptionsStep.tsx`, `steps/ResultStep.tsx`, ggf. `tooltips.ts`
 
-- [ ] **2a. State erweitern:** `PensionModuleState` bekommt `pensionInfo: { grossWithoutAdjustment: number | null; raise: number; deduction: number }` (Defaults: `null`, `PENSION_RAISE_DEFAULT`, `PENSION_GROSS_TO_NET_DEDUCTION`). Die drei lokalen `useState` in `PensionInformationStep` entfallen.
-- [ ] **2b. Selector:** `deriveExpectedStatePension(profile, moduleState)` in `defaults.ts` als reine Funktion. Präzedenz: manueller Override (`expectedStatePension !== null`) → Live-Berechnung via `projectedNetPensionToday` aus `pensionInfo` (mit aktuellen Werten für Renteneintritt, Inflation, Regelalter, Beitragsbeginn) → 48-%-Faustformel. Rückgabe inkl. Quelle (`"override" | "renteninfo" | "fallback"`), damit das UI den Zustand benennen kann.
-- [ ] **2c. Konsumenten umstellen:** `ResultStep` und `AssumptionsStep` beziehen die Rente nur noch über den Selector. „Wert übernehmen"-Button entfällt; der grüne Kasten in Schritt 3 zeigt die live berechnete Projektion samt Eingangswerten, „Ändern" leert `grossWithoutAdjustment`.
-- [ ] **2d. Migration:** Bestehendes `expectedStatePension` bleibt als manueller Override gültig (kein Datenverlust); `pensionInfo` startet leer. In `migrate()` in `state.ts` ergänzen.
-- [ ] **2e. Warnbox dreistufig:** Faustformel aktiv (rot, wie heute) / Renteninfo aktiv (neutral, Eckdaten der Ableitung) / manueller Override (Hinweis, dass Schritt-3-Daten ignoriert werden).
-- [ ] **Verify:** Tests: Präzedenz-Matrix des Selectors, Migration alter States, Regression „Renteneintritt ändern → abgeleitete Rente ändert sich mit". `vitest run` + manueller Wizard-Smoke-Test (Dev-Server).
+- [x] **2a. State erweitern:** `PensionModuleState` bekommt `pensionInfo: { grossWithoutAdjustment: number | null; raise: number; deduction: number }` (Defaults: `null`, `PENSION_RAISE_DEFAULT`, `PENSION_GROSS_TO_NET_DEDUCTION`). Die drei lokalen `useState` in `PensionInformationStep` entfallen.
+- [x] **2b. Selector:** `deriveExpectedStatePension(profile, moduleState)` in `defaults.ts` als reine Funktion. Präzedenz: manueller Override (`expectedStatePension !== null`) → Live-Berechnung via `projectedNetPensionToday` aus `pensionInfo` (mit aktuellen Werten für Renteneintritt, Inflation, Regelalter, Beitragsbeginn) → 48-%-Faustformel. Rückgabe inkl. Quelle (`"override" | "renteninfo" | "fallback"`), damit das UI den Zustand benennen kann. *(`currentYear` wird als Parameter übergeben — Testbarkeit.)*
+- [x] **2c. Konsumenten umstellen:** `ResultStep` und `AssumptionsStep` beziehen die Rente nur noch über den Selector. „Wert übernehmen"-Button entfällt; der grüne Kasten in Schritt 3 zeigt die live berechnete Projektion samt Eingangswerten. *(Abweichung: das Formular bleibt neben dem grünen Kasten sichtbar — ein Umschalten beim ersten Tastendruck würde die Eingabe unterbrechen. „Zurücksetzen" leert `grossWithoutAdjustment`; der separate „Manueller Wert aktiv"-Kasten ersetzt den alten „Wert übernommen"-Kasten für migrierte Overrides.)*
+- [x] **2d. Migration:** Bestehendes `expectedStatePension` bleibt als manueller Override gültig (kein Datenverlust); `pensionInfo` startet leer. In `migrate()` in `state.ts` ergänzt (für Tests exportiert).
+- [x] **2e. Warnbox dreistufig:** Faustformel aktiv (rot, wie heute) / Renteninfo aktiv (neutral, Eckdaten der Ableitung) / manueller Override (Hinweis, dass Schritt-3-Daten ignoriert werden).
+- [x] **Verify:** Tests: Präzedenz-Matrix des Selectors, Migration alter States, Regression „Renteneintritt ändern → abgeleitete Rente ändert sich mit". `vitest run` (236 Tests grün) + `tsc --noEmit` sauber + manueller Wizard-Smoke-Test (Dev-Server): Live-Ableitung 67→63 ändert 1.386 € → 1.107 €, Override-Pfad und Migration verifiziert.
 
 ---
 

@@ -1,5 +1,9 @@
 import { newAllocationId, type Allocation } from "../../lib/assets";
-import { TAX_BUFFER_DEFAULT } from "./constants";
+import {
+  PENSION_GROSS_TO_NET_DEDUCTION,
+  PENSION_RAISE_DEFAULT,
+  TAX_BUFFER_DEFAULT,
+} from "./constants";
 import type { PensionModuleState } from "./state";
 
 // Konservativer Default: 3 % real Anspar (≈ 5 % nominal gemischtes Portfolio),
@@ -24,6 +28,11 @@ const defaultPayout: Allocation = [
 /** State without `expectedStatePension`; that field is user-driven. */
 export const DEFAULT_PENSION_STATE: Omit<PensionModuleState, "expectedStatePension"> = {
   replacementRate: 0.8,
+  pensionInfo: {
+    grossWithoutAdjustment: null,
+    raise: PENSION_RAISE_DEFAULT,
+    deduction: PENSION_GROSS_TO_NET_DEDUCTION,
+  },
   inflation: 0.02,
   savingsAllocation: defaultSavings,
   payoutAllocation: defaultPayout,
