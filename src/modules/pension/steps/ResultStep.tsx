@@ -10,7 +10,12 @@ import { PensionRechenweg } from "../PensionRechenweg";
 import { PensionPrintSheet } from "../PensionPrintSheet";
 import { savingsRateMessage } from "../savingsRate";
 import { pensionStore } from "../state";
-import { allocationToBuckets, derivePayoutYears, withDefaults } from "../defaults";
+import {
+  allocationToBuckets,
+  deriveExpectedStatePension,
+  derivePayoutYears,
+  withDefaults,
+} from "../defaults";
 import { SAVINGS_RATE_BENCHMARKS } from "../constants";
 import { tooltips } from "../tooltips";
 import { effectiveRealReturn } from "../../../lib/assets";
@@ -19,12 +24,16 @@ export function ResultStep() {
   const profile = useProfile();
   const m = pensionStore.useState();
 
+  // Gesetzliche Rente live ableiten (Override → Renteninfo → Faustformel) statt
+  // einen eingefrorenen Snapshot zu verwenden.
+  const statePension = deriveExpectedStatePension(profile, m, new Date().getFullYear());
+
   const inputs = withDefaults({
     currentAge: profile.age,
     retirementAge: profile.retirementAge,
     netIncomeMonthly: profile.netIncomeMonthly,
     replacementRate: m.replacementRate,
-    expectedStatePension: m.expectedStatePension ?? undefined,
+    expectedStatePension: statePension.monthly,
     inflation: m.inflation,
     savingsBuckets: allocationToBuckets(m.savingsAllocation),
     payoutBuckets: allocationToBuckets(m.payoutAllocation),
@@ -97,7 +106,7 @@ export function ResultStep() {
 
   const coveredByStatePension = result.needToday - result.gapToday;
   const explanation = explainPension(inputs, result);
-  const usingDefaultStatePension = m.expectedStatePension === null;
+  const usingDefaultStatePension = statePension.source === "fallback";
 
   // Der Browser nimmt document.title als PDF-Dateinamen. Vor dem Druck auf
   // einen sprechenden, eindeutigen Namen setzen, danach wiederherstellen.
@@ -117,7 +126,7 @@ export function ResultStep() {
 
   return (
     <div className="space-y-6">
-      {usingDefaultStatePension && (
+      {statePension.source === "fallback" && (
         <div className="rounded-m3-md bg-error-container p-4 flex gap-3 items-start">
           <span aria-hidden className="text-xl leading-none">▲</span>
           <div className="space-y-1">
@@ -134,6 +143,37 @@ export function ResultStep() {
               Wert ein.
             </p>
           </div>
+        </div>
+      )}
+
+      {statePension.source === "renteninfo" && (
+        <div className="border-l-[3px] border-outline-variant bg-surface-container px-4 py-3">
+          <p className="m3-eyebrow-muted">Gesetzliche Rente · live aus deiner Renteninformation</p>
+          <p className="mt-1.5 font-sans text-[12.5px] leading-relaxed text-on-surface-variant">
+            <span className="tabular-nums font-semibold text-on-surface">
+              {formatEUR(statePension.monthly)}
+            </span>{" "}
+            / Monat in heutiger Kaufkraft — abgeleitet aus{" "}
+            <span className="tabular-nums">{formatEUR(m.pensionInfo.grossWithoutAdjustment ?? 0)}</span>{" "}
+            brutto ohne Anpassung, Anpassung{" "}
+            <span className="tabular-nums">{formatPercent(m.pensionInfo.raise)}</span> p. a., Abzug{" "}
+            <span className="tabular-nums">{formatPercent(m.pensionInfo.deduction)}</span>. Ändern sich
+            Renteneintritt oder Inflation, rechnet dieser Wert automatisch mit.
+          </p>
+        </div>
+      )}
+
+      {statePension.source === "override" && (
+        <div className="border-l-[3px] border-outline-variant bg-surface-container px-4 py-3">
+          <p className="m3-eyebrow-muted">Gesetzliche Rente · manuell festgelegt</p>
+          <p className="mt-1.5 font-sans text-[12.5px] leading-relaxed text-on-surface-variant">
+            Du hast{" "}
+            <span className="tabular-nums font-semibold text-on-surface">
+              {formatEUR(statePension.monthly)}
+            </span>{" "}
+            / Monat fest vorgegeben — Eingaben aus Schritt 03 (Renteninformation) werden ignoriert.
+            Lösche den Wert in den Annahmen, um wieder live abzuleiten.
+          </p>
         </div>
       )}
 

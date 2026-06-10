@@ -1,16 +1,10 @@
-import { useState } from "react";
 import { NumberInput } from "../../../components/NumberInput";
 import { Button } from "../../../components/ui/Button";
 import { formatEUR, formatPercent } from "../../../lib/format";
 import { useProfile } from "../../../lib/profile/useProfile";
-import { PENSION_DEFAULTS, projectedNetPensionToday, regelaltersgrenze } from "../defaults";
-import {
-  PENSION_DEDUCTION_RANGE,
-  PENSION_GROSS_TO_NET_DEDUCTION,
-  PENSION_RAISE_DEFAULT,
-  PENSION_RAISE_RANGE,
-} from "../constants";
-import { pensionStore } from "../state";
+import { PENSION_DEFAULTS, deriveExpectedStatePension, regelaltersgrenze } from "../defaults";
+import { PENSION_DEDUCTION_RANGE, PENSION_RAISE_RANGE } from "../constants";
+import { pensionStore, type PensionInfoInputs } from "../state";
 
 /**
  * Wizard step 3: capture the user's expected statutory pension from the
@@ -41,36 +35,24 @@ export function PensionInformationStep() {
     0,
     (profile.retirementAge ?? PENSION_DEFAULTS.retirementAge) - (profile.age ?? 0),
   );
-  const inflation = m.inflation;
   const netIncome = profile.netIncomeMonthly ?? 0;
 
-  const [grossWithoutAdjustment, setGrossWithoutAdjustment] = useState<number | undefined>();
-  const [raise, setRaise] = useState<number>(PENSION_RAISE_DEFAULT);
-  const [deduction, setDeduction] = useState<number>(PENSION_GROSS_TO_NET_DEDUCTION);
+  // Rohwerte liegen persistiert im Modul-State; die Netto-Rente wird daraus
+  // live abgeleitet — Änderungen an Renteneintritt/Inflation schlagen durch.
+  const { grossWithoutAdjustment, raise, deduction } = m.pensionInfo;
+  const setInfo = (patch: Partial<PensionInfoInputs>) =>
+    pensionStore.set({ pensionInfo: { ...m.pensionInfo, ...patch } });
 
-  // yearsToRetirement === 0 (Eintritt heute) ist gültig —
-  // projectedNetPensionToday überspringt dann nur die Hochrechnung.
-  const ready = grossWithoutAdjustment !== undefined;
-  const projection = ready
-    ? projectedNetPensionToday(
-        grossWithoutAdjustment!,
-        raise,
-        deduction,
-        inflation,
-        yearsToRetirement,
-        { retirementAge, regelalter, contributionStartAge },
-      )
-    : undefined;
+  // Bei aktivem Override ist das Formular ausgeblendet — derived.projection
+  // wird also genau dann gebraucht, wenn die Renteninfo-Quelle aktiv ist.
+  const projection = deriveExpectedStatePension(profile, m, currentYear).projection;
 
   const fallbackEstimate = netIncome * PENSION_DEFAULTS.statePensionFactor;
   const stored = m.expectedStatePension;
-  const hasStored = stored !== null;
+  const hasOverride = stored !== null;
 
-  const apply = () => {
-    if (projection) pensionStore.set({ expectedStatePension: Math.round(projection.netReal) });
-  };
-
-  const clear = () => pensionStore.set({ expectedStatePension: null });
+  const clearOverride = () => pensionStore.set({ expectedStatePension: null });
+  const clearGross = () => setInfo({ grossWithoutAdjustment: null });
 
   return (
     <div className="space-y-5">
@@ -81,26 +63,30 @@ export function PensionInformationStep() {
         berechnen kann statt nur eine Faustformel anzuwenden.
       </p>
 
-      {hasStored && (
+      {hasOverride && (
         <div className="border-l-[3px] border-success bg-surface-container px-4 py-3">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="m3-eyebrow-muted">Wert übernommen</p>
+              <p className="m3-eyebrow-muted">Manueller Wert aktiv</p>
               <p className="mt-1 text-xl font-semibold tabular-nums text-on-surface">
                 {formatEUR(stored)}
                 <span className="ml-1.5 font-sans text-[11px] uppercase tracking-[0.04em] text-on-surface-variant">
                   / Monat · heute
                 </span>
               </p>
+              <p className="mt-1.5 font-sans text-[11.5px] leading-relaxed text-on-surface-variant">
+                Die Rente wurde manuell festgelegt (Annahmen, Schritt 04) — Eingaben aus diesem
+                Schritt werden ignoriert, bis du den Wert löschst.
+              </p>
             </div>
-            <Button variant="text" size="sm" onClick={clear}>
+            <Button variant="text" size="sm" onClick={clearOverride}>
               Ändern
             </Button>
           </div>
         </div>
       )}
 
-      {!hasStored && (
+      {!hasOverride && (
         <>
           {retirementAge >= regelalter && (
             <div className="border-l-[3px] border-outline-variant bg-surface-container px-3 py-2">
@@ -122,8 +108,8 @@ export function PensionInformationStep() {
             </p>
             <NumberInput
               label="Brutto-Rente ohne Anpassung (heutiger Rentenwert)"
-              value={grossWithoutAdjustment}
-              onChange={setGrossWithoutAdjustment}
+              value={grossWithoutAdjustment ?? undefined}
+              onChange={(v) => setInfo({ grossWithoutAdjustment: v ?? null })}
               unit="€"
               min={0}
               required
@@ -132,7 +118,7 @@ export function PensionInformationStep() {
             <NumberInput
               label="Erwartete jährliche Rentenanpassung"
               value={raise * 100}
-              onChange={(v) => v !== undefined && setRaise(v / 100)}
+              onChange={(v) => v !== undefined && setInfo({ raise: v / 100 })}
               unit="%"
               min={PENSION_RAISE_RANGE.min * 100}
               max={PENSION_RAISE_RANGE.max * 100}
@@ -141,7 +127,7 @@ export function PensionInformationStep() {
             <NumberInput
               label="Pauschalabzug für Steuern + KV/PV"
               value={deduction * 100}
-              onChange={(v) => v !== undefined && setDeduction(v / 100)}
+              onChange={(v) => v !== undefined && setInfo({ deduction: v / 100 })}
               unit="%"
               min={PENSION_DEDUCTION_RANGE.min * 100}
               max={PENSION_DEDUCTION_RANGE.max * 100}
@@ -170,9 +156,9 @@ export function PensionInformationStep() {
               </div>
             </details>
 
-            {projection && grossWithoutAdjustment !== undefined && (
-              <div className="border border-outline-variant bg-surface-container px-4 py-3">
-                <p className="m3-eyebrow-muted">Hochrechnung</p>
+            {projection && grossWithoutAdjustment !== null && (
+              <div className="border-l-[3px] border-success bg-surface-container px-4 py-3">
+                <p className="m3-eyebrow-muted">Hochrechnung · fließt live ins Ergebnis ein</p>
                 <dl className="mt-2 divide-y divide-outline-variant text-[12px] text-on-surface-variant">
                   <CalcRow
                     label="Brutto ohne Anpassung"
@@ -199,20 +185,24 @@ export function PensionInformationStep() {
                     value={`${formatEUR(projection.netNominal)} netto in ${yearsToRetirement} J.`}
                   />
                   <CalcRow
-                    label={`÷ Inflation ${formatPercent(inflation)} · ${yearsToRetirement} J.`}
+                    label={`÷ Inflation ${formatPercent(m.inflation)} · ${yearsToRetirement} J.`}
                     value={`${formatEUR(projection.netReal)} heute`}
                     highlight
                   />
                 </dl>
-                <div className="mt-3 flex justify-end">
-                  <Button size="sm" onClick={apply}>
-                    Wert übernehmen
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <p className="font-sans text-[11.5px] leading-relaxed text-on-surface-variant">
+                    Ändern sich Renteneintritt oder Inflation, rechnet das Ergebnis automatisch mit.
+                  </p>
+                  <Button variant="text" size="sm" onClick={clearGross}>
+                    Zurücksetzen
                   </Button>
                 </div>
               </div>
             )}
           </div>
 
+          {grossWithoutAdjustment === null && (
           <div className="border-l-[3px] border-primary bg-surface-container px-4 py-3">
             <p className="text-[10.5px] font-medium uppercase tracking-[0.04em] text-primary">
               ◇ Renteninformation gerade nicht zur Hand?
@@ -229,6 +219,7 @@ export function PensionInformationStep() {
               solltest du nachreichen, sobald du sie hast.
             </p>
           </div>
+          )}
         </>
       )}
     </div>
