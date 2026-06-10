@@ -2,11 +2,92 @@ import { describe, it, expect } from "vitest";
 import {
   adjustGrossForEarlyRetirement,
   applyPensionDeduction,
+  deriveExpectedStatePension,
   derivePayoutYears,
   projectedNetPensionToday,
   regelaltersgrenze,
 } from "./defaults";
-import { RETIREMENT_AGE_DEFAULT } from "./constants";
+import {
+  PENSION_GROSS_TO_NET_DEDUCTION,
+  PENSION_RAISE_DEFAULT,
+  RETIREMENT_AGE_DEFAULT,
+  STATE_PENSION_FACTOR,
+} from "./constants";
+
+describe("deriveExpectedStatePension — Präzedenz-Matrix", () => {
+  const CURRENT_YEAR = 2026;
+  const baseProfile = { age: 35, retirementAge: 67, netIncomeMonthly: 3000 };
+  const pensionInfo = {
+    grossWithoutAdjustment: 1988,
+    raise: PENSION_RAISE_DEFAULT,
+    deduction: PENSION_GROSS_TO_NET_DEDUCTION,
+  };
+  const baseModule = {
+    expectedStatePension: null,
+    pensionInfo,
+    inflation: 0.02,
+    contributionStartAge: 20,
+  };
+
+  it("manueller Override gewinnt über Renteninfo und Faustformel", () => {
+    const r = deriveExpectedStatePension(
+      baseProfile,
+      { ...baseModule, expectedStatePension: 1500 },
+      CURRENT_YEAR,
+    );
+    expect(r.source).toBe("override");
+    expect(r.monthly).toBe(1500);
+  });
+
+  it("Renteninfo-Ableitung greift, wenn kein Override gesetzt ist", () => {
+    const r = deriveExpectedStatePension(baseProfile, baseModule, CURRENT_YEAR);
+    expect(r.source).toBe("renteninfo");
+    // Identisch zur direkten Pipeline (Eintritt zur Regelaltersgrenze → keine Korrektur).
+    const direct = projectedNetPensionToday(1988, PENSION_RAISE_DEFAULT, PENSION_GROSS_TO_NET_DEDUCTION, 0.02, 32);
+    expect(r.monthly).toBe(Math.round(direct.netReal));
+    expect(r.projection).toBeDefined();
+  });
+
+  it("Faustformel (48 % vom Netto) als letzter Fallback", () => {
+    const r = deriveExpectedStatePension(
+      baseProfile,
+      { ...baseModule, pensionInfo: { ...pensionInfo, grossWithoutAdjustment: null } },
+      CURRENT_YEAR,
+    );
+    expect(r.source).toBe("fallback");
+    expect(r.monthly).toBe(3000 * STATE_PENSION_FACTOR);
+  });
+
+  it("Regression: Renteneintritt ändern → abgeleitete Rente ändert sich mit", () => {
+    // Genau das war der Snapshot-Bug: die übernommene Zahl blieb eingefroren.
+    const at67 = deriveExpectedStatePension(baseProfile, baseModule, CURRENT_YEAR);
+    const at63 = deriveExpectedStatePension(
+      { ...baseProfile, retirementAge: 63 },
+      baseModule,
+      CURRENT_YEAR,
+    );
+    expect(at63.monthly).not.toBe(at67.monthly);
+    // Früherer Eintritt → Abschlag + weniger Beitragsjahre → niedrigere Rente.
+    expect(at63.monthly).toBeLessThan(at67.monthly);
+  });
+
+  it("Regression: Inflation ändern → abgeleitete Rente ändert sich mit", () => {
+    const low = deriveExpectedStatePension(baseProfile, { ...baseModule, inflation: 0.01 }, CURRENT_YEAR);
+    const high = deriveExpectedStatePension(baseProfile, { ...baseModule, inflation: 0.03 }, CURRENT_YEAR);
+    expect(high.monthly).toBeLessThan(low.monthly);
+  });
+
+  it("fehlendes Rentenalter fällt auf den Default (67) zurück", () => {
+    const r = deriveExpectedStatePension(
+      { age: 35, netIncomeMonthly: 3000 },
+      baseModule,
+      CURRENT_YEAR,
+    );
+    expect(r.source).toBe("renteninfo");
+    const direct = projectedNetPensionToday(1988, PENSION_RAISE_DEFAULT, PENSION_GROSS_TO_NET_DEDUCTION, 0.02, RETIREMENT_AGE_DEFAULT - 35);
+    expect(r.monthly).toBe(Math.round(direct.netReal));
+  });
+});
 
 describe("applyPensionDeduction", () => {
   it("applies the 20 % flat deduction (Finanztip rule of thumb)", () => {

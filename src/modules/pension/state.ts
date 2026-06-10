@@ -4,10 +4,29 @@ import { DEFAULT_PENSION_STATE } from "./presets";
 import { CONTRIBUTION_START_AGE_DEFAULT, RETIREMENT_AGE_DEFAULT } from "./constants";
 import type { PayoutMethod } from "./types";
 
+/**
+ * Rohwerte aus dem Renteninfo-Brief (Schritt 3). Persistiert statt eines
+ * eingefrorenen Snapshots — die Netto-Rente in heutiger Kaufkraft wird daraus
+ * live abgeleitet (siehe `deriveExpectedStatePension` in defaults.ts), damit
+ * spätere Änderungen an Renteneintritt/Inflation automatisch durchschlagen.
+ */
+export type PensionInfoInputs = {
+  /** Brutto-Rente „ohne Anpassung" laut Renteninformation. null = nicht eingetragen. */
+  grossWithoutAdjustment: number | null;
+  /** Erwartete jährliche Rentenanpassung (z. B. 0.015). */
+  raise: number;
+  /** Pauschalabzug für Steuern + KV/PV (z. B. 0.2). */
+  deduction: number;
+};
+
 export type PensionModuleState = {
   replacementRate: number;
-  /** null → derive from net income via PENSION_DEFAULTS.statePensionFactor. */
+  /**
+   * Manueller Override der Netto-Rente (heutige Kaufkraft).
+   * null → Ableitung aus `pensionInfo`, sonst Faustformel (48 % vom Netto).
+   */
   expectedStatePension: number | null;
+  pensionInfo: PensionInfoInputs;
   inflation: number;
   /** Mix of asset buckets the user contributes to during saving. Sums to 100 %. */
   savingsAllocation: Allocation;
@@ -33,8 +52,10 @@ export const PENSION_MODULE_DEFAULTS: PensionModuleState = {
  * (`realReturn` / `payoutRealReturn`). Drops them in favour of the allocation
  * model — the previous rate becomes a single-bucket allocation if neither is
  * present yet.
+ *
+ * Exported nur für Tests.
  */
-function migrate(stored: Partial<PensionModuleState> & {
+export function migrate(stored: Partial<PensionModuleState> & {
   realReturn?: number;
   payoutRealReturn?: number;
   payoutYears?: number;
@@ -87,6 +108,15 @@ function migrate(stored: Partial<PensionModuleState> & {
   if (cleaned.contributionStartAge === undefined) {
     cleaned.contributionStartAge = CONTRIBUTION_START_AGE_DEFAULT;
   }
+
+  // Renteninfo-Entkopplung: ein früher übernommener Snapshot bleibt als
+  // manueller Override in `expectedStatePension` gültig (kein Datenverlust).
+  // `pensionInfo` startet leer; unvollständig persistierte Objekte werden mit
+  // den Defaults aufgefüllt.
+  cleaned.pensionInfo = {
+    ...PENSION_MODULE_DEFAULTS.pensionInfo,
+    ...(stored.pensionInfo ?? {}),
+  };
 
   return cleaned;
 }

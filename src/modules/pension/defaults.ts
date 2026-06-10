@@ -155,6 +155,67 @@ export function projectedNetPensionToday(
   };
 }
 
+/** Woher die erwartete Netto-Rente stammt — fürs UI, um den Zustand zu benennen. */
+export type StatePensionSource = "override" | "renteninfo" | "fallback";
+
+/**
+ * Erwartete gesetzliche Netto-Rente (heutige Kaufkraft) aus Profil + Modul-State
+ * ableiten — reine Funktion, `currentYear` kommt von außen (Testbarkeit).
+ *
+ * Präzedenz:
+ *   1. "override"   — manuell gesetzter Wert (`expectedStatePension !== null`)
+ *   2. "renteninfo" — Live-Berechnung aus den persistierten Renteninfo-Rohwerten
+ *                     via `projectedNetPensionToday` (mit aktuellen Werten für
+ *                     Renteneintritt, Inflation, Regelalter, Beitragsbeginn)
+ *   3. "fallback"   — 48-%-Faustformel vom Netto-Einkommen
+ *
+ * Ersetzt den früheren eingefrorenen Snapshot: Änderungen an Renteneintritt
+ * oder Inflation schlagen damit automatisch auf das Ergebnis durch.
+ */
+export function deriveExpectedStatePension(
+  profile: { age?: number; retirementAge?: number; netIncomeMonthly?: number },
+  m: {
+    expectedStatePension: number | null;
+    pensionInfo: { grossWithoutAdjustment: number | null; raise: number; deduction: number };
+    inflation: number;
+    contributionStartAge: number;
+  },
+  currentYear: number,
+): {
+  monthly: number;
+  source: StatePensionSource;
+  projection?: ReturnType<typeof projectedNetPensionToday>;
+} {
+  if (m.expectedStatePension !== null) {
+    return { monthly: m.expectedStatePension, source: "override" };
+  }
+
+  const gross = m.pensionInfo.grossWithoutAdjustment;
+  if (gross !== null) {
+    const retirementAge = profile.retirementAge ?? PENSION_DEFAULTS.retirementAge;
+    const yearsToRetirement = Math.max(0, retirementAge - (profile.age ?? 0));
+    // Je nach Geburtstag bis zu 1 Jahrgang daneben — kostet bei der
+    // Regelaltersgrenze maximal 2 Monate, bewusst kein eigenes Eingabefeld.
+    const birthYear = profile.age !== undefined ? currentYear - profile.age : undefined;
+    const regelalter =
+      birthYear !== undefined ? regelaltersgrenze(birthYear) : PENSION_DEFAULTS.retirementAge;
+    const projection = projectedNetPensionToday(
+      gross,
+      m.pensionInfo.raise,
+      m.pensionInfo.deduction,
+      m.inflation,
+      yearsToRetirement,
+      { retirementAge, regelalter, contributionStartAge: m.contributionStartAge },
+    );
+    return { monthly: Math.round(projection.netReal), source: "renteninfo", projection };
+  }
+
+  return {
+    monthly: (profile.netIncomeMonthly ?? 0) * PENSION_DEFAULTS.statePensionFactor,
+    source: "fallback",
+  };
+}
+
 /**
  * Regelaltersgrenze nach SGB VI § 235.
  *  - Jahrgänge bis 1946: 65
