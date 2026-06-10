@@ -73,4 +73,52 @@ describe("explainPension", () => {
     expect(ex.closing.toLowerCase()).toContain("kaufkraft");
     expect(ex.closing.toLowerCase()).toContain("inflation");
   });
+
+  it("shows no bridge step when retiring at 67", () => {
+    expect(ex.steps.some((s) => s.title.includes("Brückenkapital"))).toBe(false);
+  });
+});
+
+describe("explainPension — Frühverrentungs-Brücke", () => {
+  const inputs = withDefaults({
+    currentAge: 40,
+    retirementAge: 55,
+    netIncomeMonthly: 3000,
+    expectedStatePension: 1500,
+    payoutYears: 35,
+  });
+  const result = calculatePension(inputs);
+  if (result.kind !== "ok") throw new Error("expected ok result for fixture");
+  const ex = explainPension(inputs, result);
+
+  it("inserts bridge, main-phase and sum steps with sequential indices", () => {
+    const titles = ex.steps.map((s) => s.title);
+    const bridgeIdx = titles.findIndex((t) => t.includes("Brückenkapital"));
+    const mainIdx = titles.findIndex((t) => t.includes("Hauptphase"));
+    const sumIdx = titles.findIndex((t) => t.includes("Brücke + Hauptphase"));
+    expect(bridgeIdx).toBeGreaterThan(-1);
+    expect(mainIdx).toBe(bridgeIdx + 1);
+    expect(sumIdx).toBe(mainIdx + 1);
+    const indices = ex.steps.map((s) => s.index);
+    expect(indices).toEqual(indices.map((_, i) => i + 1));
+  });
+
+  it("sum step result equals capitalNeededBeforeTax", () => {
+    const sumStep = ex.steps.find((s) => s.title.includes("Brücke + Hauptphase"));
+    expect(sumStep?.formula).toBe("K₀ = K_B + K_H");
+  });
+
+  it("keeps rₐ visible for safe-withdrawal when a bridge exists (bridge annuity uses it)", () => {
+    const swInputs = withDefaults({
+      currentAge: 40,
+      retirementAge: 55,
+      netIncomeMonthly: 3000,
+      expectedStatePension: 1500,
+      payoutMethod: "safe-withdrawal",
+    });
+    const swResult = calculatePension(swInputs);
+    if (swResult.kind !== "ok") throw new Error("ok");
+    const swEx = explainPension(swInputs, swResult);
+    expect(swEx.inputs.some((i) => i.symbol === "rₐ")).toBe(true);
+  });
 });

@@ -35,6 +35,12 @@ export type PensionResult =
       yearsToRetirement: number;
       needToday: number;
       gapToday: number;
+      /** Jahre zwischen Renteneintritt und Rentenanspruch (max(retirementAge, 63)). 0 = keine Brücke. */
+      bridgeYears: number;
+      /** Kapital für die Brückenphase: voller Bedarf B als Annuität über bridgeYears. */
+      bridgeCapital: number;
+      /** Kapital für die Hauptphase ab Rentenanspruch (bei Annuität auf den Renteneintritt abgezinst). */
+      mainCapital: number;
       capitalNeededBeforeTax: number;
       taxBufferAmount: number;
       capitalNeeded: number;

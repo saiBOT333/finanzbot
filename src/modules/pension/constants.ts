@@ -22,6 +22,13 @@ export const PENSION_GROSS_TO_NET_DEDUCTION = 0.2;
 /** Realistische Bandbreite des Pauschalabzugs (KV+PV ~12 % als Untergrenze, hohe Renten + Nebeneinkünfte bis ~35 %). */
 export const PENSION_DEDUCTION_RANGE = { min: 0.12, max: 0.35 } as const;
 
+/**
+ * Frühestes Anspruchsalter für die gesetzliche Rente (langjährig Versicherte,
+ * SGB VI § 36). Wer früher in Rente geht, muss die Jahre bis 63 komplett aus
+ * eigenem Kapital decken (Frühverrentungs-Brücke).
+ */
+export const STATE_PENSION_MIN_CLAIM_AGE = 63;
+
 /** Mittel der DRV-Hochrechnungen 1 % und 2 % — Finanztip-Faustformel. */
 export const PENSION_RAISE_DEFAULT = 0.015;
 

@@ -3,7 +3,11 @@ import { Button } from "../../../components/ui/Button";
 import { formatEUR, formatPercent } from "../../../lib/format";
 import { useProfile } from "../../../lib/profile/useProfile";
 import { PENSION_DEFAULTS, deriveExpectedStatePension, regelaltersgrenze } from "../defaults";
-import { PENSION_DEDUCTION_RANGE, PENSION_RAISE_RANGE } from "../constants";
+import {
+  PENSION_DEDUCTION_RANGE,
+  PENSION_RAISE_RANGE,
+  STATE_PENSION_MIN_CLAIM_AGE,
+} from "../constants";
 import { pensionStore, type PensionInfoInputs } from "../state";
 
 /**
@@ -166,7 +170,7 @@ export function PensionInformationStep() {
                   />
                   {projection.abschlagPct > 0 && (
                     <CalcRow
-                      label={`− ${formatPercent(projection.abschlagPct)} Abschlag (${formatYearsDiff(regelalter - retirementAge)} vorzeitig)`}
+                      label={`− ${formatPercent(projection.abschlagPct)} Abschlag (${formatYearsDiff(regelalter - Math.max(retirementAge, STATE_PENSION_MIN_CLAIM_AGE))} vorzeitig, Anspruch ab ${STATE_PENSION_MIN_CLAIM_AGE})`}
                       value={`${formatEUR(grossWithoutAdjustment * (1 - projection.abschlagPct))} brutto`}
                     />
                   )}

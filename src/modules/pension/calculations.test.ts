@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { calculatePension } from "./calculations";
 import { withDefaults } from "./defaults";
+import { annualToMonthlyRate, presentValueAnnuity } from "../../lib/finance";
 import type { PensionInputs } from "./types";
 
 const baseInputs: PensionInputs = withDefaults({
@@ -248,6 +249,83 @@ describe("calculatePension — Finanzfluss cross-check (Carlotta)", () => {
     );
     if (annuity.kind !== "ok" || safe.kind !== "ok") throw new Error("expected ok");
     expect(safe.capitalNeeded).toBeGreaterThan(annuity.capitalNeeded);
+  });
+});
+
+describe("calculatePension — Frühverrentungs-Brücke", () => {
+  // Bezugsfall: 40-Jähriger, 3.000 € Netto, 1.500 € erwartete gesetzliche
+  // Rente (ab Anspruchsalter 63), einheitliche Auszahlrendite 1 % real.
+  const base = withDefaults({
+    currentAge: 40,
+    netIncomeMonthly: 3000,
+    expectedStatePension: 1500,
+  });
+
+  it("Renteneintritt 67: keine Brücke, Ergebnis kollabiert exakt auf die einphasige Formel", () => {
+    const r = calculatePension({ ...base, retirementAge: 67, payoutYears: 23 });
+    if (r.kind !== "ok") throw new Error("expected ok");
+    expect(r.bridgeYears).toBe(0);
+    expect(r.bridgeCapital).toBe(0);
+    // Einphasige Referenzrechnung: PV der Lücke über die volle Bezugsdauer
+    const rM = annualToMonthlyRate(0.01);
+    const expected = presentValueAnnuity(900, rM, 23 * 12);
+    expect(r.mainCapital).toBeCloseTo(expected, 6);
+    expect(r.capitalNeededBeforeTax).toBeCloseTo(expected, 6);
+  });
+
+  it("Renteneintritt 55 (Handrechnung): Brücke voller Bedarf + abgezinste Hauptphase", () => {
+    // Planungsalter 90 → payoutYears 35; Brücke 55→63 = 8 Jahre, Hauptphase 27 Jahre.
+    const r = calculatePension({ ...base, retirementAge: 55, payoutYears: 35 });
+    if (r.kind !== "ok") throw new Error("expected ok");
+    expect(r.bridgeYears).toBe(8);
+
+    const rM = annualToMonthlyRate(0.01);
+    // Brückenphase: voller Bedarf B = 2400 als Annuität über 96 Monate
+    const bridge = presentValueAnnuity(2400, rM, 8 * 12);
+    // Hauptphase: Lücke L = 900 über 27 Jahre, Barwert auf Rentenbeginn abgezinst
+    const main = presentValueAnnuity(900, rM, 27 * 12) / Math.pow(1 + rM, 8 * 12);
+    expect(r.bridgeCapital).toBeCloseTo(bridge, 4);
+    expect(r.mainCapital).toBeCloseTo(main, 4);
+    expect(r.capitalNeededBeforeTax).toBeCloseTo(bridge + main, 4);
+  });
+
+  it("SWR-Variante: Brücken-Annuität zusätzlich zum (nicht abgezinsten) SWR-Kapital", () => {
+    const r = calculatePension({
+      ...base,
+      retirementAge: 55,
+      payoutMethod: "safe-withdrawal",
+      safeWithdrawalRate: 0.035,
+    });
+    if (r.kind !== "ok") throw new Error("expected ok");
+    const rM = annualToMonthlyRate(0.01);
+    const bridge = presentValueAnnuity(2400, rM, 8 * 12);
+    const swr = (900 * 12) / 0.035;
+    expect(r.bridgeCapital).toBeCloseTo(bridge, 4);
+    expect(r.mainCapital).toBeCloseTo(swr, 4);
+    expect(r.capitalNeededBeforeTax).toBeCloseTo(bridge + swr, 4);
+  });
+
+  it("volle Rentendeckung ab 63, aber Frührente mit 55: kein 'no-gap', Kapitalbedarf = Brücke", () => {
+    const r = calculatePension({
+      ...base,
+      retirementAge: 55,
+      payoutYears: 35,
+      expectedStatePension: 3000, // deckt den Bedarf (2400) ab Anspruchsalter voll
+    });
+    if (r.kind !== "ok") throw new Error("expected ok — Brückenbedarf besteht trotz gedeckter Lücke");
+    const rM = annualToMonthlyRate(0.01);
+    expect(r.mainCapital).toBe(0);
+    expect(r.capitalNeededBeforeTax).toBeCloseTo(presentValueAnnuity(2400, rM, 8 * 12), 4);
+  });
+
+  it("ohne Brücke bleibt 'no-gap' bei gedeckter Lücke erhalten (Regression)", () => {
+    const r = calculatePension({
+      ...base,
+      retirementAge: 67,
+      payoutYears: 23,
+      expectedStatePension: 3000,
+    });
+    expect(r.kind).toBe("no-gap");
   });
 });
 
