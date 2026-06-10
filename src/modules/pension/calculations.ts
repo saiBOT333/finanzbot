@@ -1,15 +1,39 @@
 import {
   annualToMonthlyRate,
   compound,
+  presentValueAnnuity,
   weightedFutureValueAnnuityFactor,
   weightedPresentValueAnnuity,
 } from "../../lib/finance";
+import { STATE_PENSION_MIN_CLAIM_AGE } from "./constants";
 import type { PensionInputs, PensionResult } from "./types";
 
 function weightedAverage(buckets: Array<{ weight: number; rate: number }>): number {
   const total = buckets.reduce((s, b) => s + b.weight, 0);
   if (total === 0) return 0;
   return buckets.reduce((s, b) => s + (b.weight / total) * b.rate, 0);
+}
+
+/**
+ * Barwert einer Annuität, die erst nach `defer` Perioden beginnt: je Bucket
+ * wird der Phasen-Barwert mit der Bucket-Rate um `defer` Perioden abgezinst.
+ * Bei `defer = 0` exakt identisch zu `weightedPresentValueAnnuity`.
+ */
+function weightedDeferredPresentValueAnnuity(
+  payment: number,
+  buckets: Array<{ weight: number; rate: number }>,
+  n: number,
+  defer: number,
+): number {
+  const totalWeight = buckets.reduce((s, b) => s + b.weight, 0);
+  if (totalWeight === 0) return 0;
+  return buckets.reduce(
+    (sum, b) =>
+      sum +
+      ((b.weight / totalWeight) * presentValueAnnuity(payment, b.rate, n)) /
+        Math.pow(1 + b.rate, defer),
+    0,
+  );
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -36,10 +60,20 @@ function weightedAverage(buckets: Array<{ weight: number; rate: number }>): numb
  *
  * Schritte
  *   1.  B  = N × q                       Bedarf monatlich heute
- *   2.  L  = B − R                       Rentenlücke monatlich heute
+ *   2.  L  = max(0; B − R)               Rentenlücke monatlich heute
  *   3.  n  = a₊ − a                      Jahre bis Rente
- *   4a. Annuität:        K₀ = L × (1 − (1 + rₐₘ)^−(T·12)) / rₐₘ   (rₐₘ = monatl. rₐ)
- *   4b. Safe-Withdrawal: K₀ = L × 12 / w
+ *   3b. Frühverrentungs-Brücke: die gesetzliche Rente fließt frühestens ab 63
+ *       (STATE_PENSION_MIN_CLAIM_AGE). Bei a₊ < 63 zerfällt die Auszahlphase:
+ *         Brücke (a₊ → 63):   voller Bedarf B als Annuität über b = 63 − a₊ Jahre
+ *         Hauptphase (63 → Planungsalter): nur noch die Lücke L
+ *       Bei a₊ ≥ 63 ist b = 0 und alles kollabiert exakt auf die Formeln 4a/4b.
+ *   4a. Annuität:        K₀ = K_B + K_H
+ *         K_B = B × (1 − (1 + rₐₘ)^−(b·12)) / rₐₘ
+ *         K_H = L × (1 − (1 + rₐₘ)^−((T−b)·12)) / rₐₘ / (1 + rₐₘ)^(b·12)
+ *       (K_H ist der Barwert zum Rentenanspruch, abgezinst auf den Renteneintritt)
+ *   4b. Safe-Withdrawal: K₀ = K_B + L × 12 / w
+ *       (SWR-Kapital bewusst NICHT um die Brückenjahre abgezinst — konservativ,
+ *       weil die SWR-Logik "ewiges" Kapital unterstellt, kein Verzehr-Enddatum)
  *   5.  K  = K₀ × (1 + τ)                Steuer-Puffer auf Kapital
  *   6.  K₀ₙ = K₀ᵥ × (1 + r)^n            heutiges Vermögen, real aufgezinst
  *   7.  K* = max(0, K − K₀ₙ)             noch zu sparendes Kapital
@@ -100,9 +134,18 @@ export function calculatePension(inputs: PensionInputs): PensionResult {
 
   const yearsToRetirement = retirementAge - currentAge;
   const needToday = netIncomeMonthly * replacementRate;
-  const gapToday = needToday - expectedStatePension;
+  // Lücke nie negativ: deckt die Rente den Bedarf, bleibt für die Hauptphase
+  // schlicht nichts zu finanzieren (Brückenbedarf kann trotzdem bestehen).
+  const gapToday = Math.max(0, needToday - expectedStatePension);
 
-  if (gapToday <= 0) {
+  // Frühverrentungs-Brücke: gesetzliche Rente frühestens ab 63. Bei der
+  // Annuität auf die Bezugsdauer gedeckelt (Planungsalter < 63 ist absurd,
+  // aber nicht verboten).
+  const rawBridgeYears = Math.max(0, STATE_PENSION_MIN_CLAIM_AGE - retirementAge);
+  const bridgeYears =
+    payoutMethod === "annuity" ? Math.min(rawBridgeYears, payoutYears) : rawBridgeYears;
+
+  if (gapToday <= 0 && bridgeYears === 0) {
     return { kind: "no-gap", needToday, expectedStatePension };
   }
 
@@ -114,10 +157,26 @@ export function calculatePension(inputs: PensionInputs): PensionResult {
     weight: b.weight,
     rate: annualToMonthlyRate(b.rate),
   }));
-  const capitalNeededBeforeTax =
+  // Brückenphase: voller Bedarf B, weil noch keine gesetzliche Rente fließt.
+  const bridgeCapital = weightedPresentValueAnnuity(
+    needToday,
+    monthlyPayoutBuckets,
+    bridgeYears * 12,
+  );
+  // Hauptphase ab Rentenanspruch: nur noch die Lücke L. Bei der Annuität wird
+  // der Barwert um die Brückenmonate auf den Renteneintritt abgezinst; das
+  // SWR-Kapital bewusst nicht (konservativ — die SWR-Logik unterstellt
+  // "ewiges" Kapital ohne Verzehr-Enddatum).
+  const mainCapital =
     payoutMethod === "annuity"
-      ? weightedPresentValueAnnuity(gapToday, monthlyPayoutBuckets, payoutYears * 12)
+      ? weightedDeferredPresentValueAnnuity(
+          gapToday,
+          monthlyPayoutBuckets,
+          (payoutYears - bridgeYears) * 12,
+          bridgeYears * 12,
+        )
       : (gapToday * 12) / safeWithdrawalRate;
+  const capitalNeededBeforeTax = bridgeCapital + mainCapital;
 
   const taxBufferAmount = capitalNeededBeforeTax * taxBufferPct;
   const capitalNeeded = capitalNeededBeforeTax + taxBufferAmount;
@@ -168,6 +227,9 @@ export function calculatePension(inputs: PensionInputs): PensionResult {
     yearsToRetirement,
     needToday,
     gapToday,
+    bridgeYears,
+    bridgeCapital,
+    mainCapital,
     capitalNeededBeforeTax,
     taxBufferAmount,
     capitalNeeded,

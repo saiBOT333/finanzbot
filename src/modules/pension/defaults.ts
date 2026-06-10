@@ -6,6 +6,7 @@ import {
   RETIREMENT_AGE_DEFAULT,
   SAFE_WITHDRAWAL_RATE,
   STATE_PENSION_FACTOR,
+  STATE_PENSION_MIN_CLAIM_AGE,
   TAX_BUFFER_DEFAULT,
 } from "./constants";
 import { effectiveRealReturn, type Allocation } from "../../lib/assets";
@@ -237,9 +238,12 @@ export function regelaltersgrenze(birthYear: number): number {
 
 /**
  * Reduziert die Renteninfo-Brutto-Rente um:
- *  - Abschläge: 0,3 % pro Monat vorzeitig (zwischen retirementAge und
- *    regelaltersgrenze), gedeckelt bei 14,4 % (48 Monate × 0,3 %).
- *  - Beitragsjahre-Faktor: tatsächliche / geplante Beitragsmonate, linear.
+ *  - Abschläge: 0,3 % pro Monat vorzeitig — gerechnet ab dem Anspruchsalter
+ *    (claimAge = max(retirementAge, 63)), denn die gesetzliche Rente fließt
+ *    frühestens ab 63. Der Cap bei 14,4 % (48 Monate × 0,3 %) bleibt als
+ *    Sicherheitsnetz erhalten.
+ *  - Beitragsjahre-Faktor: tatsächliche / geplante Beitragsmonate, linear —
+ *    basiert auf retirementAge, weil die Beiträge mit dem Arbeitsende enden.
  *
  * Bei Eintritt zur Regelaltersgrenze oder später bleibt die Brutto-Rente
  * unverändert. Zuschläge für späteren Eintritt sind bewusst NICHT modelliert
@@ -258,7 +262,8 @@ export function adjustGrossForEarlyRetirement(
       beitragsFaktor: 1,
     };
   }
-  const monthsEarly = (regelalter - retirementAge) * 12;
+  const claimAge = Math.max(retirementAge, STATE_PENSION_MIN_CLAIM_AGE);
+  const monthsEarly = Math.max(0, (regelalter - claimAge) * 12);
   const abschlagPct = Math.min(0.144, monthsEarly * 0.003);
 
   const plannedContributionMonths = (regelalter - contributionStartAge) * 12;

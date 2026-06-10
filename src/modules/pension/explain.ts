@@ -1,4 +1,5 @@
 import { formatEUR, formatNumber, formatPercent } from "../../lib/format";
+import { STATE_PENSION_MIN_CLAIM_AGE } from "./constants";
 import { PENSION_DEFAULTS } from "./defaults";
 import type { PensionInputs, PensionResult } from "./types";
 
@@ -143,23 +144,70 @@ export function explainPension(
     },
   ];
 
+  const hasBridge = result.bridgeYears > 0;
+  const bridgeMonths = result.bridgeYears * 12;
+  const mainMonths = useAnnuity ? (payoutYears - result.bridgeYears) * 12 : 0;
+
+  // Frühverrentungs-Brücke: bei Renteneintritt vor 63 wird der volle Bedarf B
+  // bis zum Rentenanspruch komplett aus Kapital gedeckt.
+  const bridgeSteps: ExplanationStep[] = hasBridge
+    ? [
+        {
+          index: 0,
+          title: "Brückenkapital bis zum Rentenanspruch",
+          formula: "K_B = B × (1 − (1 + rₐₘ)^−m_B) / rₐₘ",
+          substituted: `K_B = ${formatEUR(result.needToday)} × (1 − (1 + ${rPayMonthlyStr})^−${bridgeMonths}) / ${rPayMonthlyStr}`,
+          result: `K_B = ${formatEUR(result.bridgeCapital)}`,
+          note: `Die gesetzliche Rente fließt frühestens ab ${STATE_PENSION_MIN_CLAIM_AGE}. Zwischen Renteneintritt und Rentenanspruch (${formatNumber(result.bridgeYears)} Jahre, m_B = ${bridgeMonths} Monate) muss daher der volle Bedarf B aus Kapital gedeckt werden — nicht nur die Lücke.`,
+        },
+      ]
+    : [];
+
   const capitalStep: ExplanationStep = useAnnuity
     ? {
-        index: 4,
-        title: "Kapitalbedarf vor Steuer (Annuität)",
-        formula: "K₀ = L × (1 − (1 + rₐₘ)^−m) / rₐₘ",
-        substituted: `K₀ = ${formatEUR(result.gapToday)} × (1 − (1 + ${rPayMonthlyStr})^−${payoutMonths}) / ${rPayMonthlyStr}`,
-        result: `K₀ = ${formatEUR(result.capitalNeededBeforeTax)}`,
-        note: `Barwert einer monatlich entnommenen Rente L über T Jahre. rₐₘ ist die monatliche reale Auszahlrendite — (1 + rₐ)^(1/12) − 1 — und m = T × 12 = ${payoutMonths} Monate. Damit ist das Kapital am Ende von T Jahren genau aufgebraucht — Finanztip-Methode.`,
+        index: 0,
+        title: hasBridge
+          ? "Kapitalbedarf Hauptphase ab Rentenanspruch (Annuität)"
+          : "Kapitalbedarf vor Steuer (Annuität)",
+        formula: hasBridge
+          ? "K_H = L × (1 − (1 + rₐₘ)^−m_H) / rₐₘ / (1 + rₐₘ)^m_B"
+          : "K₀ = L × (1 − (1 + rₐₘ)^−m) / rₐₘ",
+        substituted: hasBridge
+          ? `K_H = ${formatEUR(result.gapToday)} × (1 − (1 + ${rPayMonthlyStr})^−${mainMonths}) / ${rPayMonthlyStr} / (1 + ${rPayMonthlyStr})^${bridgeMonths}`
+          : `K₀ = ${formatEUR(result.gapToday)} × (1 − (1 + ${rPayMonthlyStr})^−${payoutMonths}) / ${rPayMonthlyStr}`,
+        result: hasBridge
+          ? `K_H = ${formatEUR(result.mainCapital)}`
+          : `K₀ = ${formatEUR(result.capitalNeededBeforeTax)}`,
+        note: hasBridge
+          ? `Barwert der Lücke L über die Hauptphase (m_H = ${mainMonths} Monate ab Rentenanspruch), anschließend um die Brückenmonate auf den Renteneintritt abgezinst — das Kapital arbeitet während der Brücke weiter.`
+          : `Barwert einer monatlich entnommenen Rente L über T Jahre. rₐₘ ist die monatliche reale Auszahlrendite — (1 + rₐ)^(1/12) − 1 — und m = T × 12 = ${payoutMonths} Monate. Damit ist das Kapital am Ende von T Jahren genau aufgebraucht — Finanztip-Methode.`,
       }
     : {
-        index: 4,
-        title: "Kapitalbedarf vor Steuer (Sichere Entnahmerate)",
-        formula: "K₀ = L × 12 / w",
-        substituted: `K₀ = ${formatEUR(result.gapToday)} × 12 / ${formatPercent(safeWithdrawalRate)}`,
-        result: `K₀ = ${formatEUR(result.capitalNeededBeforeTax)}`,
-        note: "Mit jährlich entnommenen w des Anfangsvermögens und realer Rendite ≥ w bleibt das Vermögen voraussichtlich unbegrenzt erhalten — Finanzfluss-Methode (Trinity-Studie).",
+        index: 0,
+        title: hasBridge
+          ? "Kapitalbedarf Hauptphase ab Rentenanspruch (Sichere Entnahmerate)"
+          : "Kapitalbedarf vor Steuer (Sichere Entnahmerate)",
+        formula: hasBridge ? "K_H = L × 12 / w" : "K₀ = L × 12 / w",
+        substituted: `${hasBridge ? "K_H" : "K₀"} = ${formatEUR(result.gapToday)} × 12 / ${formatPercent(safeWithdrawalRate)}`,
+        result: hasBridge
+          ? `K_H = ${formatEUR(result.mainCapital)}`
+          : `K₀ = ${formatEUR(result.capitalNeededBeforeTax)}`,
+        note: hasBridge
+          ? "Mit jährlich entnommenen w des Anfangsvermögens und realer Rendite ≥ w bleibt das Vermögen voraussichtlich unbegrenzt erhalten — Finanzfluss-Methode (Trinity-Studie). Bewusst NICHT um die Brückenjahre abgezinst — konservativ, weil die SWR-Logik kein Verzehr-Enddatum kennt."
+          : "Mit jährlich entnommenen w des Anfangsvermögens und realer Rendite ≥ w bleibt das Vermögen voraussichtlich unbegrenzt erhalten — Finanzfluss-Methode (Trinity-Studie).",
       };
+
+  const sumStep: ExplanationStep[] = hasBridge
+    ? [
+        {
+          index: 0,
+          title: "Kapitalbedarf vor Steuer (Brücke + Hauptphase)",
+          formula: "K₀ = K_B + K_H",
+          substituted: `K₀ = ${formatEUR(result.bridgeCapital)} + ${formatEUR(result.mainCapital)}`,
+          result: `K₀ = ${formatEUR(result.capitalNeededBeforeTax)}`,
+        },
+      ]
+    : [];
 
   const steps: ExplanationStep[] = [
     {
@@ -173,10 +221,10 @@ export function explainPension(
     {
       index: 2,
       title: "Rentenlücke pro Monat (heute)",
-      formula: "L = B − R",
-      substituted: `L = ${formatEUR(result.needToday)} − ${formatEUR(expectedStatePension)}`,
+      formula: "L = max(0; B − R)",
+      substituted: `L = max(0; ${formatEUR(result.needToday)} − ${formatEUR(expectedStatePension)})`,
       result: `L = ${formatEUR(result.gapToday)} pro Monat`,
-      note: "Was die gesetzliche Rente nicht abdeckt — der Teil, den du selbst aufbauen musst. Heutige Kaufkraft.",
+      note: "Was die gesetzliche Rente ab Rentenanspruch nicht abdeckt — der Teil, den du selbst aufbauen musst. Heutige Kaufkraft.",
     },
     {
       index: 3,
@@ -185,7 +233,9 @@ export function explainPension(
       substituted: `n = ${formatNumber(retirementAge)} − ${formatNumber(currentAge)}`,
       result: `n = ${formatNumber(result.yearsToRetirement)} Jahre`,
     },
+    ...bridgeSteps,
     capitalStep,
+    ...sumStep,
     {
       index: 5,
       title: "Steuer-Puffer auf das Kapital",
@@ -258,12 +308,14 @@ export function explainPension(
   const closing =
     "Alle Geldbeträge in der Hauptrechnung sind in heutiger Kaufkraft. Reale Rendite r heißt: Rendite NACH Abzug der Inflation. So lassen sich Sparrate und Rentenlücke direkt vergleichen, ohne Inflation doppelt zu berücksichtigen.";
 
-  // The weighted payout return rₐ only feeds the annuity capital step. Under
-  // the safe-withdrawal method it is unused — drop it so the trace shows no
-  // input that doesn't influence a result.
-  const visibleInputs = useAnnuity
-    ? inputsTable
-    : inputsTable.filter((i) => i.symbol !== "rₐ");
+  // The weighted payout return rₐ only feeds the annuity capital step and the
+  // bridge annuity. Under safe-withdrawal without bridge it is unused — drop
+  // it so the trace shows no input that doesn't influence a result.
+  const visibleInputs =
+    useAnnuity || hasBridge ? inputsTable : inputsTable.filter((i) => i.symbol !== "rₐ");
 
-  return { inputs: visibleInputs, steps, closing };
+  // Brücken- und Summen-Schritt sind bedingt — Indizes erst hier durchnummerieren.
+  const numberedSteps = steps.map((s, i) => ({ ...s, index: i + 1 }));
+
+  return { inputs: visibleInputs, steps: numberedSteps, closing };
 }

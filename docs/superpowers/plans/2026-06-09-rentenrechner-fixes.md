@@ -53,17 +53,17 @@ Befund 1. State-Refactoring: persistierte Rohwerte + Live-Ableitung statt eingef
 
 ---
 
-## Phase 3 — Frühverrentungs-Brücke (Session 3)
+## Phase 3 — Frühverrentungs-Brücke (Session 3) ✅
 
 Befund 2. Baut auf Phase 2 auf (Anspruchsalter fließt in die Renten-Ableitung ein).
 
 **Files:** `constants.ts`, `defaults.ts` (+ Tests), `types.ts`, `calculations.ts` (+ Tests), `explain.ts` (+ Tests), `steps/BasicsStep.tsx`, `steps/ResultStep.tsx`, `PensionPrintSheet.tsx`
 
-- [ ] **3a. Anspruchsalter:** Konstante `STATE_PENSION_MIN_CLAIM_AGE = 63`; `claimAge = max(retirementAge, 63)`. `adjustGrossForEarlyRetirement` rechnet den Abschlag aus `regelalter − claimAge` (14,4-%-Cap bleibt als Sicherheitsnetz); der Beitragsfaktor nutzt weiterhin `retirementAge` (Beiträge enden mit dem Arbeitsende).
-- [ ] **3b. Zweiphasiger Kapitalbedarf in `calculatePension`:** Brückenphase (`retirementAge`→`claimAge`): voller Bedarf B als Annuität über `bridgeYears`. Hauptphase (`claimAge`→`planningAge`): Lücke L = B − R, Barwert auf Rentenbeginn, mit Auszahlrendite um `bridgeYears` auf Renteneintritt abgezinst. Bei `retirementAge ≥ 63` kollabiert alles exakt auf die heutige Formel (zentrales Testkriterium). SWR: Brücken-Annuität zusätzlich zum SWR-Kapital, SWR-Kapital bewusst NICHT abgezinst (konservativ, im Code dokumentieren).
-- [ ] **3c. Result-Typ:** `bridgeYears`, `bridgeCapital`, `mainCapital` in `PensionResult`; `explain.ts` bekommt bedingten Brücken-Schritt; `ResultStep`-Argumentkette und `PensionPrintSheet` zeigen die Brücke nur, wenn `bridgeYears > 0`.
-- [ ] **3d. UI-Hinweis** in `BasicsStep` bei Renteneintritt < 63 („gesetzliche Rente frühestens ab 63 — die Lücke davor wird voll aus Kapital gedeckt").
-- [ ] **Verify:** Tests: Brücke = 0 bei 67 (Regressionen unverändert grün), Handrechnung 55er-Szenario (Brücke + abgezinste Hauptphase), SWR-Variante, Abschlag basiert auf 63 statt 55.
+- [x] **3a. Anspruchsalter:** Konstante `STATE_PENSION_MIN_CLAIM_AGE = 63`; `claimAge = max(retirementAge, 63)`. `adjustGrossForEarlyRetirement` rechnet den Abschlag aus `regelalter − claimAge` (14,4-%-Cap bleibt als Sicherheitsnetz); der Beitragsfaktor nutzt weiterhin `retirementAge` (Beiträge enden mit dem Arbeitsende). *(Zusätzlich: „X J. vorzeitig"-Label in `PensionInformationStep` referenziert jetzt das Anspruchsalter.)*
+- [x] **3b. Zweiphasiger Kapitalbedarf in `calculatePension`:** Brückenphase (`retirementAge`→`claimAge`): voller Bedarf B als Annuität über `bridgeYears`. Hauptphase (`claimAge`→`planningAge`): Lücke L = B − R, Barwert auf Rentenbeginn, mit Auszahlrendite um `bridgeYears` auf Renteneintritt abgezinst. Bei `retirementAge ≥ 63` kollabiert alles exakt auf die heutige Formel (zentrales Testkriterium). SWR: Brücken-Annuität zusätzlich zum SWR-Kapital, SWR-Kapital bewusst NICHT abgezinst (konservativ, im Code dokumentieren). *(Erkenntnis: `no-gap` greift nur noch bei `bridgeYears === 0` — sonst gälte ein Frührentner mit voller Rentendeckung ab 63 fälschlich als abgesichert; L ist dafür auf `max(0, B − R)` geklemmt.)*
+- [x] **3c. Result-Typ:** `bridgeYears`, `bridgeCapital`, `mainCapital` in `PensionResult`; `explain.ts` bekommt bedingten Brücken-Schritt (+ Summen-Schritt `K₀ = K_B + K_H`, Indizes werden dynamisch durchnummeriert); `ResultStep`-Argumentkette und `PensionPrintSheet` zeigen die Brücke nur, wenn `bridgeYears > 0`. *(`PensionPrintSheet` rendert `explanation.steps` generisch — kein Code-Change nötig. `rₐ` bleibt bei SWR sichtbar, wenn eine Brücke existiert.)*
+- [x] **3d. UI-Hinweis** in `BasicsStep` bei Renteneintritt < 63 („gesetzliche Rente frühestens ab 63 — die Lücke davor wird voll aus Kapital gedeckt").
+- [x] **Verify:** Tests: Brücke = 0 bei 67 (Regressionen unverändert grün), Handrechnung 55er-Szenario (Brücke + abgezinste Hauptphase), SWR-Variante, Abschlag basiert auf Anspruchsalter 63. `vitest run` (247 Tests grün) + `tsc --noEmit` sauber + Wizard-Smoke-Test (Dev-Server): 55er-Szenario zeigt Hinweis, Brücken-Argument (258.273 €) und Rechenweg-Schritte 04–06; bei 67 alles unverändert ohne Brücke.
 
 ---
 

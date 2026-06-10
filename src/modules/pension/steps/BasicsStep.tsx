@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { NumberInput } from "../../../components/NumberInput";
 import { useProfile, setProfile } from "../../../lib/profile/useProfile";
 import { pensionStore } from "../state";
-import { RETIREMENT_AGE_DEFAULT } from "../constants";
+import { RETIREMENT_AGE_DEFAULT, STATE_PENSION_MIN_CLAIM_AGE } from "../constants";
 import { tooltips } from "../tooltips";
 
 export function BasicsStep() {
@@ -28,29 +28,47 @@ export function BasicsStep() {
     }
   }, [profile.retirementAge]);
 
+  const retirementAge = profile.retirementAge ?? RETIREMENT_AGE_DEFAULT;
+
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <NumberInput
-        label="Aktuelles Alter"
-        value={profile.age}
-        onChange={(v) => setProfile({ age: v })}
-        unit="Jahre"
-        min={0}
-        max={120}
-        required
-        tooltip={tooltips.currentAge}
-        placeholder="z. B. 35"
-      />
-      <NumberInput
-        label="Geplanter Renteneintritt"
-        value={profile.retirementAge ?? RETIREMENT_AGE_DEFAULT}
-        onChange={setRetirementAge}
-        unit="Jahre"
-        min={0}
-        max={120}
-        tooltip={tooltips.retirementAge}
-        hint="Standard: 67"
-      />
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <NumberInput
+          label="Aktuelles Alter"
+          value={profile.age}
+          onChange={(v) => setProfile({ age: v })}
+          unit="Jahre"
+          min={0}
+          max={120}
+          required
+          tooltip={tooltips.currentAge}
+          placeholder="z. B. 35"
+        />
+        <NumberInput
+          label="Geplanter Renteneintritt"
+          value={retirementAge}
+          onChange={setRetirementAge}
+          unit="Jahre"
+          min={0}
+          max={120}
+          tooltip={tooltips.retirementAge}
+          hint="Standard: 67"
+        />
+      </div>
+      {retirementAge < STATE_PENSION_MIN_CLAIM_AGE && (
+        <div className="border-l-[3px] border-outline-variant bg-surface-container px-4 py-3">
+          <p className="m3-eyebrow-muted">Hinweis · Frühverrentung</p>
+          <p className="mt-1.5 font-sans text-[12.5px] leading-relaxed text-on-surface-variant">
+            Die gesetzliche Rente gibt es frühestens ab{" "}
+            <strong className="font-semibold text-on-surface">
+              {STATE_PENSION_MIN_CLAIM_AGE} Jahren
+            </strong>
+            . Die {STATE_PENSION_MIN_CLAIM_AGE - retirementAge} Jahre davor musst du deinen vollen
+            Bedarf aus eigenem Kapital decken — das Ergebnis weist dieses Brückenkapital separat
+            aus.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

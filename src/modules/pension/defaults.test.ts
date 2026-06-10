@@ -209,6 +209,22 @@ describe("adjustGrossForEarlyRetirement", () => {
     expect(r.abschlagPct).toBe(0.144);
   });
 
+  it("Abschlag basiert auf dem Anspruchsalter 63, nicht auf dem Renteneintritt (Regelalter 66)", () => {
+    // Eintritt 60, Regelalter 66: Rente fließt frühestens ab 63 →
+    // 36 Monate vorzeitig × 0,3 % = 10,8 % (nicht 21,6 % → Cap).
+    const r = adjustGrossForEarlyRetirement(2000, 60, 66, 20);
+    expect(r.abschlagPct).toBeCloseTo(0.108, 6);
+  });
+
+  it("Renteneintritt 55: Abschlag aus Anspruchsalter 63, Beitragsfaktor aus tatsächlichem Arbeitsende 55", () => {
+    const r = adjustGrossForEarlyRetirement(2000, 55, 67, 20);
+    // Anspruch ab 63 → 48 Monate vorzeitig → 14,4 %
+    expect(r.abschlagPct).toBeCloseTo(0.144, 6);
+    // Beiträge enden mit dem Arbeitsende (55), nicht mit dem Anspruchsalter
+    expect(r.beitragsFaktor).toBeCloseTo(35 / 47, 6);
+    expect(r.adjustedGross).toBeCloseTo(2000 * (1 - 0.144) * (35 / 47), 4);
+  });
+
   it("Späterer Beitragsbeginn senkt den Beitragsfaktor zusätzlich", () => {
     const r = adjustGrossForEarlyRetirement(2000, 63, 67, 27);
     expect(r.beitragsFaktor).toBeCloseTo(36 / 40, 6); // 63-27=36 ist tatsächlich, 67-27=40 geplant

@@ -298,7 +298,15 @@ export function ResultStep() {
             <span className="tabular-nums">{formatEUR(coveredByStatePension)}</span> — es bleibt eine
             Lücke von <span className="tabular-nums">{formatEUR(result.gapToday)}</span> monatlich.
           </ArgumentStep>
-          <ArgumentStep n="03">
+          {result.bridgeYears > 0 && (
+            <ArgumentStep n="03">
+              Die gesetzliche Rente fließt frühestens ab 63 — die{" "}
+              {result.bridgeYears} Jahre davor deckst du den vollen Bedarf aus Kapital. Das kostet
+              zusätzlich{" "}
+              <span className="tabular-nums">{formatEUR(result.bridgeCapital)}</span> Brückenkapital.
+            </ArgumentStep>
+          )}
+          <ArgumentStep n={result.bridgeYears > 0 ? "04" : "03"}>
             {inputs.payoutMethod === "annuity"
               ? `Über ${inputs.payoutYears} Jahre Rente brauchst du dafür ein Kapital von `
               : `Bei einer Entnahmerate von ${formatPercent(inputs.safeWithdrawalRate)} pro Jahr brauchst du dafür ein Kapital von `}
@@ -306,7 +314,7 @@ export function ResultStep() {
             Kaufkraft — bei Renteneintritt sind das nominal rund{" "}
             <span className="tabular-nums">{formatEUR(result.capitalNeededNominal)}</span>.
           </ArgumentStep>
-          <ArgumentStep n="04">
+          <ArgumentStep n={result.bridgeYears > 0 ? "05" : "04"}>
             Mit <span className="tabular-nums">{formatEUR(result.monthlySavings, true)}</span> pro
             Monat und{" "}
             <span className="tabular-nums">{formatPercent(result.effectiveSavingReturn)}</span>{" "}
