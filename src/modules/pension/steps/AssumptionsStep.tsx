@@ -40,12 +40,12 @@ export function AssumptionsStep() {
       <div className="border-l-[3px] border-primary bg-surface-container px-4 py-3">
         <p className="m3-eyebrow-muted">Standard-Annahmen aktiv</p>
         <p className="mt-1.5 font-sans text-[13px] leading-relaxed text-on-surface-variant">
-          Konservative Standard-Annahmen: gemischtes Portfolio,{" "}
-          <span className="tabular-nums">3 %</span> real Anspar,{" "}
-          <span className="tabular-nums">1 %</span> real Auszahl, Annuität bis Alter{" "}
-          <span className="tabular-nums">90</span>,{" "}
-          <span className="tabular-nums">12 %</span> Steuer-Puffer. Du kannst alle Annahmen unten
-          frei anpassen — inklusive Auszahlungsmethode und Anlage-Allokation.
+          Wir rechnen mit vorsichtigen Standard-Annahmen: Dein Erspartes wächst mit{" "}
+          <span className="tabular-nums">3 %</span> pro Jahr über der Inflation, im Ruhestand
+          mit <span className="tabular-nums">1 %</span>. Das Geld soll bis Alter{" "}
+          <span className="tabular-nums">90</span> reichen, und für spätere Steuern planen wir{" "}
+          <span className="tabular-nums">12 %</span> Reserve ein. Unten kannst du alles
+          anpassen — auch die Geldanlage selbst.
         </p>
       </div>
 

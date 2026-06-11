@@ -19,9 +19,9 @@ export function WelcomeScreen({ onStart }: Props) {
           </h2>
           <p className="max-w-prose text-[16px] leading-[1.6] text-on-surface-variant">
             In fünf Schritten errechnen wir deine Rentenlücke und die monatliche Sparrate, mit
-            der du sie schließt — nach der konservativen Finanztip-Methodik (gemischtes
-            Portfolio, real gerechnet, Annuität über 30 Jahre). Anlage-Allokation,
-            Auszahlungsmethode und alle Annahmen kannst du frei anpassen.
+            der du sie schließt. Wir rechnen bewusst vorsichtig: mit gemischter Geldanlage, nach
+            Abzug der Inflation, und so, dass dein Geld bis Alter 90 reicht. Alle Annahmen
+            kannst du später anpassen.
           </p>
         </div>
 
