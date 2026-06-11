@@ -204,7 +204,7 @@ export function ResultStep() {
             onClick={handlePrint}
             title="Ergebnis als PDF speichern (über den Druckdialog)"
           >
-            📄 Als PDF speichern
+            <span aria-hidden className="m3-icon text-[18px]">picture_as_pdf</span> Als PDF speichern
           </Button>
         </div>
 
@@ -248,12 +248,12 @@ export function ResultStep() {
         </div>
       </Card>
 
-      {/* Tip-Card auf Tertiary für den Lesehinweis. */}
-      <div className="rounded-m3-md bg-tertiary-container text-on-tertiary-container p-4 flex gap-3 items-start">
-        <span aria-hidden className="text-xl leading-none">💡</span>
+      {/* Neutraler Lesehinweis im Border-links-Muster (kein Pink — das liest sich als Warnung). */}
+      <div className="border-l-[3px] border-primary bg-surface-container px-4 py-3 flex gap-3 items-start">
+        <span aria-hidden className="m3-icon text-[20px] leading-none text-primary">lightbulb</span>
         <div className="space-y-1.5">
-          <p className="text-[12px] font-medium uppercase tracking-[0.08em] opacity-85">Lesehinweis</p>
-          <p className="text-[13px] leading-relaxed">
+          <p className="m3-eyebrow-muted">Lesehinweis</p>
+          <p className="font-sans text-[13px] leading-relaxed text-on-surface-variant">
             Der Hauptbetrag gilt in heutiger Kaufkraft. Um real gleich zu bleiben, musst du ihn
             jedes Jahr um die Inflation anpassen (z. B. +2 %). Steigt dein Gehalt mit der
             Inflation, bleibt die Sparquote konstant.
@@ -360,19 +360,10 @@ function SparquoteEinordnung({ pct }: { pct: number }) {
 
   const message = savingsRateMessage(pct);
 
-  const accent =
-    pct < recMin
-      ? "border-primary text-on-surface"
-      : pct <= recMax
-        ? "border-success text-on-surface"
-        : "border-error text-on-surface";
-
-  const indicatorColor =
-    pct < recMin
-      ? "bg-primary"
-      : pct <= recMax
-        ? "bg-success"
-        : "bg-error";
+  // Bewusst keine Ampelfarben: Rot würde „Fehler" signalisieren, dabei ist eine
+  // hohe Sparquote nur ein Hinweis. Die Einordnung übernimmt der Text darunter.
+  const accent = "border-primary text-on-surface";
+  const indicatorColor = "bg-primary";
 
   return (
     <div className={`mt-5 border-l-[3px] ${accent} bg-surface-container px-4 py-3`}>
