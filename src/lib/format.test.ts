@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatEUR, formatPercent, formatNumber, parseLocalNumber } from "./format";
+import { formatEUR, formatEURRounded, formatPercent, formatNumber, parseLocalNumber } from "./format";
 
 describe("formatEUR", () => {
   it("formats integer Euro amounts in de-DE", () => {
@@ -13,6 +13,27 @@ describe("formatEUR", () => {
   it("returns dash for non-finite", () => {
     expect(formatEUR(Number.NaN)).toBe("—");
     expect(formatEUR(Number.POSITIVE_INFINITY)).toBe("—");
+  });
+});
+
+describe("formatEURRounded", () => {
+  // Erwartungen via formatEUR aufgebaut, weil Intl ein geschütztes Leerzeichen
+  // vor dem €-Zeichen setzt (nicht als Literal tippbar).
+  it("rundet auf 5-Euro-Schritte mit ≈-Präfix", () => {
+    expect(formatEURRounded(783.48, 5)).toBe(`≈ ${formatEUR(785)}`);
+    expect(formatEURRounded(782.4, 5)).toBe(`≈ ${formatEUR(780)}`);
+  });
+
+  it("rundet Kapitalbeträge auf Tausender", () => {
+    expect(formatEURRounded(430952, 1000)).toBe(`≈ ${formatEUR(431000)}`);
+  });
+
+  it("default-Schritt ist 5", () => {
+    expect(formatEURRounded(99)).toBe(`≈ ${formatEUR(100)}`);
+  });
+
+  it("returns dash for non-finite", () => {
+    expect(formatEURRounded(Number.NaN)).toBe("—");
   });
 });
 

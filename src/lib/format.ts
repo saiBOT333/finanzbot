@@ -29,6 +29,16 @@ export function formatEUR(value: number, precise = false): string {
   return precise ? eurFormatterPrecise.format(value) : eurFormatter.format(value);
 }
 
+/**
+ * Gerundete Anzeige für Projektionswerte: „≈ 785 €". Das ≈ kommuniziert, dass
+ * eine Jahrzehnte-Projektion keine centgenaue Antwort hat — exakte Werte
+ * bleiben im Rechenweg und im PDF.
+ */
+export function formatEURRounded(value: number, step = 5): string {
+  if (!Number.isFinite(value) || step <= 0) return "—";
+  return `≈ ${eurFormatter.format(Math.round(value / step) * step)}`;
+}
+
 export function formatPercent(fraction: number): string {
   if (!Number.isFinite(fraction)) return "—";
   return percentFormatter.format(fraction);
