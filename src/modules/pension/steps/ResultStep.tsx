@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Card } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
 import { InfoTooltip } from "../../../components/InfoTooltip";
-import { formatEUR, formatPercent } from "../../../lib/format";
+import { formatEUR, formatEURRounded, formatPercent } from "../../../lib/format";
 import { useProfile, setProfile } from "../../../lib/profile/useProfile";
 import { calculatePension } from "../calculations";
 import { explainPension } from "../explain";
@@ -221,7 +221,7 @@ export function ResultStep() {
 
         <div className="mt-6">
           <p className="m3-display text-on-primary-container">
-            {formatEUR(result.monthlySavings, true)}
+            {formatEURRounded(result.monthlySavings)}
           </p>
           <div className="mt-3 flex items-center gap-3">
             <span aria-hidden className="inline-block h-[3px] w-12 bg-primary rounded-full" />
@@ -248,7 +248,7 @@ export function ResultStep() {
               />
             </div>
             <p className="mt-1 text-2xl font-semibold tabular-nums">
-              {formatEUR(result.fixedNominalSavings, true)}
+              {formatEURRounded(result.fixedNominalSavings)}
             </p>
             <p className="mt-1 text-[12px] leading-snug opacity-85">
               jeden Monat gleich viel, dafür ohne jährliche Erhöhung
@@ -281,7 +281,7 @@ export function ResultStep() {
         />
         <Stat
           label="Kapitalbedarf (heutige Kaufkraft)"
-          value={formatEUR(result.capitalNeeded)}
+          value={formatEURRounded(result.capitalNeeded, 1000)}
           hint={`Bei Renteneintritt in ${result.yearsToRetirement} Jahren entspricht das nominal ca. ${formatEUR(result.capitalNeededNominal)}`}
           tooltip={tooltips.capitalNeeded}
         />
