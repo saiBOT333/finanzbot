@@ -162,6 +162,14 @@ export function AssumptionsStep() {
               assets={profile.assets ?? []}
               onChange={(assets) => setProfile({ assets })}
             />
+            {(profile.assets ?? []).some((a) => a.type === "company-pension") && (
+              <p className="border-l-[2px] border-outline-variant pl-3 text-[12px] leading-relaxed text-on-surface-variant">
+                bAV / Riester / Rürup fließt nicht als Depotkapital in die Rechnung ein —
+                illiquide, Auszahlung als Rente, nachgelagert besteuert. Schlage die daraus
+                erwartete Monatsrente stattdessen auf die erwartete Netto-Rente auf (Feld oben
+                in den Rahmen-Annahmen bzw. Schritt 03).
+              </p>
+            )}
           </AccordionSection>
 
           <AccordionSection

@@ -67,17 +67,17 @@ Befund 2. Baut auf Phase 2 auf (Anspruchsalter fließt in die Renten-Ableitung e
 
 ---
 
-## Phase 4 — Konzeptionelle Verfeinerungen (Session 4)
+## Phase 4 — Konzeptionelle Verfeinerungen (Session 4) ✅
 
 Befunde 4, 5, 6 + Dokumentation. Erwartungswerte einzelner Tests ändern sich bewusst.
 
-**Files:** `src/lib/finance.ts` (+ Tests), `calculations.ts` (+ Tests), `explain.ts` (+ Tests), `steps/ResultStep.tsx`, `steps/AssumptionsStep.tsx`, `tooltips.ts`
+**Files:** `src/lib/finance.ts` (+ Tests), `calculations.ts` (+ Tests), `explain.ts` (+ Tests), `types.ts`, `defaults.ts`, `steps/ResultStep.tsx`, `steps/AssumptionsStep.tsx`, `tooltips.ts`
 
-- [ ] **4a. Sinkende Realrente (umsetzen):** `presentValueGrowingAnnuity` in `lib/finance.ts`. Hauptphasen-Lücke als wachsende Annuität: B real konstant, R schrumpft real mit `(1+raise)/(1+inflation) − 1` (Default −0,5 % p. a.). Bei `raise = inflation` kollabiert sie auf die heutige Formel (Testkriterium). `raise` kommt aus `pensionInfo` (Phase 2).
-- [ ] **4b. Entnahme-Timing (umsetzen):** Auszahl-Annuität auf vorschüssig umstellen (Faktor `× (1 + rₐₘ)`), Sparseite bleibt nachschüssig (konservativ). Code-Kommentar + Testanpassung (~0,3 % höhere Erwartungswerte).
-- [ ] **4c. bAV/Riester/Rürup (filtern + hinweisen):** `company-pension`-Assets in `ResultStep` aus `existingAssets` herausfiltern; Hinweis im Vermögens-Accordion, die erwartete bAV-Monatsrente stattdessen auf die gesetzliche Rente aufzuschlagen. (Ausbaustufe `additionalPensionMonthly` nur nach explizitem Nutzer-Go.)
-- [ ] **4d. Rebalancing-Annahme (nur dokumentieren):** Per-Bucket-Aufzinsung = „kein Rebalancing" explizit in Tooltip + Formel-Stammtisch-Kommentar benennen. Kein Umschalter.
-- [ ] **Verify:** `vitest run`; Referenz-Szenarien prüfen (greifen bei `raise = inflation` weiter exakt); manueller Wizard-Smoke-Test; Rechenweg (`explain.ts`) zeigt wachsende Annuität + vorschüssige Entnahme korrekt.
+- [x] **4a. Sinkende Realrente (umsetzen):** `presentValueGrowingAnnuity` in `lib/finance.ts`. Hauptphasen-Lücke als wachsende Annuität: B real konstant, R schrumpft real mit `(1+raise)/(1+inflation) − 1` (Default −0,5 % p. a.). Bei `raise = inflation` kollabiert sie auf die heutige Formel (Testkriterium). `raise` kommt aus `pensionInfo` (Phase 2). *(Umsetzung als Differenz „B-Annuität − wachsende R-Annuität", weil die Lücke selbst nicht mit konstanter Rate wächst; `PensionInputs` bekam dafür `statePensionRaise`. Klemme `max(0, …)` auf Gesamtbarwert-Ebene — deckt die Rente den Bedarf durchgehend, bleibt die Hauptphase 0. SWR bewusst unverändert: Daumenwert auf Basis der heutigen Lücke L, im Code dokumentiert.)*
+- [x] **4b. Entnahme-Timing (umsetzen):** Auszahl-Annuität auf vorschüssig umstellen (Faktor `× (1 + rₐₘ)`), Sparseite bleibt nachschüssig (konservativ). Code-Kommentar + Testanpassung (~0,3 % höhere Erwartungswerte). *(Gilt für Brücken- und Hauptphase; Faktor je Bucket-Rate via `weightedPresentValueDue`.)*
+- [x] **4c. bAV/Riester/Rürup (filtern + hinweisen):** `company-pension`-Assets in `ResultStep` aus `existingAssets` herausgefiltert; bedingter Hinweis im Vermögens-Accordion, die erwartete bAV-Monatsrente stattdessen auf die gesetzliche Rente aufzuschlagen. (Ausbaustufe `additionalPensionMonthly` nur nach explizitem Nutzer-Go.)
+- [x] **4d. Rebalancing-Annahme (nur dokumentieren):** Per-Bucket-Aufzinsung = „kein Rebalancing" explizit im `existingAssets`-Tooltip + Formel-Stammtisch-Kommentar benannt. Kein Umschalter.
+- [x] **Verify:** `vitest run` (144 Tests grün, 11 Dateien) + `tsc --noEmit` sauber. Referenz-Szenarien: Daniela mit `statePensionRaise = inflation` als Invariante fixiert (Finanztip hält die Lücke real konstant), Carlotta (SWR) unverändert; Kollaps- und Vorschüssig-Faktor-Tests ergänzt. Wizard-Smoke-Test (Dev-Server): Rechenweg zeigt `K₀ = max(0; B × aₘ − R × aᵍₘ) × (1 + rₐₘ)` mit g ≈ −0,49 % p. a. und Eingang ρ; bAV-Asset (50 k€) fließt nicht in `existingFV` ein (41.161 € = nur ETF), Hinweis im Accordion sichtbar. *(Presets-Fixture bewusst von ~525 € auf ~575 € angehoben.)*
 
 ---
 

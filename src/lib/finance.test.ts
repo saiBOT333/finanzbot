@@ -6,6 +6,7 @@ import {
   paymentForFutureValue,
   annualToMonthlyRate,
   monthlyToAnnualRate,
+  presentValueGrowingAnnuity,
   weightedFutureValueAnnuity,
   weightedPresentValueAnnuity,
   weightedFutureValueAnnuityFactor,
@@ -29,6 +30,36 @@ describe("presentValueAnnuity", () => {
   });
   it("n=0 yields 0", () => {
     expect(presentValueAnnuity(100, 0.05, 0)).toBe(0);
+  });
+});
+
+describe("presentValueGrowingAnnuity", () => {
+  it("collapses to presentValueAnnuity when growth = 0", () => {
+    expect(presentValueGrowingAnnuity(100, 0.05, 0, 10)).toBeCloseTo(
+      presentValueAnnuity(100, 0.05, 10),
+      10,
+    );
+  });
+
+  it("matches the brute-force sum of discounted growing payments", () => {
+    // PV = Σ payment × (1+g)^(t−1) / (1+r)^t, nachschüssig, erste Zahlung = payment
+    const payment = 100;
+    const rate = 0.004;
+    const growth = -0.0004; // schrumpfende Zahlung (reale Rente bei Anpassung < Inflation)
+    const n = 120;
+    let expected = 0;
+    for (let t = 1; t <= n; t++) {
+      expected += (payment * Math.pow(1 + growth, t - 1)) / Math.pow(1 + rate, t);
+    }
+    expect(presentValueGrowingAnnuity(payment, rate, growth, n)).toBeCloseTo(expected, 6);
+  });
+
+  it("handles rate === growth without dividing by zero", () => {
+    expect(presentValueGrowingAnnuity(100, 0.02, 0.02, 10)).toBeCloseTo((100 * 10) / 1.02, 8);
+  });
+
+  it("n=0 yields 0", () => {
+    expect(presentValueGrowingAnnuity(100, 0.05, 0.01, 0)).toBe(0);
   });
 });
 

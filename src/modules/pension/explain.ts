@@ -1,5 +1,10 @@
 import { formatEUR, formatNumber, formatPercent } from "../../lib/format";
-import { STATE_PENSION_MIN_CLAIM_AGE } from "./constants";
+import {
+  annualToMonthlyRate,
+  presentValueAnnuity,
+  presentValueGrowingAnnuity,
+} from "../../lib/finance";
+import { PENSION_RAISE_DEFAULT, STATE_PENSION_MIN_CLAIM_AGE } from "./constants";
 import { PENSION_DEFAULTS } from "./defaults";
 import type { PensionInputs, PensionResult } from "./types";
 
@@ -47,6 +52,7 @@ export function explainPension(
     replacementRate,
     expectedStatePension,
     inflation,
+    statePensionRaise,
     savingsBuckets,
     payoutBuckets,
     existingAssets,
@@ -62,7 +68,6 @@ export function explainPension(
   const rPayMonthly = Math.pow(1 + rPay, 1 / 12) - 1;
   const months = result.yearsToRetirement * 12;
   const useAnnuity = payoutMethod === "annuity";
-  const payoutMonths = payoutYears * 12;
   const rPayMonthlyStr = `${(rPayMonthly * 100).toFixed(4).replace(".", ",")} %`;
 
   const inputsTable: ExplanationInput[] = [
@@ -98,6 +103,12 @@ export function explainPension(
       symbol: "i",
       value: formatPercent(inflation),
       isDefault: inflation === PENSION_DEFAULTS.inflation,
+    },
+    {
+      label: "Jährliche Rentenanpassung (nominal)",
+      symbol: "ρ",
+      value: formatPercent(statePensionRaise),
+      isDefault: statePensionRaise === PENSION_RAISE_DEFAULT,
     },
     {
       label: "Reale Rendite Sparphase (gewichtet)",
@@ -148,6 +159,17 @@ export function explainPension(
   const bridgeMonths = result.bridgeYears * 12;
   const mainMonths = useAnnuity ? (payoutYears - result.bridgeYears) * 12 : 0;
 
+  // Sinkende Realrente: Anpassung ρ < Inflation i ⇒ die Rente schrumpft real
+  // mit g = (1+ρ)/(1+i) − 1 während des Bezugs (spiegelt calculations.ts).
+  const gAnnual = (1 + statePensionRaise) / (1 + inflation) - 1;
+  const gMonthly = annualToMonthlyRate(gAnnual);
+  const gAnnualStr = `${(gAnnual * 100).toFixed(2).replace(".", ",")} %`;
+  // Barwertfaktoren der Hauptphase (für 1 € Zahlung) — mit dem gewichteten
+  // Durchschnitt rₐₘ gerechnet, wie alle Substitutions-Zeilen dieses Traces.
+  const aFactor = presentValueAnnuity(1, rPayMonthly, mainMonths);
+  const agFactor = presentValueGrowingAnnuity(1, rPayMonthly, gMonthly, mainMonths);
+  const fmtFactor = (x: number) => x.toFixed(2).replace(".", ",");
+
   // Frühverrentungs-Brücke: bei Renteneintritt vor 63 wird der volle Bedarf B
   // bis zum Rentenanspruch komplett aus Kapital gedeckt.
   const bridgeSteps: ExplanationStep[] = hasBridge
@@ -155,10 +177,10 @@ export function explainPension(
         {
           index: 0,
           title: "Brückenkapital bis zum Rentenanspruch",
-          formula: "K_B = B × (1 − (1 + rₐₘ)^−m_B) / rₐₘ",
-          substituted: `K_B = ${formatEUR(result.needToday)} × (1 − (1 + ${rPayMonthlyStr})^−${bridgeMonths}) / ${rPayMonthlyStr}`,
+          formula: "K_B = B × (1 − (1 + rₐₘ)^−m_B) / rₐₘ × (1 + rₐₘ)",
+          substituted: `K_B = ${formatEUR(result.needToday)} × (1 − (1 + ${rPayMonthlyStr})^−${bridgeMonths}) / ${rPayMonthlyStr} × (1 + ${rPayMonthlyStr})`,
           result: `K_B = ${formatEUR(result.bridgeCapital)}`,
-          note: `Die gesetzliche Rente fließt frühestens ab ${STATE_PENSION_MIN_CLAIM_AGE}. Zwischen Renteneintritt und Rentenanspruch (${formatNumber(result.bridgeYears)} Jahre, m_B = ${bridgeMonths} Monate) muss daher der volle Bedarf B aus Kapital gedeckt werden — nicht nur die Lücke.`,
+          note: `Die gesetzliche Rente fließt frühestens ab ${STATE_PENSION_MIN_CLAIM_AGE}. Zwischen Renteneintritt und Rentenanspruch (${formatNumber(result.bridgeYears)} Jahre, m_B = ${bridgeMonths} Monate) muss daher der volle Bedarf B aus Kapital gedeckt werden — nicht nur die Lücke. Der Faktor (1 + rₐₘ) stellt auf vorschüssige Entnahme um, weil der Bedarf am Monatsanfang anfällt.`,
         },
       ]
     : [];
@@ -170,17 +192,19 @@ export function explainPension(
           ? "Kapitalbedarf Hauptphase ab Rentenanspruch (Annuität)"
           : "Kapitalbedarf vor Steuer (Annuität)",
         formula: hasBridge
-          ? "K_H = L × (1 − (1 + rₐₘ)^−m_H) / rₐₘ / (1 + rₐₘ)^m_B"
-          : "K₀ = L × (1 − (1 + rₐₘ)^−m) / rₐₘ",
+          ? "K_H = max(0; B × aₘ − R × aᵍₘ) × (1 + rₐₘ) / (1 + rₐₘ)^m_B"
+          : "K₀ = max(0; B × aₘ − R × aᵍₘ) × (1 + rₐₘ)",
         substituted: hasBridge
-          ? `K_H = ${formatEUR(result.gapToday)} × (1 − (1 + ${rPayMonthlyStr})^−${mainMonths}) / ${rPayMonthlyStr} / (1 + ${rPayMonthlyStr})^${bridgeMonths}`
-          : `K₀ = ${formatEUR(result.gapToday)} × (1 − (1 + ${rPayMonthlyStr})^−${payoutMonths}) / ${rPayMonthlyStr}`,
+          ? `K_H = max(0; ${formatEUR(result.needToday)} × ${fmtFactor(aFactor)} − ${formatEUR(expectedStatePension)} × ${fmtFactor(agFactor)}) × (1 + ${rPayMonthlyStr}) / (1 + ${rPayMonthlyStr})^${bridgeMonths}`
+          : `K₀ = max(0; ${formatEUR(result.needToday)} × ${fmtFactor(aFactor)} − ${formatEUR(expectedStatePension)} × ${fmtFactor(agFactor)}) × (1 + ${rPayMonthlyStr})`,
         result: hasBridge
           ? `K_H = ${formatEUR(result.mainCapital)}`
           : `K₀ = ${formatEUR(result.capitalNeededBeforeTax)}`,
-        note: hasBridge
-          ? `Barwert der Lücke L über die Hauptphase (m_H = ${mainMonths} Monate ab Rentenanspruch), anschließend um die Brückenmonate auf den Renteneintritt abgezinst — das Kapital arbeitet während der Brücke weiter.`
-          : `Barwert einer monatlich entnommenen Rente L über T Jahre. rₐₘ ist die monatliche reale Auszahlrendite — (1 + rₐ)^(1/12) − 1 — und m = T × 12 = ${payoutMonths} Monate. Damit ist das Kapital am Ende von T Jahren genau aufgebraucht — Finanztip-Methode.`,
+        note: `${
+          hasBridge
+            ? `Hauptphase über m_H = ${mainMonths} Monate ab Rentenanspruch, anschließend um die Brückenmonate auf den Renteneintritt abgezinst — das Kapital arbeitet während der Brücke weiter. `
+            : `Bezugsdauer m = T × 12 = ${mainMonths} Monate. `
+        }Die Lücke ist keine konstante Annuität: der Bedarf B bleibt real konstant, die Rente R schrumpft real mit g = (1 + ρ)/(1 + i) − 1 ≈ ${gAnnualStr} p. a., weil die Rentenanpassung meist unter der Inflation liegt. aₘ = (1 − (1 + rₐₘ)^−m) / rₐₘ ist der Barwertfaktor des konstanten Bedarfs, aᵍₘ = (1 − ((1+gₘ)/(1+rₐₘ))^m) / (rₐₘ − gₘ) der der schrumpfenden Rente. Der Faktor (1 + rₐₘ) stellt auf vorschüssige Entnahme um (Bedarf am Monatsanfang). Bei ρ = i kollabiert alles auf die konstante Annuität der Lücke L — Finanztip-Methode.`,
       }
     : {
         index: 0,
@@ -310,9 +334,12 @@ export function explainPension(
 
   // The weighted payout return rₐ only feeds the annuity capital step and the
   // bridge annuity. Under safe-withdrawal without bridge it is unused — drop
-  // it so the trace shows no input that doesn't influence a result.
-  const visibleInputs =
-    useAnnuity || hasBridge ? inputsTable : inputsTable.filter((i) => i.symbol !== "rₐ");
+  // it so the trace shows no input that doesn't influence a result. Gleiches
+  // gilt für die Rentenanpassung ρ: sie fließt nur in die wachsende Annuität
+  // der Hauptphase ein (Annuitäts-Methode).
+  const visibleInputs = (
+    useAnnuity || hasBridge ? inputsTable : inputsTable.filter((i) => i.symbol !== "rₐ")
+  ).filter((i) => useAnnuity || i.symbol !== "ρ");
 
   // Brücken- und Summen-Schritt sind bedingt — Indizes erst hier durchnummerieren.
   const numberedSteps = steps.map((s, i) => ({ ...s, index: i + 1 }));

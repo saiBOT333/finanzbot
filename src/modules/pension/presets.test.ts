@@ -36,14 +36,17 @@ describe("DEFAULT_PENSION_STATE", () => {
     expect(DEFAULT_PENSION_STATE.taxBufferPct).toBe(TAX_BUFFER_DEFAULT);
   });
 
-  it("produces a plausible monthly savings (~ 525 €) for the 35 J / 3.000 € fixture", () => {
+  it("produces a plausible monthly savings (~ 575 €) for the 35 J / 3.000 € fixture", () => {
+    // Seit Phase 4 leicht höher als früher (~525 €): die real sinkende Rente
+    // (Anpassung 1,5 % < Inflation 2 %) und die vorschüssige Entnahme erhöhen
+    // den Kapitalbedarf bewusst.
     const state: PensionModuleState = {
       ...DEFAULT_PENSION_STATE,
       expectedStatePension: 1440,
     };
     const r = calculatePension(fixtureInputs(state));
     if (r.kind !== "ok") throw new Error("expected ok");
-    expect(r.monthlySavings).toBeGreaterThan(490);
-    expect(r.monthlySavings).toBeLessThan(560);
+    expect(r.monthlySavings).toBeGreaterThan(540);
+    expect(r.monthlySavings).toBeLessThan(610);
   });
 });

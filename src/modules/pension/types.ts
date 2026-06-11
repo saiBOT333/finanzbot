@@ -10,6 +10,12 @@ export type PensionInputs = {
   expectedStatePension: number;
   /** Annual inflation rate, e.g. 0.02 for 2 %. */
   inflation: number;
+  /**
+   * Nominale jährliche Rentenanpassung (z. B. 0.015). Liegt sie unter der
+   * Inflation, schrumpft die gesetzliche Rente während des Bezugs real —
+   * die Hauptphasen-Lücke wächst entsprechend.
+   */
+  statePensionRaise: number;
   /** Per-bucket weights and real returns during the saving phase. Weights sum to 1. */
   savingsBuckets: Array<{ weight: number; rate: number }>;
   /** Per-bucket weights and real returns during the payout phase. Weights sum to 1. */

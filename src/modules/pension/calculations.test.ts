@@ -1,7 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { calculatePension } from "./calculations";
 import { withDefaults } from "./defaults";
-import { annualToMonthlyRate, presentValueAnnuity } from "../../lib/finance";
+import {
+  annualToMonthlyRate,
+  presentValueAnnuity,
+  presentValueGrowingAnnuity,
+} from "../../lib/finance";
 import type { PensionInputs } from "./types";
 
 const baseInputs: PensionInputs = withDefaults({
@@ -163,6 +167,9 @@ describe("calculatePension — Finanztip cross-check (Daniela)", () => {
         netIncomeMonthly: 2600,
         replacementRate: 2200 / 2600,
         expectedStatePension: 1360,
+        // Finanztip hält die Lücke real konstant — raise = inflation schaltet
+        // das Schrumpf-Modell der Phase 4 ab (Referenz-Invariante).
+        statePensionRaise: 0.02,
         savingsBuckets: [{ weight: 1, rate: 0.03 }], // 5 % nominal − 2 % inflation
         payoutBuckets: [{ weight: 1, rate: 0.01 }], // 3 % nominal − 2 % inflation
         payoutYears: 30,
@@ -261,14 +268,21 @@ describe("calculatePension — Frühverrentungs-Brücke", () => {
     expectedStatePension: 1500,
   });
 
+  // Reale Schrumpfrate der Rente bei Default-Anpassung 1,5 % und Inflation 2 %
+  const gM = annualToMonthlyRate((1 + 0.015) / (1 + 0.02) - 1);
+
   it("Renteneintritt 67: keine Brücke, Ergebnis kollabiert exakt auf die einphasige Formel", () => {
     const r = calculatePension({ ...base, retirementAge: 67, payoutYears: 23 });
     if (r.kind !== "ok") throw new Error("expected ok");
     expect(r.bridgeYears).toBe(0);
     expect(r.bridgeCapital).toBe(0);
-    // Einphasige Referenzrechnung: PV der Lücke über die volle Bezugsdauer
+    // Einphasige Referenzrechnung: Bedarf konstant, Rente schrumpft real mit gM,
+    // vorschüssige Entnahme (Faktor 1 + rM).
     const rM = annualToMonthlyRate(0.01);
-    const expected = presentValueAnnuity(900, rM, 23 * 12);
+    const expected =
+      (presentValueAnnuity(2400, rM, 23 * 12) -
+        presentValueGrowingAnnuity(1500, rM, gM, 23 * 12)) *
+      (1 + rM);
     expect(r.mainCapital).toBeCloseTo(expected, 6);
     expect(r.capitalNeededBeforeTax).toBeCloseTo(expected, 6);
   });
@@ -280,10 +294,15 @@ describe("calculatePension — Frühverrentungs-Brücke", () => {
     expect(r.bridgeYears).toBe(8);
 
     const rM = annualToMonthlyRate(0.01);
-    // Brückenphase: voller Bedarf B = 2400 als Annuität über 96 Monate
-    const bridge = presentValueAnnuity(2400, rM, 8 * 12);
-    // Hauptphase: Lücke L = 900 über 27 Jahre, Barwert auf Rentenbeginn abgezinst
-    const main = presentValueAnnuity(900, rM, 27 * 12) / Math.pow(1 + rM, 8 * 12);
+    // Brückenphase: voller Bedarf B = 2400 als vorschüssige Annuität über 96 Monate
+    const bridge = presentValueAnnuity(2400, rM, 8 * 12) * (1 + rM);
+    // Hauptphase: Bedarf 2400 konstant minus real schrumpfende Rente 1500 über
+    // 27 Jahre, vorschüssig, Barwert auf den Rentenbeginn abgezinst
+    const main =
+      ((presentValueAnnuity(2400, rM, 27 * 12) -
+        presentValueGrowingAnnuity(1500, rM, gM, 27 * 12)) *
+        (1 + rM)) /
+      Math.pow(1 + rM, 8 * 12);
     expect(r.bridgeCapital).toBeCloseTo(bridge, 4);
     expect(r.mainCapital).toBeCloseTo(main, 4);
     expect(r.capitalNeededBeforeTax).toBeCloseTo(bridge + main, 4);
@@ -298,7 +317,7 @@ describe("calculatePension — Frühverrentungs-Brücke", () => {
     });
     if (r.kind !== "ok") throw new Error("expected ok");
     const rM = annualToMonthlyRate(0.01);
-    const bridge = presentValueAnnuity(2400, rM, 8 * 12);
+    const bridge = presentValueAnnuity(2400, rM, 8 * 12) * (1 + rM);
     const swr = (900 * 12) / 0.035;
     expect(r.bridgeCapital).toBeCloseTo(bridge, 4);
     expect(r.mainCapital).toBeCloseTo(swr, 4);
@@ -315,7 +334,10 @@ describe("calculatePension — Frühverrentungs-Brücke", () => {
     if (r.kind !== "ok") throw new Error("expected ok — Brückenbedarf besteht trotz gedeckter Lücke");
     const rM = annualToMonthlyRate(0.01);
     expect(r.mainCapital).toBe(0);
-    expect(r.capitalNeededBeforeTax).toBeCloseTo(presentValueAnnuity(2400, rM, 8 * 12), 4);
+    expect(r.capitalNeededBeforeTax).toBeCloseTo(
+      presentValueAnnuity(2400, rM, 8 * 12) * (1 + rM),
+      4,
+    );
   });
 
   it("ohne Brücke bleibt 'no-gap' bei gedeckter Lücke erhalten (Regression)", () => {
@@ -326,6 +348,49 @@ describe("calculatePension — Frühverrentungs-Brücke", () => {
       expectedStatePension: 3000,
     });
     expect(r.kind).toBe("no-gap");
+  });
+});
+
+describe("calculatePension — sinkende Realrente & vorschüssige Entnahme (Phase 4)", () => {
+  // 40-Jähriger, 3.000 € Netto, 1.500 € Rente ab 67, Auszahlrendite 1 % real.
+  const base = withDefaults({
+    currentAge: 40,
+    retirementAge: 67,
+    netIncomeMonthly: 3000,
+    expectedStatePension: 1500,
+    payoutYears: 23,
+  });
+  const rM = annualToMonthlyRate(0.01);
+
+  it("raise = inflation: kollabiert exakt auf die konstante Annuität der Lücke (vorschüssig)", () => {
+    const r = calculatePension({ ...base, statePensionRaise: base.inflation });
+    if (r.kind !== "ok") throw new Error("expected ok");
+    const expected = presentValueAnnuity(900, rM, 23 * 12) * (1 + rM);
+    expect(r.mainCapital).toBeCloseTo(expected, 6);
+  });
+
+  it("Anpassung unter der Inflation erhöht den Kapitalbedarf (Lücke wächst real)", () => {
+    const shrinking = calculatePension(base); // Default-Anpassung 1,5 % < Inflation 2 %
+    const constant = calculatePension({ ...base, statePensionRaise: base.inflation });
+    if (shrinking.kind !== "ok" || constant.kind !== "ok") throw new Error("expected ok");
+    expect(shrinking.capitalNeededBeforeTax).toBeGreaterThan(constant.capitalNeededBeforeTax);
+  });
+
+  it("vorschüssige Entnahme: Kapitalbedarf genau um den Faktor (1 + rₐₘ) über der nachschüssigen Referenz", () => {
+    const r = calculatePension({ ...base, statePensionRaise: base.inflation });
+    if (r.kind !== "ok") throw new Error("expected ok");
+    const arrears = presentValueAnnuity(900, rM, 23 * 12);
+    expect(r.mainCapital / arrears).toBeCloseTo(1 + rM, 10);
+  });
+
+  it("SWR-Hauptkapital bleibt vom Schrumpf-Modell unberührt (Daumenwert L × 12 / w)", () => {
+    const r = calculatePension({
+      ...base,
+      payoutMethod: "safe-withdrawal",
+      safeWithdrawalRate: 0.035,
+    });
+    if (r.kind !== "ok") throw new Error("expected ok");
+    expect(r.mainCapital).toBeCloseTo((900 * 12) / 0.035, 6);
   });
 });
 

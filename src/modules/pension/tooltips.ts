@@ -23,7 +23,7 @@ export const tooltips: Record<string, string> = {
   taxBufferPct:
     "Aufschlag auf den Kapitalbedarf, um die spätere Kapitalertragssteuer (26,375 % auf Gewinne) zu kompensieren. Finanzfluss-Faustformel: 10–15 % zusätzliches Vermögen einplanen. Vereinfachung: die Steuer trifft real nur die Gewinne, hier wird sie pauschal aufs Gesamtkapital gerechnet.",
   existingAssets:
-    "Trag dein bestehendes Vermögen nach Anlageform getrennt ein. Jede Position wächst dann mit ihrer eigenen realen Rendite — Tagesgeld stagniert, ETF wächst kräftig. Macht die Hochrechnung deutlich realistischer als ein einzelner Mittelwert.",
+    "Trag dein bestehendes Vermögen nach Anlageform getrennt ein. Jede Position wächst dann mit ihrer eigenen realen Rendite — Tagesgeld stagniert, ETF wächst kräftig. Macht die Hochrechnung deutlich realistischer als ein einzelner Mittelwert. Annahme dabei: kein Rebalancing — jede Position läuft mit ihrer eigenen Rendite weiter, Umschichtungen zwischen Anlageklassen sind nicht modelliert. bAV / Riester / Rürup zählt nicht als Depotkapital (illiquide, Auszahlung als Rente) — schlage die erwartete Monatsrente daraus stattdessen auf die gesetzliche Rente auf.",
   gapToday:
     "Die monatliche Lücke zwischen Bedarf und gesetzlicher Rente, ausgedrückt in heutiger Kaufkraft. Real (heute) = gemessen in heutigen Preisen, also direkt vergleichbar mit deinem jetzigen Lebensniveau. Die Zahl im Hinweis ist derselbe Betrag nominal — die Euro-Summe, die du in N Jahren tatsächlich überweisen musst, weil bis dahin alles teurer geworden ist. Beide Zahlen beschreiben dasselbe Lebensniveau.",
   capitalNeeded:

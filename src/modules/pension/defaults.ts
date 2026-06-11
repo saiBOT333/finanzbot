@@ -2,6 +2,7 @@ import {
   INFLATION_DEFAULT,
   PLANNING_AGE_DEFAULT,
   PENSION_GROSS_TO_NET_DEDUCTION,
+  PENSION_RAISE_DEFAULT,
   REPLACEMENT_RATE_DEFAULT,
   RETIREMENT_AGE_DEFAULT,
   SAFE_WITHDRAWAL_RATE,
@@ -60,6 +61,7 @@ export function withDefaults(partial: Partial<PensionInputs>): PensionInputs {
     expectedStatePension:
       partial.expectedStatePension ?? netIncomeMonthly * PENSION_DEFAULTS.statePensionFactor,
     inflation: partial.inflation ?? PENSION_DEFAULTS.inflation,
+    statePensionRaise: partial.statePensionRaise ?? PENSION_RAISE_DEFAULT,
     savingsBuckets: partial.savingsBuckets ?? [{ weight: 1, rate: 0.03 }],
     payoutBuckets: partial.payoutBuckets ?? [{ weight: 1, rate: 0.01 }],
     existingAssets: partial.existingAssets ?? [],
