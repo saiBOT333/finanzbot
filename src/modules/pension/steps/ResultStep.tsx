@@ -132,7 +132,7 @@ export function ResultStep() {
 
   return (
     <div className="space-y-6">
-      {statePension.source === "fallback" && (
+      {statePension.source === "fallback" && m.pensionInfoChoice !== "estimate" && (
         <div className="rounded-m3-md bg-error-container p-4 flex gap-3 items-start">
           <span aria-hidden className="text-xl leading-none">▲</span>
           <div className="space-y-1">
@@ -149,6 +149,20 @@ export function ResultStep() {
               Wert ein.
             </p>
           </div>
+        </div>
+      )}
+
+      {statePension.source === "fallback" && m.pensionInfoChoice === "estimate" && (
+        <div className="border-l-[3px] border-primary bg-surface-container px-4 py-3">
+          <p className="m3-eyebrow-muted">Gesetzliche Rente · geschätzt</p>
+          <p className="mt-1.5 font-sans text-[13px] leading-relaxed text-on-surface-variant">
+            Dein Ergebnis basiert auf einer Schätzung der gesetzlichen Rente:{" "}
+            <span className="tabular-nums font-semibold text-on-surface">
+              {formatEUR(result.needToday - result.gapToday)}
+            </span>{" "}
+            pro Monat — pauschal 48 % deines Netto-Einkommens. Mit dem Wert aus deiner
+            Renteninformation (Schritt 3) wird es deutlich genauer.
+          </p>
         </div>
       )}
 
