@@ -200,17 +200,14 @@ export function ResultStep() {
       {/* M3 Hero-Card: Display-Zahl auf Primary-Container. */}
       <Card variant="hero">
         <div className="flex items-start justify-between gap-3">
-          <div>
-            <span className="m3-eyebrow bg-primary text-on-primary">Output · 01</span>
-            <div className="mt-2 flex items-center gap-1.5">
-              <p className="text-[12px] uppercase tracking-[0.08em] opacity-85">
-                Empfohlene monatliche Sparrate
-              </p>
-              <InfoTooltip
-                content={tooltips.monthlySavings}
-                label="Erklärung zu Empfohlene monatliche Sparrate"
-              />
-            </div>
+          <div className="flex items-center gap-1.5">
+            <p className="text-[12px] uppercase tracking-[0.08em] opacity-85">
+              Empfohlene monatliche Sparrate
+            </p>
+            <InfoTooltip
+              content={tooltips.monthlySavings}
+              label="Erklärung zu Empfohlene monatliche Sparrate"
+            />
           </div>
           <Button
             variant="tonal"
@@ -228,9 +225,7 @@ export function ResultStep() {
           </p>
           <div className="mt-3 flex items-center gap-3">
             <span aria-hidden className="inline-block h-[3px] w-12 bg-primary rounded-full" />
-            <span className="text-[12px] uppercase tracking-[0.08em] opacity-85">
-              Monatlich · Real · Heutige Kaufkraft
-            </span>
+            <span className="text-[13px] opacity-85">pro Monat, in heutiger Kaufkraft</span>
           </div>
         </div>
 
@@ -246,17 +241,17 @@ export function ResultStep() {
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <p className="text-[11px] uppercase tracking-[0.08em] opacity-85">Alternativ · Nominal fix</p>
+              <p className="text-[12px] font-medium opacity-85">Alternative: fester Betrag</p>
               <InfoTooltip
                 content={tooltips.fixedNominalSavings}
-                label="Erklärung zu Alternativ · Nominal fix"
+                label="Erklärung zu Alternative: fester Betrag"
               />
             </div>
             <p className="mt-1 text-2xl font-semibold tabular-nums">
               {formatEUR(result.fixedNominalSavings, true)}
             </p>
             <p className="mt-1 text-[12px] leading-snug opacity-85">
-              gleichbleibender Betrag, ohne jährliche Inflationsanpassung
+              jeden Monat gleich viel, dafür ohne jährliche Erhöhung
             </p>
           </div>
         </div>
@@ -435,7 +430,7 @@ function Stat({ label, value, hint, tooltip }: StatProps) {
         {value}
       </div>
       {hint && (
-        <div className="mt-2 text-[12px] leading-snug text-on-surface-variant">{hint}</div>
+        <div className="mt-2 text-[13px] leading-snug text-on-surface-variant">{hint}</div>
       )}
     </Card>
   );

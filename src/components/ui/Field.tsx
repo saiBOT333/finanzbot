@@ -47,7 +47,7 @@ export function Field({
         </p>
       ) : (
         hint && (
-          <p className="text-[12px] leading-snug text-on-surface-variant">{hint}</p>
+          <p className="text-[13px] leading-snug text-on-surface-variant">{hint}</p>
         )
       )}
     </div>
