@@ -44,6 +44,7 @@ describe("DEFAULT_PENSION_STATE", () => {
     const state: PensionModuleState = {
       ...DEFAULT_PENSION_STATE,
       expectedStatePension: 1440,
+      pensionInfoChoice: null,
     };
     const r = calculatePension(fixtureInputs(state));
     if (r.kind !== "ok") throw new Error("expected ok");
