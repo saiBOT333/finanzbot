@@ -35,12 +35,18 @@ export function ResultStep() {
     replacementRate: m.replacementRate,
     expectedStatePension: statePension.monthly,
     inflation: m.inflation,
+    statePensionRaise: m.pensionInfo.raise,
     savingsBuckets: allocationToBuckets(m.savingsAllocation),
     payoutBuckets: allocationToBuckets(m.payoutAllocation),
-    existingAssets: (profile.assets ?? []).map((a) => ({
-      amount: a.amount,
-      realReturn: effectiveRealReturn(a),
-    })),
+    // bAV/Riester/Rürup ist kein frei verzehrbares Depotkapital (illiquide,
+    // Rentenauszahlung, nachgelagert besteuert) — bleibt hier außen vor.
+    // Hinweis dazu im Vermögens-Accordion (AssumptionsStep).
+    existingAssets: (profile.assets ?? [])
+      .filter((a) => a.type !== "company-pension")
+      .map((a) => ({
+        amount: a.amount,
+        realReturn: effectiveRealReturn(a),
+      })),
     payoutMethod: m.payoutMethod,
     payoutYears: derivePayoutYears(m.planningAge, profile.retirementAge),
     safeWithdrawalRate: m.safeWithdrawalRate,

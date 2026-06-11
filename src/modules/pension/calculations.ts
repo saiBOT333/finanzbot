@@ -2,8 +2,8 @@ import {
   annualToMonthlyRate,
   compound,
   presentValueAnnuity,
+  presentValueGrowingAnnuity,
   weightedFutureValueAnnuityFactor,
-  weightedPresentValueAnnuity,
 } from "../../lib/finance";
 import { STATE_PENSION_MIN_CLAIM_AGE } from "./constants";
 import type { PensionInputs, PensionResult } from "./types";
@@ -15,23 +15,19 @@ function weightedAverage(buckets: Array<{ weight: number; rate: number }>): numb
 }
 
 /**
- * Barwert einer Annuität, die erst nach `defer` Perioden beginnt: je Bucket
- * wird der Phasen-Barwert mit der Bucket-Rate um `defer` Perioden abgezinst.
- * Bei `defer = 0` exakt identisch zu `weightedPresentValueAnnuity`.
+ * Gewichteter Barwert einer VORSCHÜSSIGEN Entnahme: je Bucket wird der
+ * nachschüssige Phasen-Barwert `pvAtRate(rate)` mit dem Faktor (1 + rate)
+ * auf Zahlung am Monatsanfang umgestellt (der Rentenbedarf fällt am
+ * Monatsanfang an, nicht am Monatsende).
  */
-function weightedDeferredPresentValueAnnuity(
-  payment: number,
+function weightedPresentValueDue(
   buckets: Array<{ weight: number; rate: number }>,
-  n: number,
-  defer: number,
+  pvAtRate: (rate: number) => number,
 ): number {
   const totalWeight = buckets.reduce((s, b) => s + b.weight, 0);
   if (totalWeight === 0) return 0;
   return buckets.reduce(
-    (sum, b) =>
-      sum +
-      ((b.weight / totalWeight) * presentValueAnnuity(payment, b.rate, n)) /
-        Math.pow(1 + b.rate, defer),
+    (sum, b) => sum + (b.weight / totalWeight) * pvAtRate(b.rate) * (1 + b.rate),
     0,
   );
 }
@@ -48,6 +44,7 @@ function weightedDeferredPresentValueAnnuity(
  *   N    Netto-Einkommen pro Monat (heute)            inputs.netIncomeMonthly
  *   q    Bedarfsquote                                 inputs.replacementRate
  *   R    Erwartete Netto-Rente (heute, Monat)         inputs.expectedStatePension
+ *   ρ    Nominale jährliche Rentenanpassung           inputs.statePensionRaise
  *   a    Aktuelles Alter                              inputs.currentAge
  *   a₊   Renteneintrittsalter                         inputs.retirementAge
  *   r    Reale Rendite Sparphase                      inputs.realReturn
@@ -67,13 +64,27 @@ function weightedDeferredPresentValueAnnuity(
  *         Brücke (a₊ → 63):   voller Bedarf B als Annuität über b = 63 − a₊ Jahre
  *         Hauptphase (63 → Planungsalter): nur noch die Lücke L
  *       Bei a₊ ≥ 63 ist b = 0 und alles kollabiert exakt auf die Formeln 4a/4b.
+ *   3c. Sinkende Realrente: die Anpassung ρ liegt typischerweise unter der
+ *       Inflation i, die Rente schrumpft real während des Bezugs mit
+ *         g = (1 + ρ) / (1 + i) − 1        (Default ≈ −0,5 % p. a.)
+ *       Die Hauptphasen-Lücke ist daher keine konstante Annuität, sondern die
+ *       Differenz "konstanter Bedarf B − wachsende (schrumpfende) Rente R".
+ *       Bei ρ = i ist g = 0 und alles kollabiert auf die konstante Lücke L.
+ *   3d. Entnahme-Timing: der Rentenbedarf fällt am MONATSANFANG an, die
+ *       Auszahl-Annuitäten sind daher vorschüssig (Faktor × (1 + rₐₘ)).
+ *       Die Sparseite bleibt nachschüssig — konservativ.
  *   4a. Annuität:        K₀ = K_B + K_H
- *         K_B = B × (1 − (1 + rₐₘ)^−(b·12)) / rₐₘ
- *         K_H = L × (1 − (1 + rₐₘ)^−((T−b)·12)) / rₐₘ / (1 + rₐₘ)^(b·12)
- *       (K_H ist der Barwert zum Rentenanspruch, abgezinst auf den Renteneintritt)
+ *         K_B = B × (1 − (1 + rₐₘ)^−(b·12)) / rₐₘ × (1 + rₐₘ)
+ *         K_H = max(0; B × aₘ − R × aᵍₘ) × (1 + rₐₘ) / (1 + rₐₘ)^(b·12)
+ *           aₘ  = (1 − (1 + rₐₘ)^−((T−b)·12)) / rₐₘ              (konstanter Bedarf)
+ *           aᵍₘ = (1 − ((1+gₘ)/(1+rₐₘ))^((T−b)·12)) / (rₐₘ − gₘ)  (schrumpfende Rente)
+ *       (K_H ist der Barwert zum Rentenanspruch, abgezinst auf den Renteneintritt;
+ *       die Klemme auf 0 greift, wenn die Rente den Bedarf durchgehend deckt)
  *   4b. Safe-Withdrawal: K₀ = K_B + L × 12 / w
  *       (SWR-Kapital bewusst NICHT um die Brückenjahre abgezinst — konservativ,
- *       weil die SWR-Logik "ewiges" Kapital unterstellt, kein Verzehr-Enddatum)
+ *       weil die SWR-Logik "ewiges" Kapital unterstellt, kein Verzehr-Enddatum.
+ *       Die sinkende Realrente fließt hier ebenfalls bewusst nicht ein: die
+ *       SWR-Methode arbeitet mit der heutigen Lücke L als Daumenwert)
  *   5.  K  = K₀ × (1 + τ)                Steuer-Puffer auf Kapital
  *   6.  K₀ₙ = K₀ᵥ × (1 + r)^n            heutiges Vermögen, real aufgezinst
  *   7.  K* = max(0, K − K₀ₙ)             noch zu sparendes Kapital
@@ -82,6 +93,11 @@ function weightedDeferredPresentValueAnnuity(
  *   9.  S  = K* / (((1 + rₘ)^m − 1) / rₘ)    monatliche Sparrate
  *   10. s  = S / N                       Sparquote (Anteil des Netto)
  *   11. Lₙ = L × (1 + i)^n               Lücke nominal bei Renteneintritt (Anzeige)
+ *
+ * Annahme Rebalancing: die Per-Bucket-Aufzinsung (Schritte 6 und 9 sowie die
+ * Auszahl-Buckets) heißt implizit KEIN Rebalancing — jede Position bzw.
+ * Allokations-Scheibe läuft über die gesamte Laufzeit mit ihrer eigenen
+ * Rendite weiter, Umschichtungen zwischen Anlageklassen sind nicht modelliert.
  *
  * Quellen
  *   - Finanztip "Rentenlücke berechnen" (Beispiel Daniela)        Schritte 1–4a, 11
@@ -103,6 +119,7 @@ export function calculatePension(inputs: PensionInputs): PensionResult {
     replacementRate,
     expectedStatePension,
     inflation,
+    statePensionRaise,
     savingsBuckets,
     payoutBuckets,
     existingAssets,
@@ -152,28 +169,50 @@ export function calculatePension(inputs: PensionInputs): PensionResult {
   // Annuity capital uses a MONTHLY annuity (payment, rate and periods all
   // monthly) so the withdrawal timing matches reality. An annual annuity
   // treats the whole year's gap as a single year-end payment and understates
-  // the capital need by ~0.5–1.5 %.
+  // the capital need by ~0.5–1.5 %. Die Annuitäten sind VORSCHÜSSIG
+  // (Bedarf am Monatsanfang, Faktor 1 + rₐₘ) — die Sparseite bleibt
+  // nachschüssig, konservativ.
   const monthlyPayoutBuckets = payoutBuckets.map((b) => ({
     weight: b.weight,
     rate: annualToMonthlyRate(b.rate),
   }));
-  // Brückenphase: voller Bedarf B, weil noch keine gesetzliche Rente fließt.
-  const bridgeCapital = weightedPresentValueAnnuity(
-    needToday,
-    monthlyPayoutBuckets,
-    bridgeYears * 12,
+  const bridgeMonths = bridgeYears * 12;
+  const mainMonths = (payoutYears - bridgeYears) * 12;
+  // Sinkende Realrente: Anpassung ρ < Inflation i ⇒ die gesetzliche Rente
+  // schrumpft real während des Bezugs mit g = (1+ρ)/(1+i) − 1.
+  const pensionRealGrowthMonthly = annualToMonthlyRate(
+    (1 + statePensionRaise) / (1 + inflation) - 1,
   );
-  // Hauptphase ab Rentenanspruch: nur noch die Lücke L. Bei der Annuität wird
-  // der Barwert um die Brückenmonate auf den Renteneintritt abgezinst; das
-  // SWR-Kapital bewusst nicht (konservativ — die SWR-Logik unterstellt
-  // "ewiges" Kapital ohne Verzehr-Enddatum).
+  // Brückenphase: voller Bedarf B, weil noch keine gesetzliche Rente fließt.
+  const bridgeCapital = weightedPresentValueDue(monthlyPayoutBuckets, (rate) =>
+    presentValueAnnuity(needToday, rate, bridgeMonths),
+  );
+  // Hauptphase ab Rentenanspruch: Lücke als Differenz "konstanter Bedarf B −
+  // real schrumpfende Rente R" (wachsende Annuität; bei ρ = i kollabiert das
+  // auf die konstante Lücke L). Bei der Annuität wird der Barwert um die
+  // Brückenmonate auf den Renteneintritt abgezinst; das SWR-Kapital bewusst
+  // nicht (konservativ — die SWR-Logik unterstellt "ewiges" Kapital ohne
+  // Verzehr-Enddatum) und ohne Schrumpf-Modell (Daumenwert auf Basis der
+  // heutigen Lücke L). Klemme auf 0: deckt die Rente den Bedarf durchgehend,
+  // bleibt für die Hauptphase nichts zu finanzieren. Vereinfachung: kippt
+  // B − R(t) erst mitten in der Hauptphase ins Positive, verrechnet die
+  // Differenz Überschüsse und Lücken miteinander.
   const mainCapital =
     payoutMethod === "annuity"
-      ? weightedDeferredPresentValueAnnuity(
-          gapToday,
-          monthlyPayoutBuckets,
-          (payoutYears - bridgeYears) * 12,
-          bridgeYears * 12,
+      ? Math.max(
+          0,
+          weightedPresentValueDue(
+            monthlyPayoutBuckets,
+            (rate) =>
+              (presentValueAnnuity(needToday, rate, mainMonths) -
+                presentValueGrowingAnnuity(
+                  expectedStatePension,
+                  rate,
+                  pensionRealGrowthMonthly,
+                  mainMonths,
+                )) /
+              Math.pow(1 + rate, bridgeMonths),
+          ),
         )
       : (gapToday * 12) / safeWithdrawalRate;
   const capitalNeededBeforeTax = bridgeCapital + mainCapital;

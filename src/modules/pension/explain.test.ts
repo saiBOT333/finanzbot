@@ -77,6 +77,26 @@ describe("explainPension", () => {
   it("shows no bridge step when retiring at 67", () => {
     expect(ex.steps.some((s) => s.title.includes("Brückenkapital"))).toBe(false);
   });
+
+  it("annuity capital step shows growing annuity + vorschüssige Entnahme (Phase 4)", () => {
+    const capStep = ex.steps.find((s) => s.title.includes("Kapitalbedarf vor Steuer"));
+    expect(capStep?.formula).toContain("aᵍₘ");
+    expect(capStep?.formula).toContain("× (1 + rₐₘ)");
+    expect(capStep?.note).toContain("schrumpft");
+  });
+
+  it("lists the pension raise ρ for annuity, but not for safe-withdrawal", () => {
+    expect(ex.inputs.some((i) => i.symbol === "ρ")).toBe(true);
+    const swInputs = withDefaults({
+      currentAge: 35,
+      netIncomeMonthly: 3000,
+      payoutMethod: "safe-withdrawal",
+    });
+    const swResult = calculatePension(swInputs);
+    if (swResult.kind !== "ok") throw new Error("ok");
+    const swEx = explainPension(swInputs, swResult);
+    expect(swEx.inputs.some((i) => i.symbol === "ρ")).toBe(false);
+  });
 });
 
 describe("explainPension — Frühverrentungs-Brücke", () => {

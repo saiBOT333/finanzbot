@@ -13,6 +13,22 @@ export function presentValueAnnuity(payment: number, rate: number, n: number): n
   return (payment * (1 - Math.pow(1 + rate, -n))) / rate;
 }
 
+/**
+ * Present value of an annuity whose payment grows at `growth` per period
+ * (first payment = `payment`, paid in arrears). With growth = 0 this is
+ * exactly `presentValueAnnuity`. Negative growth models a shrinking payment.
+ */
+export function presentValueGrowingAnnuity(
+  payment: number,
+  rate: number,
+  growth: number,
+  n: number,
+): number {
+  if (n <= 0) return 0;
+  if (rate === growth) return (payment * n) / (1 + rate);
+  return (payment * (1 - Math.pow((1 + growth) / (1 + rate), n))) / (rate - growth);
+}
+
 export function futureValueAnnuity(payment: number, rate: number, n: number): number {
   if (n <= 0) return 0;
   if (rate === 0) return payment * n;
