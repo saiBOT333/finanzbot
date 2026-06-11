@@ -23,9 +23,10 @@ const fixtureInputs = (state: PensionModuleState) =>
   });
 
 describe("DEFAULT_PENSION_STATE", () => {
-  it("matches the module defaults (modulo expectedStatePension)", () => {
+  it("matches the module defaults (modulo expectedStatePension/pensionInfoChoice)", () => {
     const def = { ...PENSION_MODULE_DEFAULTS };
     delete (def as Partial<PensionModuleState>).expectedStatePension;
+    delete (def as Partial<PensionModuleState>).pensionInfoChoice;
     expect(DEFAULT_PENSION_STATE).toEqual(def);
   });
 

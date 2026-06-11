@@ -19,6 +19,9 @@ export type PensionInfoInputs = {
   deduction: number;
 };
 
+/** Wie Schritt 3 beantwortet wurde: Brief liegt vor, bewusst geschätzt, oder noch offen. */
+export type PensionInfoChoice = "letter" | "estimate" | null;
+
 export type PensionModuleState = {
   replacementRate: number;
   /**
@@ -27,6 +30,8 @@ export type PensionModuleState = {
    */
   expectedStatePension: number | null;
   pensionInfo: PensionInfoInputs;
+  /** Gabelung Schritt 3: null = noch nicht entschieden. */
+  pensionInfoChoice: PensionInfoChoice;
   inflation: number;
   /** Mix of asset buckets the user contributes to during saving. Sums to 100 %. */
   savingsAllocation: Allocation;
@@ -45,6 +50,7 @@ export type PensionModuleState = {
 export const PENSION_MODULE_DEFAULTS: PensionModuleState = {
   ...DEFAULT_PENSION_STATE,
   expectedStatePension: null,
+  pensionInfoChoice: null,
 };
 
 /**
@@ -117,6 +123,14 @@ export function migrate(stored: Partial<PensionModuleState> & {
     ...PENSION_MODULE_DEFAULTS.pensionInfo,
     ...(stored.pensionInfo ?? {}),
   };
+
+  // Gabelung Schritt 3: Bestandsdaten mit eingetragener Brutto-Rente haben die
+  // Frage implizit schon beantwortet — sonst bleibt eine persistierte Wahl
+  // erhalten bzw. startet offen (null).
+  if (cleaned.pensionInfoChoice === undefined) {
+    cleaned.pensionInfoChoice =
+      cleaned.pensionInfo.grossWithoutAdjustment !== null ? "letter" : null;
+  }
 
   return cleaned;
 }

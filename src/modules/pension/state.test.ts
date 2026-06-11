@@ -32,3 +32,26 @@ describe("migrate — Renteninfo-Entkopplung", () => {
     expect(PENSION_MODULE_DEFAULTS.pensionInfo.grossWithoutAdjustment).toBeNull();
   });
 });
+
+describe("migrate — pensionInfoChoice", () => {
+  it("startet ohne Entscheidung (null)", () => {
+    const migrated = migrate({});
+    expect(migrated.pensionInfoChoice).toBeNull();
+  });
+
+  it("leitet 'letter' ab, wenn bereits eine Brutto-Rente eingetragen ist", () => {
+    const migrated = migrate({
+      pensionInfo: { grossWithoutAdjustment: 1988 } as never,
+    });
+    expect(migrated.pensionInfoChoice).toBe("letter");
+  });
+
+  it("behält eine persistierte Entscheidung bei", () => {
+    const migrated = migrate({ pensionInfoChoice: "estimate" });
+    expect(migrated.pensionInfoChoice).toBe("estimate");
+  });
+
+  it("Module-Defaults starten mit null", () => {
+    expect(PENSION_MODULE_DEFAULTS.pensionInfoChoice).toBeNull();
+  });
+});
