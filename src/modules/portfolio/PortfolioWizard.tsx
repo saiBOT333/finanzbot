@@ -20,7 +20,7 @@ export function PortfolioWizard() {
     },
     {
       id: "zielquote",
-      title: "2. Zielquote",
+      title: "2. Wunsch-Aufteilung",
       content: <ZielquoteStep />,
       canProceed: true,
     },

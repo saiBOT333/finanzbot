@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { portfolioStore } from "../state";
 import { NumberInput } from "../../../components/NumberInput";
-import { Button } from "../../../components/ui/Button";
-import { FragebogenModal } from "./FragebogenModal";
+import { FragebogenSection } from "./FragebogenSection";
 
 export function ZielquoteStep() {
   const state = portfolioStore.useState();
-  const [showModal, setShowModal] = useState(false);
+  const [showFragebogen, setShowFragebogen] = useState(false);
 
   const setTarget = (value: number | undefined) => {
     const v = value ?? 0;
@@ -17,15 +16,16 @@ export function ZielquoteStep() {
   return (
     <div className="space-y-4">
       <p className="font-sans text-sm leading-relaxed text-on-surface-variant">
-        Wie viel Prozent deines liquiden Vermögens sollen in Aktien stecken?
-        Der Rest landet im Sicherheitsbaustein (Cash, Anleihen, Geldmarkt).
+        Wie viel Prozent deines Geldes soll in Aktien stecken? Der Rest bleibt im sicheren
+        Teil (Tagesgeld, Anleihen, Geldmarkt). Mehr Aktien = mehr erwartete Rendite, aber
+        stärkere Schwankungen.
       </p>
 
       <div className="flex items-end gap-4">
         <div className="flex-1">
           <label className="mb-1 flex justify-between text-[12px] uppercase tracking-[0.04em] text-on-surface-variant">
-            <span className="text-error">Aktien (Risiko)</span>
-            <span className="text-success">Sicher</span>
+            <span>Aktien</span>
+            <span>Sicherer Teil</span>
           </label>
           <input
             type="range"
@@ -36,7 +36,7 @@ export function ZielquoteStep() {
             onChange={(e) => setTarget(Number(e.target.value))}
             className="m3-slider"
             style={{
-              background: `linear-gradient(to right, var(--m3-error) 0%, var(--m3-error) ${state.targetEquityPercent}%, var(--m3-success) ${state.targetEquityPercent}%, var(--m3-success) 100%)`,
+              background: `linear-gradient(to right, var(--m3-primary) 0%, var(--m3-primary) ${state.targetEquityPercent}%, var(--m3-outline-variant) ${state.targetEquityPercent}%, var(--m3-outline-variant) 100%)`,
             }}
             aria-label="Gewünschte Aktienquote"
           />
@@ -53,27 +53,31 @@ export function ZielquoteStep() {
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
-        <Button variant="outlined" onClick={() => setShowModal(true)}>
-          Quote vorschlagen lassen
-        </Button>
-        {state.fragebogen && (
-          <span className="text-xs text-on-surface-variant">
-            Vorschlag aus Fragebogen aktiv — Slider übernommen.
-          </span>
-        )}
-      </div>
+      <button
+        type="button"
+        onClick={() => setShowFragebogen((v) => !v)}
+        className="text-[12px] font-medium uppercase tracking-[0.04em] text-primary hover:underline underline-offset-4 decoration-2"
+      >
+        {showFragebogen
+          ? "▾ Fragebogen ausblenden"
+          : "▸ Unsicher? Quote vorschlagen lassen — 5 kurze Fragen"}
+      </button>
 
-      {showModal && (
-        <FragebogenModal
+      {!showFragebogen && state.fragebogen && (
+        <p className="text-xs text-on-surface-variant">
+          Vorschlag aus Fragebogen aktiv — Slider übernommen.
+        </p>
+      )}
+
+      {showFragebogen && (
+        <FragebogenSection
           initial={state.fragebogen}
-          onCancel={() => setShowModal(false)}
           onApply={(antworten, empfehlung) => {
             portfolioStore.set({
               fragebogen: antworten,
               targetEquityPercent: empfehlung,
             });
-            setShowModal(false);
+            setShowFragebogen(false);
           }}
         />
       )}

@@ -11,10 +11,9 @@ export function BestandStep() {
   return (
     <div className="space-y-4">
       <p className="font-sans text-sm leading-relaxed text-on-surface-variant">
-        Erfasse alle Anlagen, die in deine Risiko-Betrachtung einfließen sollen.
-        Positionen, die nicht eindeutig in „riskant" oder „sicher" passen
-        (z.&nbsp;B. selbstgenutzte Immobilie, bAV/Riester), kannst du pro Asset
-        manuell zuordnen.
+        Trag hier dein Erspartes ein — jede Position einzeln. Was nicht eindeutig riskant
+        oder sicher ist (z.&nbsp;B. selbstgenutzte Immobilie, bAV/Riester), kannst du pro
+        Position selbst zuordnen.
       </p>
 
       <AssetsManager
@@ -25,10 +24,9 @@ export function BestandStep() {
 
       {breakdown.excludedEuro > 0 && (
         <p className="border border-outline-variant bg-surface-container p-3 font-sans text-[13px] leading-relaxed text-on-surface-variant">
-          Hinweis: {formatEUR(breakdown.excludedEuro)} sind als „außerhalb der
-          Quote" eingestuft (z.&nbsp;B. Immobilie, bAV). Diese Anlagen werden
-          separat ausgewiesen, fließen aber nicht in die Aktien-/Sicher-Quote
-          ein.
+          Hinweis: {formatEUR(breakdown.excludedEuro)} zählen nicht in die Aufteilung —
+          z.&nbsp;B. Immobilie oder bAV, weil du sie nicht einfach umschichten kannst.
+          Sie werden separat ausgewiesen.
         </p>
       )}
     </div>
