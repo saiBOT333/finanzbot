@@ -32,6 +32,8 @@ export default {
       },
       fontFamily: {
         sans: ['"Roboto Flex"', "system-ui", "sans-serif"],
+        // Display-Schrift für Headlines, Hero-Zahlen und die Wortmarke.
+        display: ['"Bricolage Grotesque"', '"Roboto Flex"', "system-ui", "sans-serif"],
       },
       // M3-Typo-Rollen — statt Ad-hoc-Pixelwerten in den Komponenten.
       fontSize: {

@@ -87,6 +87,7 @@
 
   /* Hero-Display-Zahl wie auf dem Ergebnis-Screen. */
   .m3-display {
+    font-family: 'Bricolage Grotesque', 'Roboto Flex', system-ui, sans-serif;
     font-size: clamp(48px, 8vw, 96px);
     font-weight: 700;
     letter-spacing: -0.03em;

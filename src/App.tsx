@@ -115,7 +115,9 @@ export function App() {
         <div className="container-page py-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-baseline gap-3">
-              <span className="m3-eyebrow">FinanzBot</span>
+              <span className="font-display text-title-sm font-bold tracking-[-0.01em] text-on-surface">
+                Finanz<span className="text-primary">Bot</span>
+              </span>
               <span className="hidden sm:inline text-body-md text-on-surface-variant">
                 Modulare Finanzplanung · lokal · quelloffen
               </span>
@@ -177,7 +179,7 @@ export function App() {
             {active ? (
               <section className="space-y-8">
                 <div className="space-y-3">
-                  <h2 className="flex items-center gap-3 text-title-lg sm:text-[48px] font-semibold leading-[1.05] tracking-[-0.02em] text-on-surface">
+                  <h2 className="flex items-center gap-3 font-display text-title-lg sm:text-[48px] font-semibold leading-[1.05] tracking-[-0.02em] text-on-surface">
                     <span aria-hidden className="m3-icon text-primary text-[32px] sm:text-[52px]">{active.icon}</span>
                     {active.name}
                   </h2>

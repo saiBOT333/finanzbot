@@ -11,7 +11,7 @@ export function WelcomeScreen({ onStart }: Props) {
       <div className="space-y-7">
         <div className="space-y-3">
           <span className="m3-eyebrow">Modul Vorsorge · Setup</span>
-          <h2 className="text-[44px] sm:text-[56px] font-bold leading-[1.05] tracking-[-0.02em] text-on-surface max-w-[18ch]">
+          <h2 className="font-display text-[44px] sm:text-[56px] font-bold leading-[1.05] tracking-[-0.02em] text-on-surface max-w-[18ch]">
             Wie viel musst du sparen,
             <br />
             damit die Rente reicht

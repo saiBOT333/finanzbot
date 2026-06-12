@@ -100,7 +100,7 @@ export function Wizard({ steps, onFinish, finishLabel = "Fertig" }: WizardProps)
 
       <header className="space-y-3">
         <span className="m3-eyebrow">{`Schritt ${index + 1} / ${total}`}</span>
-        <h2 className="text-title-lg sm:text-headline font-semibold leading-[1.1] tracking-[-0.005em] text-on-surface">
+        <h2 className="font-display text-title-lg sm:text-headline font-semibold leading-[1.1] tracking-[-0.005em] text-on-surface">
           {cleanTitle}
         </h2>
       </header>
