@@ -75,7 +75,7 @@ export function ErgebnisStep() {
       {hasAssets && rebalance.direction === "shift-to-safe" && (
         <Card variant="hero">
           <p className="text-label-md uppercase tracking-[0.08em] opacity-85">Deine Empfehlung</p>
-          <p className="mt-3 text-title-lg font-semibold leading-[1.15] tracking-[-0.01em] sm:text-[34px]">
+          <p className="mt-3 font-display text-title-lg font-semibold leading-[1.15] tracking-[-0.01em] sm:text-[34px]">
             Verschiebe {formatEURRounded(rebalance.deltaAmount, 100)} von Aktien in den
             sicheren Teil.
           </p>
@@ -89,7 +89,7 @@ export function ErgebnisStep() {
       {hasAssets && rebalance.direction === "shift-to-equity" && (
         <Card variant="hero">
           <p className="text-label-md uppercase tracking-[0.08em] opacity-85">Deine Empfehlung</p>
-          <p className="mt-3 text-title-lg font-semibold leading-[1.15] tracking-[-0.01em] sm:text-[34px]">
+          <p className="mt-3 font-display text-title-lg font-semibold leading-[1.15] tracking-[-0.01em] sm:text-[34px]">
             Verschiebe {formatEURRounded(rebalance.deltaAmount, 100)} in Aktien
             (z. B. Welt-ETF).
           </p>
@@ -105,7 +105,7 @@ export function ErgebnisStep() {
             <span aria-hidden className="m3-icon text-[16px] leading-none">check_circle</span>
             Alles im Lot
           </p>
-          <p className="mt-3 text-title-lg font-semibold tracking-[-0.02em] text-on-surface">
+          <p className="mt-3 font-display text-title-lg font-semibold tracking-[-0.02em] text-on-surface">
             Nichts zu tun.
           </p>
           <p className="mt-3 font-sans text-body-sm leading-relaxed text-on-surface-variant">

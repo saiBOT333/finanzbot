@@ -100,7 +100,7 @@ export function ResultStep() {
           <span aria-hidden className="m3-icon text-[16px] leading-none">check_circle</span>
           Keine Rentenlücke
         </p>
-        <p className="mt-3 text-title-lg font-semibold tracking-[-0.02em] text-on-surface">
+        <p className="mt-3 font-display text-title-lg font-semibold tracking-[-0.02em] text-on-surface">
           Du bist abgesichert.
         </p>
         <p className="mt-3 font-sans text-body-sm leading-relaxed text-on-surface-variant">
