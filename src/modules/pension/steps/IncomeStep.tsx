@@ -28,7 +28,7 @@ export function IncomeStep() {
         min={0}
         max={150}
         tooltip={tooltips.replacementRate}
-        hint="Faustformel: 80 %"
+        hint="Faustformel: 80 % — viele Ausgaben (Pendeln, Sparen für die Rente) fallen im Ruhestand weg."
       />
     </div>
   );

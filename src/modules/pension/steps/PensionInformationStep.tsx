@@ -15,6 +15,10 @@ import { pensionStore, type PensionInfoInputs } from "../state";
  * "Renteninformation" letter sent by the DRV every year. This is the most
  * important input after age/income — without it the tool falls back to the
  * 48 %-of-net rule of thumb, which can be off by hundreds of Euros.
+ *
+ * Der Schritt gabelt sich über `pensionInfoChoice`: erst die Frage
+ * "Brief zur Hand?", dann entweder das Formular (letter) oder eine
+ * bewusste Schätzung (estimate).
  */
 export function PensionInformationStep() {
   const profile = useProfile();
@@ -54,17 +58,19 @@ export function PensionInformationStep() {
   const fallbackEstimate = netIncome * PENSION_DEFAULTS.statePensionFactor;
   const stored = m.expectedStatePension;
   const hasOverride = stored !== null;
+  const choice = m.pensionInfoChoice;
 
   const clearOverride = () => pensionStore.set({ expectedStatePension: null });
   const clearGross = () => setInfo({ grossWithoutAdjustment: null });
+  const setChoice = (next: "letter" | "estimate") =>
+    pensionStore.set({ pensionInfoChoice: next });
 
   return (
     <div className="space-y-5">
       <p className="font-sans text-[14px] leading-relaxed text-on-surface-variant">
-        Die Deutsche Rentenversicherung schickt dir jedes Jahr eine{" "}
-        <strong className="font-semibold">Renteninformation</strong> — darin steht, wie hoch deine
-        Rente voraussichtlich wird. Trag den Wert hier ein, damit das Tool deine echte Lücke
-        berechnen kann statt nur eine Faustformel anzuwenden.
+        Wie hoch deine gesetzliche Rente voraussichtlich wird, steht in deiner{" "}
+        <strong className="font-semibold">Renteninformation</strong> — dem Brief, den die
+        Deutsche Rentenversicherung dir jedes Jahr schickt.
       </p>
 
       {hasOverride && (
@@ -78,7 +84,7 @@ export function PensionInformationStep() {
                   / Monat · heute
                 </span>
               </p>
-              <p className="mt-1.5 font-sans text-[11.5px] leading-relaxed text-on-surface-variant">
+              <p className="mt-1.5 font-sans text-[13px] leading-relaxed text-on-surface-variant">
                 Die Rente wurde manuell festgelegt (Annahmen, Schritt 04) — Eingaben aus diesem
                 Schritt werden ignoriert, bis du den Wert löschst.
               </p>
@@ -90,11 +96,47 @@ export function PensionInformationStep() {
         </div>
       )}
 
-      {!hasOverride && (
+      {!hasOverride && choice === null && (
+        <div className="border-l-[3px] border-primary bg-surface-container px-4 py-4 space-y-3">
+          <p className="font-sans text-[15px] font-medium text-on-surface">
+            Hast du deine Renteninformation zur Hand?
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={() => setChoice("letter")}>Ja, Wert eintragen</Button>
+            <Button variant="tonal" onClick={() => setChoice("estimate")}>
+              Nein, erstmal schätzen
+            </Button>
+          </div>
+          <p className="font-sans text-[13px] leading-relaxed text-on-surface-variant">
+            Mit dem Wert aus dem Brief wird dein Ergebnis deutlich genauer — du kannst aber
+            jederzeit mit einer Schätzung starten und den Wert später nachtragen.
+          </p>
+        </div>
+      )}
+
+      {!hasOverride && choice === "estimate" && (
+        <div className="border-l-[3px] border-primary bg-surface-container px-4 py-4 space-y-3">
+          <p className="m3-eyebrow-muted">Geschätzte gesetzliche Rente</p>
+          <p className="font-sans text-[13px] leading-relaxed text-on-surface-variant">
+            Wir schätzen deine Rente auf{" "}
+            <strong className="tabular-nums text-on-surface">
+              rund {formatEUR(fallbackEstimate)} im Monat
+            </strong>{" "}
+            — pauschal {formatPercent(PENSION_DEFAULTS.statePensionFactor)} deines
+            Netto-Einkommens. Das ist grob; mit dem echten Wert aus deiner Renteninformation
+            wird dein Ergebnis deutlich genauer.
+          </p>
+          <Button variant="tonal" size="sm" onClick={() => setChoice("letter")}>
+            Wert aus dem Brief eintragen
+          </Button>
+        </div>
+      )}
+
+      {!hasOverride && choice === "letter" && (
         <>
           {retirementAge >= regelalter && (
             <div className="border-l-[3px] border-outline-variant bg-surface-container px-3 py-2">
-              <p className="font-sans text-[11.5px] leading-relaxed text-on-surface-variant">
+              <p className="font-sans text-[13px] leading-relaxed text-on-surface-variant">
                 Du gehst zur Regelaltersgrenze ({Number.isInteger(regelalter) ? regelalter : regelalter.toFixed(1)}) oder später in Rente —
                 keine Abschläge, kein Beitragsjahre-Abschlag in der Hochrechnung. Die
                 Regelaltersgrenze schätzen wir aus deinem Jahrgang (auf das Kalenderjahr genau).
@@ -102,16 +144,15 @@ export function PensionInformationStep() {
             </div>
           )}
           <div className="space-y-4 border border-on-surface-variant bg-surface p-4">
-            <p className="font-sans text-[12.5px] leading-relaxed text-on-surface-variant">
-              Such auf dem Renteninfo-Brief den Wert{" "}
+            <p className="font-sans text-[13px] leading-relaxed text-on-surface-variant">
+              Such auf dem Brief den Wert{" "}
               <strong className="font-semibold">
                 „voraussichtliche Regelaltersrente, wenn Sie wie bisher Beiträge zahlen"
               </strong>{" "}
-              — das ist der <em>ohne Anpassung</em>-Wert, meist in der Tabelle direkt unter dem
-              heutigen Rentenwert. Wir rechnen die Anpassung und Inflation für dich raus.
+              — meist in der Tabelle direkt unter dem heutigen Rentenwert.
             </p>
             <NumberInput
-              label="Brutto-Rente ohne Anpassung (heutiger Rentenwert)"
+              label="Monatliche Rente laut Brief (der Wert ohne künftige Anpassungen)"
               value={grossWithoutAdjustment ?? undefined}
               onChange={(v) => setInfo({ grossWithoutAdjustment: v ?? null })}
               unit="€"
@@ -139,7 +180,7 @@ export function PensionInformationStep() {
             />
 
             <details className="pt-1">
-              <summary className="cursor-pointer text-[11px] font-medium uppercase tracking-[0.04em] text-primary hover:underline underline-offset-4 decoration-2">
+              <summary className="cursor-pointer text-[12px] font-medium uppercase tracking-[0.04em] text-primary hover:underline underline-offset-4 decoration-2">
                 ▸ Abweichende Erwerbsbiografie?
               </summary>
               <div className="mt-3 space-y-2">
@@ -154,75 +195,71 @@ export function PensionInformationStep() {
                   max={Math.max(14, retirementAge - 1)}
                   hint="Default 20: durchgängig ab Ausbildung/Studium gerechnet. Höher setzen bei Spätstart in DRV-Pflichteinzahlung (z. B. langes Studium, Selbstständigkeit, Auslandsjahre)."
                 />
-                <p className="text-[11px] text-on-surface-variant">
+                <p className="text-[13px] text-on-surface-variant">
                   Wirkt sich auf den Beitragsjahre-Faktor in der Hochrechnung aus.
                 </p>
               </div>
             </details>
 
             {projection && grossWithoutAdjustment !== null && (
-              <div className="border-l-[3px] border-success bg-surface-container px-4 py-3">
-                <p className="m3-eyebrow-muted">Hochrechnung · fließt live ins Ergebnis ein</p>
-                <dl className="mt-2 divide-y divide-outline-variant text-[12px] text-on-surface-variant">
-                  <CalcRow
-                    label="Brutto ohne Anpassung"
-                    value={formatEUR(grossWithoutAdjustment)}
-                  />
-                  {projection.abschlagPct > 0 && (
+              <details className="pt-1">
+                <summary className="cursor-pointer text-[12px] font-medium uppercase tracking-[0.04em] text-primary hover:underline underline-offset-4 decoration-2">
+                  ▸ Wie rechnen wir das um?
+                </summary>
+                <div className="mt-3 border-l-[3px] border-success bg-surface-container px-4 py-3">
+                  <p className="m3-eyebrow-muted">Hochrechnung · fließt live ins Ergebnis ein</p>
+                  <dl className="mt-2 divide-y divide-outline-variant text-[12px] text-on-surface-variant">
                     <CalcRow
-                      label={`− ${formatPercent(projection.abschlagPct)} Abschlag (${formatYearsDiff(regelalter - Math.max(retirementAge, STATE_PENSION_MIN_CLAIM_AGE))} vorzeitig, Anspruch ab ${STATE_PENSION_MIN_CLAIM_AGE})`}
-                      value={`${formatEUR(grossWithoutAdjustment * (1 - projection.abschlagPct))} brutto`}
+                      label="Brutto ohne Anpassung"
+                      value={formatEUR(grossWithoutAdjustment)}
                     />
-                  )}
-                  {projection.beitragsFaktor < 1 && (
+                    {projection.abschlagPct > 0 && (
+                      <CalcRow
+                        label={`− ${formatPercent(projection.abschlagPct)} Abschlag (${formatYearsDiff(regelalter - Math.max(retirementAge, STATE_PENSION_MIN_CLAIM_AGE))} vorzeitig, Anspruch ab ${STATE_PENSION_MIN_CLAIM_AGE})`}
+                        value={`${formatEUR(grossWithoutAdjustment * (1 - projection.abschlagPct))} brutto`}
+                      />
+                    )}
+                    {projection.beitragsFaktor < 1 && (
+                      <CalcRow
+                        label={`× ${formatPercent(projection.beitragsFaktor)} Beitragsjahre (${formatYearsDiff(retirementAge - contributionStartAge)}/${formatYearsDiff(regelalter - contributionStartAge)})`}
+                        value={`${formatEUR(projection.grossAdjusted)} brutto angepasst`}
+                      />
+                    )}
                     <CalcRow
-                      label={`× ${formatPercent(projection.beitragsFaktor)} Beitragsjahre (${formatYearsDiff(retirementAge - contributionStartAge)}/${formatYearsDiff(regelalter - contributionStartAge)})`}
-                      value={`${formatEUR(projection.grossAdjusted)} brutto angepasst`}
+                      label={`× (1 + ${formatPercent(raise)})^${yearsToRetirement}`}
+                      value={`${formatEUR(projection.grossNominal)} brutto in ${yearsToRetirement} J.`}
                     />
-                  )}
-                  <CalcRow
-                    label={`× (1 + ${formatPercent(raise)})^${yearsToRetirement}`}
-                    value={`${formatEUR(projection.grossNominal)} brutto in ${yearsToRetirement} J.`}
-                  />
-                  <CalcRow
-                    label={`− ${formatPercent(deduction)} Steuern + KV/PV`}
-                    value={`${formatEUR(projection.netNominal)} netto in ${yearsToRetirement} J.`}
-                  />
-                  <CalcRow
-                    label={`÷ Inflation ${formatPercent(m.inflation)} · ${yearsToRetirement} J.`}
-                    value={`${formatEUR(projection.netReal)} heute`}
-                    highlight
-                  />
-                </dl>
-                <div className="mt-3 flex items-center justify-between gap-3">
-                  <p className="font-sans text-[11.5px] leading-relaxed text-on-surface-variant">
-                    Ändern sich Renteneintritt oder Inflation, rechnet das Ergebnis automatisch mit.
-                  </p>
-                  <Button variant="text" size="sm" onClick={clearGross}>
-                    Zurücksetzen
-                  </Button>
+                    <CalcRow
+                      label={`− ${formatPercent(deduction)} Steuern + KV/PV`}
+                      value={`${formatEUR(projection.netNominal)} netto in ${yearsToRetirement} J.`}
+                    />
+                    <CalcRow
+                      label={`÷ Inflation ${formatPercent(m.inflation)} · ${yearsToRetirement} J.`}
+                      value={`${formatEUR(projection.netReal)} heute`}
+                      highlight
+                    />
+                  </dl>
+                  <div className="mt-3 flex items-center justify-between gap-3">
+                    <p className="font-sans text-[13px] leading-relaxed text-on-surface-variant">
+                      Ändern sich Renteneintritt oder Inflation, rechnet das Ergebnis automatisch mit.
+                    </p>
+                    <Button variant="text" size="sm" onClick={clearGross}>
+                      Zurücksetzen
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              </details>
             )}
           </div>
 
           {grossWithoutAdjustment === null && (
-          <div className="border-l-[3px] border-primary bg-surface-container px-4 py-3">
-            <p className="text-[10.5px] font-medium uppercase tracking-[0.04em] text-primary">
-              ◇ Renteninformation gerade nicht zur Hand?
-            </p>
-            <p className="mt-2 font-sans text-[12.5px] leading-relaxed text-on-surface-variant">
-              Ohne deinen Wert rechnen wir mit{" "}
-              <strong className="tabular-nums">{formatEUR(fallbackEstimate)} / Monat</strong> —
-              pauschal {formatPercent(PENSION_DEFAULTS.statePensionFactor)} deines Netto-Einkommens.
-              Diese Faustformel ist <em>sehr</em> grob; gerade bei kürzeren Erwerbsbiografien oder
-              höheren Einkommen kann der echte Wert deutlich abweichen.
-            </p>
-            <p className="mt-2 font-sans text-[12.5px] leading-relaxed text-on-surface-variant">
-              Du kannst trotzdem weitermachen, das Ergebnis ist dann eine Schätzung — die Renteninfo
-              solltest du nachreichen, sobald du sie hast.
-            </p>
-          </div>
+            <button
+              type="button"
+              onClick={() => setChoice("estimate")}
+              className="text-[12px] font-medium text-primary hover:underline underline-offset-4 decoration-2"
+            >
+              Brief doch nicht zur Hand? Erstmal schätzen →
+            </button>
           )}
         </>
       )}

@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Card } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
 import { InfoTooltip } from "../../../components/InfoTooltip";
-import { formatEUR, formatPercent } from "../../../lib/format";
+import { formatEUR, formatEURRounded, formatPercent } from "../../../lib/format";
 import { useProfile, setProfile } from "../../../lib/profile/useProfile";
 import { calculatePension } from "../calculations";
 import { explainPension } from "../explain";
@@ -132,7 +132,7 @@ export function ResultStep() {
 
   return (
     <div className="space-y-6">
-      {statePension.source === "fallback" && (
+      {statePension.source === "fallback" && m.pensionInfoChoice !== "estimate" && (
         <div className="rounded-m3-md bg-error-container p-4 flex gap-3 items-start">
           <span aria-hidden className="text-xl leading-none">▲</span>
           <div className="space-y-1">
@@ -149,6 +149,20 @@ export function ResultStep() {
               Wert ein.
             </p>
           </div>
+        </div>
+      )}
+
+      {statePension.source === "fallback" && m.pensionInfoChoice === "estimate" && (
+        <div className="border-l-[3px] border-primary bg-surface-container px-4 py-3">
+          <p className="m3-eyebrow-muted">Gesetzliche Rente · geschätzt</p>
+          <p className="mt-1.5 font-sans text-[13px] leading-relaxed text-on-surface-variant">
+            Dein Ergebnis basiert auf einer Schätzung der gesetzlichen Rente:{" "}
+            <span className="tabular-nums font-semibold text-on-surface">
+              {formatEUR(result.needToday - result.gapToday)}
+            </span>{" "}
+            pro Monat — pauschal 48 % deines Netto-Einkommens. Mit dem Wert aus deiner
+            Renteninformation (Schritt 3) wird es deutlich genauer.
+          </p>
         </div>
       )}
 
@@ -186,17 +200,14 @@ export function ResultStep() {
       {/* M3 Hero-Card: Display-Zahl auf Primary-Container. */}
       <Card variant="hero">
         <div className="flex items-start justify-between gap-3">
-          <div>
-            <span className="m3-eyebrow bg-primary text-on-primary">Output · 01</span>
-            <div className="mt-2 flex items-center gap-1.5">
-              <p className="text-[12px] uppercase tracking-[0.08em] opacity-85">
-                Empfohlene monatliche Sparrate
-              </p>
-              <InfoTooltip
-                content={tooltips.monthlySavings}
-                label="Erklärung zu Empfohlene monatliche Sparrate"
-              />
-            </div>
+          <div className="flex items-center gap-1.5">
+            <p className="text-[12px] uppercase tracking-[0.08em] opacity-85">
+              Empfohlene monatliche Sparrate
+            </p>
+            <InfoTooltip
+              content={tooltips.monthlySavings}
+              label="Erklärung zu Empfohlene monatliche Sparrate"
+            />
           </div>
           <Button
             variant="tonal"
@@ -204,19 +215,17 @@ export function ResultStep() {
             onClick={handlePrint}
             title="Ergebnis als PDF speichern (über den Druckdialog)"
           >
-            📄 Als PDF speichern
+            <span aria-hidden className="m3-icon text-[18px]">picture_as_pdf</span> Als PDF speichern
           </Button>
         </div>
 
         <div className="mt-6">
           <p className="m3-display text-on-primary-container">
-            {formatEUR(result.monthlySavings, true)}
+            {formatEURRounded(result.monthlySavings)}
           </p>
           <div className="mt-3 flex items-center gap-3">
             <span aria-hidden className="inline-block h-[3px] w-12 bg-primary rounded-full" />
-            <span className="text-[12px] uppercase tracking-[0.08em] opacity-85">
-              Monatlich · Real · Heutige Kaufkraft
-            </span>
+            <span className="text-[13px] opacity-85">pro Monat, in heutiger Kaufkraft</span>
           </div>
         </div>
 
@@ -232,28 +241,28 @@ export function ResultStep() {
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <p className="text-[11px] uppercase tracking-[0.08em] opacity-85">Alternativ · Nominal fix</p>
+              <p className="text-[12px] font-medium opacity-85">Alternative: fester Betrag</p>
               <InfoTooltip
                 content={tooltips.fixedNominalSavings}
-                label="Erklärung zu Alternativ · Nominal fix"
+                label="Erklärung zu Alternative: fester Betrag"
               />
             </div>
             <p className="mt-1 text-2xl font-semibold tabular-nums">
-              {formatEUR(result.fixedNominalSavings, true)}
+              {formatEURRounded(result.fixedNominalSavings)}
             </p>
             <p className="mt-1 text-[12px] leading-snug opacity-85">
-              gleichbleibender Betrag, ohne jährliche Inflationsanpassung
+              jeden Monat gleich viel, dafür ohne jährliche Erhöhung
             </p>
           </div>
         </div>
       </Card>
 
-      {/* Tip-Card auf Tertiary für den Lesehinweis. */}
-      <div className="rounded-m3-md bg-tertiary-container text-on-tertiary-container p-4 flex gap-3 items-start">
-        <span aria-hidden className="text-xl leading-none">💡</span>
+      {/* Neutraler Lesehinweis im Border-links-Muster (kein Pink — das liest sich als Warnung). */}
+      <div className="border-l-[3px] border-primary bg-surface-container px-4 py-3 flex gap-3 items-start">
+        <span aria-hidden className="m3-icon text-[20px] leading-none text-primary">lightbulb</span>
         <div className="space-y-1.5">
-          <p className="text-[12px] font-medium uppercase tracking-[0.08em] opacity-85">Lesehinweis</p>
-          <p className="text-[13px] leading-relaxed">
+          <p className="m3-eyebrow-muted">Lesehinweis</p>
+          <p className="font-sans text-[13px] leading-relaxed text-on-surface-variant">
             Der Hauptbetrag gilt in heutiger Kaufkraft. Um real gleich zu bleiben, musst du ihn
             jedes Jahr um die Inflation anpassen (z. B. +2 %). Steigt dein Gehalt mit der
             Inflation, bleibt die Sparquote konstant.
@@ -272,7 +281,7 @@ export function ResultStep() {
         />
         <Stat
           label="Kapitalbedarf (heutige Kaufkraft)"
-          value={formatEUR(result.capitalNeeded)}
+          value={formatEURRounded(result.capitalNeeded, 1000)}
           hint={`Bei Renteneintritt in ${result.yearsToRetirement} Jahren entspricht das nominal ca. ${formatEUR(result.capitalNeededNominal)}`}
           tooltip={tooltips.capitalNeeded}
         />
@@ -360,19 +369,10 @@ function SparquoteEinordnung({ pct }: { pct: number }) {
 
   const message = savingsRateMessage(pct);
 
-  const accent =
-    pct < recMin
-      ? "border-primary text-on-surface"
-      : pct <= recMax
-        ? "border-success text-on-surface"
-        : "border-error text-on-surface";
-
-  const indicatorColor =
-    pct < recMin
-      ? "bg-primary"
-      : pct <= recMax
-        ? "bg-success"
-        : "bg-error";
+  // Bewusst keine Ampelfarben: Rot würde „Fehler" signalisieren, dabei ist eine
+  // hohe Sparquote nur ein Hinweis. Die Einordnung übernimmt der Text darunter.
+  const accent = "border-primary text-on-surface";
+  const indicatorColor = "bg-primary";
 
   return (
     <div className={`mt-5 border-l-[3px] ${accent} bg-surface-container px-4 py-3`}>
@@ -430,7 +430,7 @@ function Stat({ label, value, hint, tooltip }: StatProps) {
         {value}
       </div>
       {hint && (
-        <div className="mt-2 text-[12px] leading-snug text-on-surface-variant">{hint}</div>
+        <div className="mt-2 text-[13px] leading-snug text-on-surface-variant">{hint}</div>
       )}
     </Card>
   );

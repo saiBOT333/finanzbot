@@ -56,12 +56,12 @@
 
   /* M3 Eyebrow-Pill: kleines Label auf Primary-Container. */
   .m3-eyebrow {
-    @apply inline-block rounded-m3-pill bg-primary-container px-3.5 py-1.5 text-[11px] font-medium uppercase tracking-[0.08em] text-on-primary-container;
+    @apply inline-block rounded-m3-pill bg-primary-container px-3.5 py-1.5 text-[12px] font-medium uppercase tracking-[0.08em] text-on-primary-container;
   }
 
   /* M3 Eyebrow-Variant: für Sekundärbereiche (Surface-Container-High). */
   .m3-eyebrow-muted {
-    @apply inline-block rounded-m3-pill bg-surface-container-high px-3.5 py-1.5 text-[11px] font-medium uppercase tracking-[0.08em] text-on-surface-variant;
+    @apply inline-block rounded-m3-pill bg-surface-container-high px-3.5 py-1.5 text-[12px] font-medium uppercase tracking-[0.08em] text-on-surface-variant;
   }
 
   /* M3 Material Symbol — Standard-Wrapper-Klasse. */

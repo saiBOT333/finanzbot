@@ -55,7 +55,7 @@ export function Wizard({ steps, onFinish, finishLabel = "Fertig" }: WizardProps)
             style={{ width: `${((index + 1) / total) * 100}%` }}
           />
         </div>
-        <ol className="flex flex-wrap gap-2">
+        <ol className="hidden flex-wrap gap-2 sm:flex">
           {steps.map((s, i) => {
             const status = i < index ? "done" : i === index ? "active" : "pending";
             const reachable = i <= index;

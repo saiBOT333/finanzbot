@@ -25,8 +25,8 @@ const defaultPayout: Allocation = [
   { id: newAllocationId(), type: "bonds", percent: 100 },
 ];
 
-/** State without `expectedStatePension`; that field is user-driven. */
-export const DEFAULT_PENSION_STATE: Omit<PensionModuleState, "expectedStatePension"> = {
+/** State without `expectedStatePension`/`pensionInfoChoice`; those fields are user-driven. */
+export const DEFAULT_PENSION_STATE: Omit<PensionModuleState, "expectedStatePension" | "pensionInfoChoice"> = {
   replacementRate: 0.8,
   pensionInfo: {
     grossWithoutAdjustment: null,

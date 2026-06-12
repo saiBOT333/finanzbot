@@ -93,17 +93,17 @@ export function App() {
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-baseline gap-3">
               <span className="m3-eyebrow">FinanzBot</span>
-              <span className="text-[14px] text-on-surface-variant">
+              <span className="hidden sm:inline text-[14px] text-on-surface-variant">
                 Modulare Finanzplanung · lokal · quelloffen
               </span>
             </div>
             <div className="flex flex-shrink-0 gap-1">
               <Button variant="text" size="sm" onClick={handleImportClick} title="Daten importieren">
-                <span aria-hidden className="sm:hidden">📥</span>
+                <span aria-hidden className="m3-icon text-[20px] sm:hidden">upload</span>
                 <span className="hidden sm:inline">Import</span>
               </Button>
               <Button variant="text" size="sm" onClick={handleExport} title="Daten exportieren">
-                <span aria-hidden className="sm:hidden">📤</span>
+                <span aria-hidden className="m3-icon text-[20px] sm:hidden">download</span>
                 <span className="hidden sm:inline">Export</span>
               </Button>
               <Button
@@ -112,7 +112,7 @@ export function App() {
                 onClick={handleReset}
                 title="Alle Eingaben löschen"
               >
-                <span aria-hidden className="sm:hidden">🔄</span>
+                <span aria-hidden className="m3-icon text-[20px] sm:hidden">restart_alt</span>
                 <span className="hidden sm:inline">Zurücksetzen</span>
               </Button>
               <input
@@ -155,8 +155,8 @@ export function App() {
               <section className="space-y-8">
                 <div className="space-y-3">
                   <span className="m3-eyebrow">Modul Vorsorge</span>
-                  <h2 className="flex items-center gap-3 text-[40px] sm:text-[48px] font-semibold leading-[1.05] tracking-[-0.02em] text-on-surface">
-                    <span aria-hidden className="m3-icon text-primary text-[44px] sm:text-[52px]">{active.icon}</span>
+                  <h2 className="flex items-center gap-3 text-[28px] sm:text-[48px] font-semibold leading-[1.05] tracking-[-0.02em] text-on-surface">
+                    <span aria-hidden className="m3-icon text-primary text-[32px] sm:text-[52px]">{active.icon}</span>
                     {active.name}
                   </h2>
                   <p className="max-w-prose text-[15px] leading-relaxed text-on-surface-variant">
