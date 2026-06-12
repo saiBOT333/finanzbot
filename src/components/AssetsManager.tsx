@@ -43,19 +43,19 @@ export function AssetsManager({ assets, onChange, showRiskOverride = false }: Pr
   return (
     <div className="space-y-3">
       {assets.length === 0 ? (
-        <p className="border border-outline-variant bg-surface-container p-3 font-sans text-[13px] leading-relaxed text-on-surface-variant">
+        <p className="rounded-m3-sm border border-outline-variant bg-surface-container p-3 font-sans text-body-sm leading-relaxed text-on-surface-variant">
           Noch kein Vermögen erfasst. Füg deine größten Positionen hinzu — Tagesgeld,
           ETF-Depot, Festgeld etc. Jede Position wächst bis zur Rente mit ihrer eigenen
           erwarteten Rendite.
         </p>
       ) : (
-        <ul className="divide-y divide-outline-variant border border-on-surface-variant bg-surface">
+        <ul className="divide-y divide-outline-variant overflow-hidden rounded-m3-md border border-on-surface-variant bg-surface">
           {assets.map((a, i) => {
             const def = getAssetTypeDef(a.type);
             const r = effectiveRealReturn(a);
             return (
               <li key={a.id} className="px-4 py-3">
-                <div className="mb-2 flex items-baseline gap-2 text-[10.5px] uppercase tracking-[0.04em] text-on-surface-variant">
+                <div className="mb-2 flex items-baseline gap-2 text-label-sm uppercase tracking-[0.04em] text-on-surface-variant">
                   <span className="text-primary">
                     {String(i + 1).padStart(2, "0")}
                   </span>
@@ -158,7 +158,7 @@ export function AssetsManager({ assets, onChange, showRiskOverride = false }: Pr
                   </div>
                 )}
                 <div className="mt-3 flex items-center justify-between gap-3">
-                  <p className="font-sans text-[12px] leading-relaxed text-on-surface-variant">
+                  <p className="font-sans text-body-sm leading-relaxed text-on-surface-variant">
                     {def.hint}
                   </p>
                   <Button
@@ -181,7 +181,7 @@ export function AssetsManager({ assets, onChange, showRiskOverride = false }: Pr
           + Position hinzufügen
         </Button>
         {assets.length > 0 && (
-          <p className="text-[11px] uppercase tracking-[0.04em] text-on-surface-variant">
+          <p className="text-label-sm uppercase tracking-[0.04em] text-on-surface-variant">
             Summe ·{" "}
             <strong className="text-on-surface">{formatEUR(total)}</strong>
           </p>

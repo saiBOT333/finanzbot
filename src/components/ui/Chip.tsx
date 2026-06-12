@@ -28,7 +28,7 @@ export function Chip({
 }: ChipProps) {
   return (
     <span
-      className={`inline-flex items-center gap-2 rounded-m3-pill px-3.5 py-1.5 text-[13px] font-medium ${tones[tone]} ${className}`.trim()}
+      className={`inline-flex items-center gap-2 rounded-m3-pill px-3.5 py-1.5 text-label-lg font-medium ${tones[tone]} ${className}`.trim()}
       {...rest}
     >
       {leading}

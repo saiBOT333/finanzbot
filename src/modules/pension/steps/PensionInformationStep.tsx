@@ -1,5 +1,6 @@
 import { NumberInput } from "../../../components/NumberInput";
 import { Button } from "../../../components/ui/Button";
+import { Callout } from "../../../components/ui/Callout";
 import { formatEUR, formatPercent } from "../../../lib/format";
 import { useProfile } from "../../../lib/profile/useProfile";
 import { PENSION_DEFAULTS, deriveExpectedStatePension, regelaltersgrenze } from "../defaults";
@@ -67,24 +68,24 @@ export function PensionInformationStep() {
 
   return (
     <div className="space-y-5">
-      <p className="font-sans text-[14px] leading-relaxed text-on-surface-variant">
+      <p className="font-sans text-body-md leading-relaxed text-on-surface-variant">
         Wie hoch deine gesetzliche Rente voraussichtlich wird, steht in deiner{" "}
         <strong className="font-semibold">Renteninformation</strong> — dem Brief, den die
         Deutsche Rentenversicherung dir jedes Jahr schickt.
       </p>
 
       {hasOverride && (
-        <div className="border-l-[3px] border-success bg-surface-container px-4 py-3">
+        <Callout tone="success">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="m3-eyebrow-muted">Manueller Wert aktiv</p>
-              <p className="mt-1 text-xl font-semibold tabular-nums text-on-surface">
+              <p className="mt-1 text-title-sm font-semibold tabular-nums text-on-surface">
                 {formatEUR(stored)}
-                <span className="ml-1.5 font-sans text-[11px] uppercase tracking-[0.04em] text-on-surface-variant">
+                <span className="ml-1.5 font-sans text-label-sm uppercase tracking-[0.04em] text-on-surface-variant">
                   / Monat · heute
                 </span>
               </p>
-              <p className="mt-1.5 font-sans text-[13px] leading-relaxed text-on-surface-variant">
+              <p className="mt-1.5 font-sans text-body-sm leading-relaxed text-on-surface-variant">
                 Die Rente wurde manuell festgelegt (Annahmen, Schritt 04) — Eingaben aus diesem
                 Schritt werden ignoriert, bis du den Wert löschst.
               </p>
@@ -93,58 +94,61 @@ export function PensionInformationStep() {
               Ändern
             </Button>
           </div>
-        </div>
+        </Callout>
       )}
 
       {!hasOverride && choice === null && (
-        <div className="border-l-[3px] border-primary bg-surface-container px-4 py-4 space-y-3">
-          <p className="font-sans text-[15px] font-medium text-on-surface">
-            Hast du deine Renteninformation zur Hand?
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <Button onClick={() => setChoice("letter")}>Ja, Wert eintragen</Button>
-            <Button variant="tonal" onClick={() => setChoice("estimate")}>
-              Nein, erstmal schätzen
-            </Button>
+        <Callout tone="info" className="py-4">
+          <div className="space-y-3">
+            <p className="font-sans text-body-lg font-medium text-on-surface">
+              Hast du deine Renteninformation zur Hand?
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button onClick={() => setChoice("letter")}>Ja, Wert eintragen</Button>
+              <Button variant="tonal" onClick={() => setChoice("estimate")}>
+                Nein, erstmal schätzen
+              </Button>
+            </div>
+            <p className="font-sans text-body-sm leading-relaxed text-on-surface-variant">
+              Mit dem Wert aus dem Brief wird dein Ergebnis deutlich genauer — du kannst aber
+              jederzeit mit einer Schätzung starten und den Wert später nachtragen.
+            </p>
           </div>
-          <p className="font-sans text-[13px] leading-relaxed text-on-surface-variant">
-            Mit dem Wert aus dem Brief wird dein Ergebnis deutlich genauer — du kannst aber
-            jederzeit mit einer Schätzung starten und den Wert später nachtragen.
-          </p>
-        </div>
+        </Callout>
       )}
 
       {!hasOverride && choice === "estimate" && (
-        <div className="border-l-[3px] border-primary bg-surface-container px-4 py-4 space-y-3">
-          <p className="m3-eyebrow-muted">Geschätzte gesetzliche Rente</p>
-          <p className="font-sans text-[13px] leading-relaxed text-on-surface-variant">
-            Wir schätzen deine Rente auf{" "}
-            <strong className="tabular-nums text-on-surface">
-              rund {formatEUR(fallbackEstimate)} im Monat
-            </strong>{" "}
-            — pauschal {formatPercent(PENSION_DEFAULTS.statePensionFactor)} deines
-            Netto-Einkommens. Das ist grob; mit dem echten Wert aus deiner Renteninformation
-            wird dein Ergebnis deutlich genauer.
-          </p>
-          <Button variant="tonal" size="sm" onClick={() => setChoice("letter")}>
-            Wert aus dem Brief eintragen
-          </Button>
-        </div>
+        <Callout tone="info" eyebrow="Geschätzte gesetzliche Rente" className="py-4">
+          <div className="space-y-3">
+            <p className="font-sans text-body-sm leading-relaxed text-on-surface-variant">
+              Wir schätzen deine Rente auf{" "}
+              <strong className="tabular-nums text-on-surface">
+                rund {formatEUR(fallbackEstimate)} im Monat
+              </strong>{" "}
+              — pauschal {formatPercent(PENSION_DEFAULTS.statePensionFactor)} deines
+              Netto-Einkommens. Das ist grob; mit dem echten Wert aus deiner Renteninformation
+              wird dein Ergebnis deutlich genauer.
+            </p>
+            <Button variant="tonal" size="sm" onClick={() => setChoice("letter")}>
+              Wert aus dem Brief eintragen
+            </Button>
+          </div>
+        </Callout>
       )}
 
       {!hasOverride && choice === "letter" && (
         <>
           {retirementAge >= regelalter && (
-            <div className="border-l-[3px] border-outline-variant bg-surface-container px-3 py-2">
-              <p className="font-sans text-[13px] leading-relaxed text-on-surface-variant">
+            <Callout>
+              <p className="font-sans text-body-sm leading-relaxed text-on-surface-variant">
                 Du gehst zur Regelaltersgrenze ({Number.isInteger(regelalter) ? regelalter : regelalter.toFixed(1)}) oder später in Rente —
                 keine Abschläge, kein Beitragsjahre-Abschlag in der Hochrechnung. Die
                 Regelaltersgrenze schätzen wir aus deinem Jahrgang (auf das Kalenderjahr genau).
               </p>
-            </div>
+            </Callout>
           )}
-          <div className="space-y-4 border border-on-surface-variant bg-surface p-4">
-            <p className="font-sans text-[13px] leading-relaxed text-on-surface-variant">
+          <div className="space-y-4 rounded-m3-md border border-on-surface-variant bg-surface p-4">
+            <p className="font-sans text-body-sm leading-relaxed text-on-surface-variant">
               Such auf dem Brief den Wert{" "}
               <strong className="font-semibold">
                 „voraussichtliche Regelaltersrente, wenn Sie wie bisher Beiträge zahlen"
@@ -179,9 +183,12 @@ export function PensionInformationStep() {
               hint="20 % = Faustformel Finanztip (mittlere Rente). 12 % bei niedriger Rente, 30 %+ bei höherer Rente mit Nebeneinkünften."
             />
 
-            <details className="pt-1">
-              <summary className="cursor-pointer text-[12px] font-medium uppercase tracking-[0.04em] text-primary hover:underline underline-offset-4 decoration-2">
-                ▸ Abweichende Erwerbsbiografie?
+            <details className="group pt-1">
+              <summary className="inline-flex cursor-pointer list-none items-center gap-1 text-label-md font-medium uppercase tracking-[0.04em] text-primary hover:underline underline-offset-4 decoration-2 [&::-webkit-details-marker]:hidden">
+                <span aria-hidden className="m3-icon text-[16px] leading-none transition-transform group-open:rotate-90">
+                  chevron_right
+                </span>
+                Abweichende Erwerbsbiografie?
               </summary>
               <div className="mt-3 space-y-2">
                 <NumberInput
@@ -195,20 +202,22 @@ export function PensionInformationStep() {
                   max={Math.max(14, retirementAge - 1)}
                   hint="Default 20: durchgängig ab Ausbildung/Studium gerechnet. Höher setzen bei Spätstart in DRV-Pflichteinzahlung (z. B. langes Studium, Selbstständigkeit, Auslandsjahre)."
                 />
-                <p className="text-[13px] text-on-surface-variant">
+                <p className="text-body-sm text-on-surface-variant">
                   Wirkt sich auf den Beitragsjahre-Faktor in der Hochrechnung aus.
                 </p>
               </div>
             </details>
 
             {projection && grossWithoutAdjustment !== null && (
-              <details className="pt-1">
-                <summary className="cursor-pointer text-[12px] font-medium uppercase tracking-[0.04em] text-primary hover:underline underline-offset-4 decoration-2">
-                  ▸ Wie rechnen wir das um?
+              <details className="group pt-1">
+                <summary className="inline-flex cursor-pointer list-none items-center gap-1 text-label-md font-medium uppercase tracking-[0.04em] text-primary hover:underline underline-offset-4 decoration-2 [&::-webkit-details-marker]:hidden">
+                  <span aria-hidden className="m3-icon text-[16px] leading-none transition-transform group-open:rotate-90">
+                    chevron_right
+                  </span>
+                  Wie rechnen wir das um?
                 </summary>
-                <div className="mt-3 border-l-[3px] border-success bg-surface-container px-4 py-3">
-                  <p className="m3-eyebrow-muted">Hochrechnung · fließt live ins Ergebnis ein</p>
-                  <dl className="mt-2 divide-y divide-outline-variant text-[12px] text-on-surface-variant">
+                <Callout tone="success" eyebrow="Hochrechnung · fließt live ins Ergebnis ein" className="mt-3">
+                  <dl className="divide-y divide-outline-variant text-body-sm text-on-surface-variant">
                     <CalcRow
                       label="Brutto ohne Anpassung"
                       value={formatEUR(grossWithoutAdjustment)}
@@ -240,14 +249,14 @@ export function PensionInformationStep() {
                     />
                   </dl>
                   <div className="mt-3 flex items-center justify-between gap-3">
-                    <p className="font-sans text-[13px] leading-relaxed text-on-surface-variant">
+                    <p className="font-sans text-body-sm leading-relaxed text-on-surface-variant">
                       Ändern sich Renteneintritt oder Inflation, rechnet das Ergebnis automatisch mit.
                     </p>
                     <Button variant="text" size="sm" onClick={clearGross}>
                       Zurücksetzen
                     </Button>
                   </div>
-                </div>
+                </Callout>
               </details>
             )}
           </div>
@@ -256,9 +265,10 @@ export function PensionInformationStep() {
             <button
               type="button"
               onClick={() => setChoice("estimate")}
-              className="text-[12px] font-medium text-primary hover:underline underline-offset-4 decoration-2"
+              className="inline-flex items-center gap-1 text-label-md font-medium text-primary hover:underline underline-offset-4 decoration-2"
             >
-              Brief doch nicht zur Hand? Erstmal schätzen →
+              Brief doch nicht zur Hand? Erstmal schätzen
+              <span aria-hidden className="m3-icon text-[16px] leading-none">arrow_forward</span>
             </button>
           )}
         </>

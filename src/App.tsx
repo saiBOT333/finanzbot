@@ -1,13 +1,18 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card } from "./components/ui/Card";
 import { Button } from "./components/ui/Button";
 import { ChoiceChip } from "./components/ui/ChoiceChip";
+import { ConfirmDialog } from "./components/ui/ConfirmDialog";
+import { Snackbar } from "./components/ui/Snackbar";
 import { WelcomeScreen } from "./components/WelcomeScreen";
 import { modules } from "./modules/registry";
 import { profileStore } from "./lib/profile/store";
 import { KEYS, buildExport, downloadJSON, isExportPayload, writeJSON } from "./lib/storage";
 
 const WELCOME_KEY = "finanzbot:welcomeSeen";
+// sessionStorage-Flag: der Import lädt die Seite neu, die Erfolgsmeldung
+// soll aber erst danach als Snackbar erscheinen.
+const IMPORT_TOAST_KEY = "finanzbot:importToast";
 
 function readWelcomeSeen(): boolean {
   if (typeof window === "undefined") return true;
@@ -30,9 +35,22 @@ function markWelcomeSeen(): void {
 export function App() {
   const [activeId, setActiveId] = useState<string>(modules[0]?.id ?? "");
   const [welcomeSeen, setWelcomeSeen] = useState<boolean>(readWelcomeSeen);
+  const [snackbar, setSnackbar] = useState<string | null>(null);
+  const [confirmResetOpen, setConfirmResetOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const active = modules.find((m) => m.id === activeId);
+
+  useEffect(() => {
+    try {
+      if (window.sessionStorage.getItem(IMPORT_TOAST_KEY) === "1") {
+        window.sessionStorage.removeItem(IMPORT_TOAST_KEY);
+        setSnackbar("Daten importiert.");
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   const handleExport = () => {
     const payload = buildExport(
@@ -49,11 +67,11 @@ export function App() {
     try {
       data = JSON.parse(await file.text());
     } catch {
-      alert("Datei konnte nicht gelesen werden.");
+      setSnackbar("Datei konnte nicht gelesen werden.");
       return;
     }
     if (!isExportPayload(data)) {
-      alert("Diese Datei sieht nicht wie ein FinanzBot-Export aus.");
+      setSnackbar("Diese Datei sieht nicht wie ein FinanzBot-Export aus.");
       return;
     }
     // Write to storage and reload: on the next start every store rebuilds
@@ -65,12 +83,15 @@ export function App() {
       writeJSON(KEYS.moduleKey(id), moduleData);
     }
     markWelcomeSeen();
-    alert("Daten importiert.");
+    try {
+      window.sessionStorage.setItem(IMPORT_TOAST_KEY, "1");
+    } catch {
+      // ignore
+    }
     window.location.reload();
   };
 
   const handleReset = () => {
-    if (!confirm("Alle Eingaben in diesem Browser löschen?")) return;
     profileStore.reset();
     modules.forEach((m) => m.store.reset());
     try {
@@ -78,7 +99,9 @@ export function App() {
     } catch {
       // ignore
     }
+    setConfirmResetOpen(false);
     setWelcomeSeen(false);
+    setSnackbar("Alle Eingaben gelöscht.");
   };
 
   const handleStart = () => {
@@ -93,7 +116,7 @@ export function App() {
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-baseline gap-3">
               <span className="m3-eyebrow">FinanzBot</span>
-              <span className="hidden sm:inline text-[14px] text-on-surface-variant">
+              <span className="hidden sm:inline text-body-md text-on-surface-variant">
                 Modulare Finanzplanung · lokal · quelloffen
               </span>
             </div>
@@ -109,7 +132,7 @@ export function App() {
               <Button
                 variant="text"
                 size="sm"
-                onClick={handleReset}
+                onClick={() => setConfirmResetOpen(true)}
                 title="Alle Eingaben löschen"
               >
                 <span aria-hidden className="m3-icon text-[20px] sm:hidden">restart_alt</span>
@@ -154,11 +177,11 @@ export function App() {
             {active ? (
               <section className="space-y-8">
                 <div className="space-y-3">
-                  <h2 className="flex items-center gap-3 text-[28px] sm:text-[48px] font-semibold leading-[1.05] tracking-[-0.02em] text-on-surface">
+                  <h2 className="flex items-center gap-3 text-title-lg sm:text-[48px] font-semibold leading-[1.05] tracking-[-0.02em] text-on-surface">
                     <span aria-hidden className="m3-icon text-primary text-[32px] sm:text-[52px]">{active.icon}</span>
                     {active.name}
                   </h2>
-                  <p className="max-w-prose text-[15px] leading-relaxed text-on-surface-variant">
+                  <p className="max-w-prose text-body-lg leading-relaxed text-on-surface-variant">
                     {active.description}
                   </p>
                 </div>
@@ -168,7 +191,7 @@ export function App() {
               </section>
             ) : (
               <Card>
-                <p className="text-[14px] text-on-surface-variant">Keine Module aktiv.</p>
+                <p className="text-body-md text-on-surface-variant">Keine Module aktiv.</p>
               </Card>
             )}
           </>
@@ -176,10 +199,25 @@ export function App() {
       </main>
 
       <footer className="container-page py-6">
-        <p className="text-center text-[12px] tracking-[0.04em] text-on-surface-variant">
+        <p className="text-center text-label-md tracking-[0.04em] text-on-surface-variant">
           Realgerechnete Orientierung · Keine Anlageberatung · Lokal &amp; quelloffen
         </p>
       </footer>
+
+      <ConfirmDialog
+        open={confirmResetOpen}
+        title="Eingaben löschen?"
+        confirmLabel="Löschen"
+        onConfirm={handleReset}
+        onClose={() => setConfirmResetOpen(false)}
+      >
+        <p>
+          Alle Eingaben in diesem Browser werden gelöscht. Mit Export kannst du sie vorher
+          als Datei sichern.
+        </p>
+      </ConfirmDialog>
+
+      <Snackbar message={snackbar} onDismiss={() => setSnackbar(null)} />
     </div>
   );
 }

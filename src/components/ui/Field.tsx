@@ -29,7 +29,7 @@ export function Field({
     <div className="space-y-1.5">
       <label
         htmlFor={id}
-        className="flex min-h-[16px] items-center gap-2 text-[12px] font-medium uppercase tracking-[0.04em] text-on-surface-variant"
+        className="flex min-h-[16px] items-center gap-2 text-label-md font-medium uppercase tracking-[0.04em] text-on-surface-variant"
       >
         <span>
           {label}
@@ -41,13 +41,13 @@ export function Field({
       {showError ? (
         <p
           id={errorId}
-          className="text-[12px] font-medium text-error"
+          className="text-label-md font-medium text-error"
         >
           {error}
         </p>
       ) : (
         hint && (
-          <p className="text-[13px] leading-snug text-on-surface-variant">{hint}</p>
+          <p className="text-body-sm leading-snug text-on-surface-variant">{hint}</p>
         )
       )}
     </div>

@@ -37,12 +37,12 @@ export function Slider({
       {(label || display) && (
         <div className="flex items-baseline justify-between">
           {label && (
-            <label htmlFor={id} className="text-[14px] text-on-surface-variant">
+            <label htmlFor={id} className="text-body-md text-on-surface-variant">
               {label}
             </label>
           )}
           {display && (
-            <span className="text-[18px] font-semibold text-primary tabular-nums">
+            <span className="text-title-sm font-semibold text-primary tabular-nums">
               {display}
             </span>
           )}

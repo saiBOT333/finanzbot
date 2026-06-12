@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { NumberInput } from "../../../components/NumberInput";
+import { Callout } from "../../../components/ui/Callout";
 import { useProfile, setProfile } from "../../../lib/profile/useProfile";
 import { pensionStore } from "../state";
 import { RETIREMENT_AGE_DEFAULT, STATE_PENSION_MIN_CLAIM_AGE } from "../constants";
@@ -56,9 +57,8 @@ export function BasicsStep() {
         />
       </div>
       {retirementAge < STATE_PENSION_MIN_CLAIM_AGE && (
-        <div className="border-l-[3px] border-outline-variant bg-surface-container px-4 py-3">
-          <p className="m3-eyebrow-muted">Hinweis · Frühverrentung</p>
-          <p className="mt-1.5 font-sans text-[12.5px] leading-relaxed text-on-surface-variant">
+        <Callout eyebrow="Hinweis · Frühverrentung">
+          <p className="font-sans text-body-sm leading-relaxed text-on-surface-variant">
             Die gesetzliche Rente gibt es frühestens ab{" "}
             <strong className="font-semibold text-on-surface">
               {STATE_PENSION_MIN_CLAIM_AGE} Jahren
@@ -67,7 +67,7 @@ export function BasicsStep() {
             Bedarf aus eigenem Kapital decken — das Ergebnis weist dieses Brückenkapital separat
             aus.
           </p>
-        </div>
+        </Callout>
       )}
     </div>
   );

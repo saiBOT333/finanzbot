@@ -45,17 +45,17 @@ export function AllocationManager({ allocation, onChange, emptyHint }: Props) {
   return (
     <div className="space-y-3">
       {allocation.length === 0 ? (
-        <p className="border border-outline-variant bg-surface-container p-3 font-sans text-[13px] text-on-surface-variant">
+        <p className="rounded-m3-sm border border-outline-variant bg-surface-container p-3 font-sans text-body-sm text-on-surface-variant">
           {emptyHint ?? "Noch keine Allokation gesetzt — füg Anteile in % hinzu."}
         </p>
       ) : (
-        <ul className="divide-y divide-outline-variant border border-on-surface-variant bg-surface">
+        <ul className="divide-y divide-outline-variant overflow-hidden rounded-m3-md border border-on-surface-variant bg-surface">
           {allocation.map((a, i) => {
             const def = getAssetTypeDef(a.type);
             const r = effectiveRealReturn(a);
             return (
               <li key={a.id} className="px-4 py-3">
-                <div className="mb-2 flex items-baseline gap-2 text-[10.5px] uppercase tracking-[0.04em] text-on-surface-variant">
+                <div className="mb-2 flex items-baseline gap-2 text-label-sm uppercase tracking-[0.04em] text-on-surface-variant">
                   <span className="text-primary">
                     {String(i + 1).padStart(2, "0")}
                   </span>
@@ -114,7 +114,7 @@ export function AllocationManager({ allocation, onChange, emptyHint }: Props) {
                   </div>
                 </div>
                 <div className="mt-3 flex items-center justify-between gap-3">
-                  <p className="font-sans text-[12px] leading-relaxed text-on-surface-variant">
+                  <p className="font-sans text-body-sm leading-relaxed text-on-surface-variant">
                     {def.hint}
                   </p>
                   <Button
@@ -139,7 +139,7 @@ export function AllocationManager({ allocation, onChange, emptyHint }: Props) {
         <div className="flex flex-col items-start gap-0.5 sm:items-end">
           <span
             className={[
-              "text-[11px] uppercase tracking-[0.04em]",
+              "text-label-sm uppercase tracking-[0.04em]",
               valid ? "text-on-surface-variant" : "text-error",
             ].join(" ")}
           >
@@ -148,11 +148,14 @@ export function AllocationManager({ allocation, onChange, emptyHint }: Props) {
               {formatPercent(totalPercent / 100)}
             </strong>
             {!valid && allocation.length > 0 && (
-              <span className="ml-1 normal-case">▲ muss 100 % ergeben</span>
+              <span className="ml-1 inline-flex items-center gap-1 normal-case">
+                <span aria-hidden className="m3-icon text-[14px] leading-none">warning</span>
+                muss 100 % ergeben
+              </span>
             )}
           </span>
           {valid && (
-            <span className="text-[10.5px] uppercase tracking-[0.04em] text-on-surface-variant">
+            <span className="text-label-sm uppercase tracking-[0.04em] text-on-surface-variant">
               Gewichtete reale Rendite ≈{" "}
               <strong className="text-primary">{formatPercent(effective)}</strong>
             </span>

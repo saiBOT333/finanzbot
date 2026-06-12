@@ -18,7 +18,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <input
         ref={ref}
-        className={`block h-12 w-full rounded-t-m3-sm border-b-2 bg-surface-container-high px-4 text-[16px] tabular-nums placeholder:text-on-surface-variant focus:outline-none ${tone} ${className}`.trim()}
+        className={`block h-12 w-full rounded-t-m3-sm border-b-2 bg-surface-container-high px-4 text-body-lg tabular-nums placeholder:text-on-surface-variant focus:outline-none ${tone} ${className}`.trim()}
         {...rest}
       />
     );

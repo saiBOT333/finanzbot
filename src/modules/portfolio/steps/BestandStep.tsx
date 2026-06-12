@@ -10,7 +10,7 @@ export function BestandStep() {
 
   return (
     <div className="space-y-4">
-      <p className="font-sans text-sm leading-relaxed text-on-surface-variant">
+      <p className="font-sans text-body-md leading-relaxed text-on-surface-variant">
         Trag hier dein Erspartes ein — jede Position einzeln. Was nicht eindeutig riskant
         oder sicher ist (z.&nbsp;B. selbstgenutzte Immobilie, bAV/Riester), kannst du pro
         Position selbst zuordnen.
@@ -23,7 +23,7 @@ export function BestandStep() {
       />
 
       {breakdown.excludedEuro > 0 && (
-        <p className="border border-outline-variant bg-surface-container p-3 font-sans text-[13px] leading-relaxed text-on-surface-variant">
+        <p className="rounded-m3-sm border border-outline-variant bg-surface-container p-3 font-sans text-body-sm leading-relaxed text-on-surface-variant">
           Hinweis: {formatEUR(breakdown.excludedEuro)} zählen nicht in die Aufteilung —
           z.&nbsp;B. Immobilie oder bAV, weil du sie nicht einfach umschichten kannst.
           Sie werden separat ausgewiesen.
