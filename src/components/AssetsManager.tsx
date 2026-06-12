@@ -133,7 +133,10 @@ export function AssetsManager({ assets, onChange, showRiskOverride = false }: Pr
                 </div>
                 {showRiskOverride && (
                   <div className="mt-3 sm:max-w-xs">
-                    <Field label="Risiko-Einstufung">
+                    <Field
+                      label="Risiko-Einstufung"
+                      hint="Standard ordnet automatisch zu: ETFs/Aktien/Krypto = riskant, Tagesgeld/Anleihen = sicher. Nur ändern, wenn eine Position nicht passt."
+                    >
                       {(id) => (
                         <Select
                           id={id}
