@@ -72,3 +72,8 @@ export function recommendEquityPercent(a: FragebogenAntworten): number {
   if (s <= 9) return 70;
   return 90;
 }
+
+/** Alle fünf Fragen beantwortet? Punktwert 0 zählt als beantwortet. */
+export function isComplete(a: Partial<FragebogenAntworten>): a is FragebogenAntworten {
+  return QUESTIONS.every((q) => a[q.key] !== undefined);
+}
