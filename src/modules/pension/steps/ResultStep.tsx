@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Card } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
+import { Callout } from "../../../components/ui/Callout";
 import { InfoTooltip } from "../../../components/InfoTooltip";
 import { formatEUR, formatEURRounded, formatPercent } from "../../../lib/format";
 import { useProfile, setProfile } from "../../../lib/profile/useProfile";
@@ -71,10 +72,11 @@ export function ResultStep() {
   if (result.kind === "invalid") {
     return (
       <Card className="!border-error">
-        <p className="text-[10.5px] font-medium uppercase tracking-[0.04em] text-error">
-          ▲ Eingabe ungültig
+        <p className="inline-flex items-center gap-1.5 text-label-sm font-medium uppercase tracking-[0.04em] text-error">
+          <span aria-hidden className="m3-icon text-[16px] leading-none">warning</span>
+          Eingabe ungültig
         </p>
-        <p className="mt-2 font-sans text-[13px] leading-relaxed text-on-surface-variant">{result.reason}</p>
+        <p className="mt-2 font-sans text-body-sm leading-relaxed text-on-surface-variant">{result.reason}</p>
       </Card>
     );
   }
@@ -83,7 +85,7 @@ export function ResultStep() {
     return (
       <Card>
         <p className="m3-eyebrow-muted">Hinweis</p>
-        <p className="mt-2 font-sans text-[13px] leading-relaxed text-on-surface-variant">
+        <p className="mt-2 font-sans text-body-sm leading-relaxed text-on-surface-variant">
           Mit dem aktuellen Alter und Renteneintritt befindest du dich bereits im Ruhestand. Passe
           die Werte an, um eine Lücke zu berechnen.
         </p>
@@ -94,13 +96,14 @@ export function ResultStep() {
   if (result.kind === "no-gap") {
     return (
       <Card>
-        <p className="text-[10.5px] font-medium uppercase tracking-[0.04em] text-success">
-          ◯ Keine Rentenlücke
+        <p className="inline-flex items-center gap-1.5 text-label-sm font-medium uppercase tracking-[0.04em] text-success">
+          <span aria-hidden className="m3-icon text-[16px] leading-none">check_circle</span>
+          Keine Rentenlücke
         </p>
-        <p className="mt-3 text-3xl font-semibold tracking-[-0.02em] text-on-surface">
+        <p className="mt-3 text-title-lg font-semibold tracking-[-0.02em] text-on-surface">
           Du bist abgesichert.
         </p>
-        <p className="mt-3 font-sans text-[13.5px] leading-relaxed text-on-surface-variant">
+        <p className="mt-3 font-sans text-body-sm leading-relaxed text-on-surface-variant">
           Bei Bedarf <span className="tabular-nums">{formatEUR(result.needToday)}</span> und erwarteter
           gesetzlicher Rente von{" "}
           <span className="tabular-nums">{formatEUR(result.expectedStatePension)}</span> liegt keine
@@ -133,29 +136,22 @@ export function ResultStep() {
   return (
     <div className="space-y-6">
       {statePension.source === "fallback" && m.pensionInfoChoice !== "estimate" && (
-        <div className="rounded-m3-md bg-error-container p-4 flex gap-3 items-start">
-          <span aria-hidden className="text-xl leading-none">▲</span>
-          <div className="space-y-1">
-            <p className="text-[12px] font-medium uppercase tracking-[0.04em] text-error">
-              Achtung · Renteninformation fehlt
-            </p>
-            <p className="text-[13px] leading-relaxed text-on-surface">
-              Wir rechnen mit der Faustformel <strong className="font-semibold">48 % vom Netto</strong>{" "}
-              ={" "}
-              <span className="tabular-nums">{formatEUR(result.needToday - result.gapToday)}</span> pro
-              Monat. Das ist eine sehr grobe Schätzung und kann je nach Erwerbsbiografie deutlich
-              daneben liegen. Trag in{" "}
-              <strong className="font-semibold">Schritt 03 (Renteninformation)</strong> deinen echten
-              Wert ein.
-            </p>
-          </div>
-        </div>
+        <Callout tone="warning" icon="warning" eyebrow="Achtung · Renteninformation fehlt">
+          <p className="text-body-sm leading-relaxed text-on-surface">
+            Wir rechnen mit der Faustformel <strong className="font-semibold">48 % vom Netto</strong>{" "}
+            ={" "}
+            <span className="tabular-nums">{formatEUR(result.needToday - result.gapToday)}</span> pro
+            Monat. Das ist eine sehr grobe Schätzung und kann je nach Erwerbsbiografie deutlich
+            daneben liegen. Trag in{" "}
+            <strong className="font-semibold">Schritt 03 (Renteninformation)</strong> deinen echten
+            Wert ein.
+          </p>
+        </Callout>
       )}
 
       {statePension.source === "fallback" && m.pensionInfoChoice === "estimate" && (
-        <div className="border-l-[3px] border-primary bg-surface-container px-4 py-3">
-          <p className="m3-eyebrow-muted">Gesetzliche Rente · geschätzt</p>
-          <p className="mt-1.5 font-sans text-[13px] leading-relaxed text-on-surface-variant">
+        <Callout tone="info" eyebrow="Gesetzliche Rente · geschätzt">
+          <p className="font-sans text-body-sm leading-relaxed text-on-surface-variant">
             Dein Ergebnis basiert auf einer Schätzung der gesetzlichen Rente:{" "}
             <span className="tabular-nums font-semibold text-on-surface">
               {formatEUR(result.needToday - result.gapToday)}
@@ -163,13 +159,12 @@ export function ResultStep() {
             pro Monat — pauschal 48 % deines Netto-Einkommens. Mit dem Wert aus deiner
             Renteninformation (Schritt 3) wird es deutlich genauer.
           </p>
-        </div>
+        </Callout>
       )}
 
       {statePension.source === "renteninfo" && (
-        <div className="border-l-[3px] border-outline-variant bg-surface-container px-4 py-3">
-          <p className="m3-eyebrow-muted">Gesetzliche Rente · live aus deiner Renteninformation</p>
-          <p className="mt-1.5 font-sans text-[12.5px] leading-relaxed text-on-surface-variant">
+        <Callout eyebrow="Gesetzliche Rente · live aus deiner Renteninformation">
+          <p className="font-sans text-body-sm leading-relaxed text-on-surface-variant">
             <span className="tabular-nums font-semibold text-on-surface">
               {formatEUR(statePension.monthly)}
             </span>{" "}
@@ -180,13 +175,12 @@ export function ResultStep() {
             <span className="tabular-nums">{formatPercent(m.pensionInfo.deduction)}</span>. Ändern sich
             Renteneintritt oder Inflation, rechnet dieser Wert automatisch mit.
           </p>
-        </div>
+        </Callout>
       )}
 
       {statePension.source === "override" && (
-        <div className="border-l-[3px] border-outline-variant bg-surface-container px-4 py-3">
-          <p className="m3-eyebrow-muted">Gesetzliche Rente · manuell festgelegt</p>
-          <p className="mt-1.5 font-sans text-[12.5px] leading-relaxed text-on-surface-variant">
+        <Callout eyebrow="Gesetzliche Rente · manuell festgelegt">
+          <p className="font-sans text-body-sm leading-relaxed text-on-surface-variant">
             Du hast{" "}
             <span className="tabular-nums font-semibold text-on-surface">
               {formatEUR(statePension.monthly)}
@@ -194,14 +188,14 @@ export function ResultStep() {
             / Monat fest vorgegeben — Eingaben aus Schritt 03 (Renteninformation) werden ignoriert.
             Lösche den Wert in den Annahmen, um wieder live abzuleiten.
           </p>
-        </div>
+        </Callout>
       )}
 
       {/* M3 Hero-Card: Display-Zahl auf Primary-Container. */}
       <Card variant="hero">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-1.5">
-            <p className="text-[12px] uppercase tracking-[0.08em] opacity-85">
+            <p className="text-label-md uppercase tracking-[0.08em] opacity-85">
               Empfohlene monatliche Sparrate
             </p>
             <InfoTooltip
@@ -225,50 +219,48 @@ export function ResultStep() {
           </p>
           <div className="mt-3 flex items-center gap-3">
             <span aria-hidden className="inline-block h-[3px] w-12 bg-primary rounded-full" />
-            <span className="text-[13px] opacity-85">pro Monat, in heutiger Kaufkraft</span>
+            <span className="text-body-sm opacity-85">pro Monat, in heutiger Kaufkraft</span>
           </div>
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-x-8 gap-y-3 border-t border-primary/20 pt-5 sm:grid-cols-2">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.08em] opacity-85">Sparquote</p>
-            <p className="mt-1 text-2xl font-semibold tabular-nums">
+            <p className="text-label-sm uppercase tracking-[0.08em] opacity-85">Sparquote</p>
+            <p className="mt-1 text-title-md font-semibold tabular-nums">
               {formatPercent(result.savingsRatePct / 100)}
             </p>
-            <p className="mt-1 text-[12px] leading-snug opacity-85">
+            <p className="mt-1 text-label-md leading-snug opacity-85">
               vom aktuellen Netto-Einkommen
             </p>
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <p className="text-[12px] font-medium opacity-85">Alternative: fester Betrag</p>
+              <p className="text-label-sm uppercase tracking-[0.08em] opacity-85">
+                Alternative: fester Betrag
+              </p>
               <InfoTooltip
                 content={tooltips.fixedNominalSavings}
                 label="Erklärung zu Alternative: fester Betrag"
               />
             </div>
-            <p className="mt-1 text-2xl font-semibold tabular-nums">
+            <p className="mt-1 text-title-md font-semibold tabular-nums">
               {formatEURRounded(result.fixedNominalSavings)}
             </p>
-            <p className="mt-1 text-[12px] leading-snug opacity-85">
+            <p className="mt-1 text-label-md leading-snug opacity-85">
               jeden Monat gleich viel, dafür ohne jährliche Erhöhung
             </p>
           </div>
         </div>
       </Card>
 
-      {/* Neutraler Lesehinweis im Border-links-Muster (kein Pink — das liest sich als Warnung). */}
-      <div className="border-l-[3px] border-primary bg-surface-container px-4 py-3 flex gap-3 items-start">
-        <span aria-hidden className="m3-icon text-[20px] leading-none text-primary">lightbulb</span>
-        <div className="space-y-1.5">
-          <p className="m3-eyebrow-muted">Lesehinweis</p>
-          <p className="font-sans text-[13px] leading-relaxed text-on-surface-variant">
-            Der Hauptbetrag gilt in heutiger Kaufkraft. Um real gleich zu bleiben, musst du ihn
-            jedes Jahr um die Inflation anpassen (z. B. +2 %). Steigt dein Gehalt mit der
-            Inflation, bleibt die Sparquote konstant.
-          </p>
-        </div>
-      </div>
+      {/* Neutraler Lesehinweis (kein Pink — das liest sich als Warnung). */}
+      <Callout tone="info" icon="lightbulb" eyebrow="Lesehinweis">
+        <p className="font-sans text-body-sm leading-relaxed text-on-surface-variant">
+          Der Hauptbetrag gilt in heutiger Kaufkraft. Um real gleich zu bleiben, musst du ihn
+          jedes Jahr um die Inflation anpassen (z. B. +2 %). Steigt dein Gehalt mit der
+          Inflation, bleibt die Sparquote konstant.
+        </p>
+      </Callout>
 
       <SparquoteEinordnung pct={result.savingsRatePct} />
 
@@ -299,10 +291,10 @@ export function ResultStep() {
 
       <Card>
         <p className="m3-eyebrow">Berechnung · Schritt für Schritt</p>
-        <h3 className="mt-1 text-2xl font-semibold tracking-[-0.02em] text-on-surface">
+        <h3 className="mt-1 text-title-md font-semibold tracking-[-0.02em] text-on-surface">
           So entsteht die Empfehlung
         </h3>
-        <ol className="mt-2 divide-y divide-outline-variant font-sans text-[13.5px] leading-[1.65] text-on-surface-variant">
+        <ol className="mt-2 divide-y divide-outline-variant font-sans text-body-sm leading-[1.65] text-on-surface-variant">
           <ArgumentStep n="01">
             Du brauchst in Rente{" "}
             <span className="tabular-nums">{formatEUR(result.needToday)}</span> pro Monat (heutige
@@ -371,35 +363,31 @@ function SparquoteEinordnung({ pct }: { pct: number }) {
 
   // Bewusst keine Ampelfarben: Rot würde „Fehler" signalisieren, dabei ist eine
   // hohe Sparquote nur ein Hinweis. Die Einordnung übernimmt der Text darunter.
-  const accent = "border-primary text-on-surface";
-  const indicatorColor = "bg-primary";
-
   return (
-    <div className={`mt-5 border-l-[3px] ${accent} bg-surface-container px-4 py-3`}>
-      <p className="m3-eyebrow-muted">Einordnung · Sparquote</p>
-      <div className="relative mt-3 h-1.5 w-full overflow-hidden bg-surface-container">
+    <Callout tone="info" eyebrow="Einordnung · Sparquote" className="mt-5">
+      <div className="relative mt-1.5 h-1.5 w-full overflow-hidden bg-surface-container">
         <div
           className="absolute inset-y-0 bg-success/20"
           aria-hidden="true"
           style={{ left: `${recLeft}%`, width: `${recWidth}%` }}
         />
         <div
-          className={`absolute inset-y-0 left-0 ${indicatorColor}`}
+          className="absolute inset-y-0 left-0 bg-primary"
           style={{ width: `${sparrateLeftPct}%` }}
           aria-label={`Deine Sparquote ${pct.toFixed(1)} %`}
         />
       </div>
-      <div className="mt-2 flex items-center justify-between text-[10px] uppercase tracking-[0.04em] text-on-surface-variant">
+      <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.04em] text-on-surface-variant">
         <span>0 %</span>
         <span>
           Ø DE {avg.toFixed(0)} % · Empf. {recMin.toFixed(0)}–{recMax.toFixed(0)} %
         </span>
       </div>
-      <p className="mt-3 font-sans text-[12.5px] leading-relaxed text-on-surface-variant">
+      <p className="pt-1.5 font-sans text-body-sm leading-relaxed text-on-surface-variant">
         Deine Sparquote liegt bei{" "}
         <strong className="tabular-nums">{formatPercent(pct / 100)}</strong>. {message}
       </p>
-    </div>
+    </Callout>
   );
 }
 
@@ -408,7 +396,7 @@ function ArgumentStep({ n, children }: { n: string; children: React.ReactNode })
     <li className="flex gap-4 py-3">
       <span
         aria-hidden
-        className="flex-shrink-0 text-[11px] font-medium tabular-nums text-primary"
+        className="flex-shrink-0 text-label-sm font-medium tabular-nums text-primary"
       >
         {n}
       </span>
@@ -421,16 +409,16 @@ function Stat({ label, value, hint, tooltip }: StatProps) {
   return (
     <Card className="!px-5 !py-5 sm:!px-6 sm:!py-5 flex flex-col">
       <div className="flex items-baseline gap-1.5 min-h-[3.25rem] sm:min-h-[3.75rem]">
-        <span className="text-[11px] font-medium uppercase tracking-[0.06em] text-on-surface-variant">
+        <span className="text-label-sm font-medium uppercase tracking-[0.06em] text-on-surface-variant">
           {label}
         </span>
         {tooltip && <InfoTooltip content={tooltip} label={`Erklärung zu ${label}`} />}
       </div>
-      <div className="mt-2 text-[26px] font-semibold leading-none tabular-nums text-on-surface sm:text-[28px]">
+      <div className="mt-2 text-title-lg font-semibold leading-none tabular-nums text-on-surface">
         {value}
       </div>
       {hint && (
-        <div className="mt-2 text-[13px] leading-snug text-on-surface-variant">{hint}</div>
+        <div className="mt-2 text-body-sm leading-snug text-on-surface-variant">{hint}</div>
       )}
     </Card>
   );

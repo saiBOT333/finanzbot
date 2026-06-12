@@ -22,7 +22,7 @@ export function Tooltip({ content, children }: TooltipProps) {
       {open && (
         <span
           role="tooltip"
-          className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 w-64 -translate-x-1/2 rounded-m3-sm bg-on-surface px-3 py-2 text-[12px] leading-relaxed text-surface shadow-m3-elev2"
+          className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 w-64 -translate-x-1/2 rounded-m3-sm bg-on-surface px-3 py-2 text-body-sm leading-relaxed text-surface shadow-m3-elev2"
         >
           {content}
         </span>

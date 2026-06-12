@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { Button } from "./ui/Button";
+import { Callout } from "./ui/Callout";
 
 export type WizardStep = {
   id: string;
@@ -77,13 +78,17 @@ export function Wizard({ steps, onFinish, finishLabel = "Fertig" }: WizardProps)
                   disabled={!reachable}
                   aria-current={status === "active" ? "step" : undefined}
                   title={s.title}
-                  className={`inline-flex items-center gap-1.5 rounded-m3-pill px-2.5 py-1 text-[12px] font-medium transition-colors ${tone} ${reachable ? "cursor-pointer hover:brightness-95" : "cursor-not-allowed opacity-60"}`}
+                  className={`inline-flex items-center gap-1.5 rounded-m3-pill px-2.5 py-1 text-label-md font-medium transition-colors ${tone} ${reachable ? "cursor-pointer hover:brightness-95" : "cursor-not-allowed opacity-60"}`}
                 >
                   <span
                     aria-hidden
                     className={`inline-flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-semibold ${numTone}`}
                   >
-                    {status === "done" ? "✓" : i + 1}
+                    {status === "done" ? (
+                      <span className="m3-icon text-[12px] leading-none">check</span>
+                    ) : (
+                      i + 1
+                    )}
                   </span>
                   {stripNumberPrefix(s.title)}
                 </button>
@@ -95,7 +100,7 @@ export function Wizard({ steps, onFinish, finishLabel = "Fertig" }: WizardProps)
 
       <header className="space-y-3">
         <span className="m3-eyebrow">{`Schritt ${index + 1} / ${total}`}</span>
-        <h2 className="text-[28px] sm:text-[32px] font-semibold leading-[1.1] tracking-[-0.005em] text-on-surface">
+        <h2 className="text-title-lg sm:text-headline font-semibold leading-[1.1] tracking-[-0.005em] text-on-surface">
           {cleanTitle}
         </h2>
       </header>
@@ -104,17 +109,25 @@ export function Wizard({ steps, onFinish, finishLabel = "Fertig" }: WizardProps)
 
       <div className="space-y-3 pt-6">
         {!canProceed && step.blockReason && (
-          <p className="rounded-m3-md bg-error-container px-4 py-3 text-[13px] text-on-surface">
-            ▲ {step.blockReason}
-          </p>
+          <Callout tone="warning" icon="warning">
+            <p className="text-body-sm text-on-surface">{step.blockReason}</p>
+          </Callout>
         )}
         <div className="flex items-center justify-between gap-2">
           <Button variant="text" onClick={handleBack} disabled={index === 0}>
-            ← Zurück
+            <span aria-hidden className="m3-icon text-[18px]">arrow_back</span>
+            Zurück
           </Button>
           {(!isLast || onFinish) && (
             <Button onClick={handleNext} disabled={!canProceed}>
-              {isLast ? finishLabel : "Weiter →"}
+              {isLast ? (
+                finishLabel
+              ) : (
+                <>
+                  Weiter
+                  <span aria-hidden className="m3-icon text-[18px]">arrow_forward</span>
+                </>
+              )}
             </Button>
           )}
         </div>

@@ -15,7 +15,7 @@ export function ZielquoteStep() {
 
   return (
     <div className="space-y-4">
-      <p className="font-sans text-sm leading-relaxed text-on-surface-variant">
+      <p className="font-sans text-body-md leading-relaxed text-on-surface-variant">
         Wie viel Prozent deines Geldes soll in Aktien stecken? Der Rest bleibt im sicheren
         Teil (Tagesgeld, Anleihen, Geldmarkt). Mehr Aktien = mehr erwartete Rendite, aber
         stärkere Schwankungen.
@@ -23,7 +23,7 @@ export function ZielquoteStep() {
 
       <div className="flex items-end gap-4">
         <div className="flex-1">
-          <label className="mb-1 flex justify-between text-[12px] uppercase tracking-[0.04em] text-on-surface-variant">
+          <label className="mb-1 flex justify-between text-label-md uppercase tracking-[0.04em] text-on-surface-variant">
             <span>Aktien</span>
             <span>Sicherer Teil</span>
           </label>
@@ -56,15 +56,18 @@ export function ZielquoteStep() {
       <button
         type="button"
         onClick={() => setShowFragebogen((v) => !v)}
-        className="text-[12px] font-medium uppercase tracking-[0.04em] text-primary hover:underline underline-offset-4 decoration-2"
+        className="inline-flex items-center gap-1 text-label-md font-medium uppercase tracking-[0.04em] text-primary hover:underline underline-offset-4 decoration-2"
       >
+        <span aria-hidden className="m3-icon text-[16px] leading-none">
+          {showFragebogen ? "expand_more" : "chevron_right"}
+        </span>
         {showFragebogen
-          ? "▾ Fragebogen ausblenden"
-          : "▸ Unsicher? Quote vorschlagen lassen — 5 kurze Fragen"}
+          ? "Fragebogen ausblenden"
+          : "Unsicher? Quote vorschlagen lassen — 5 kurze Fragen"}
       </button>
 
       {!showFragebogen && state.fragebogen && (
-        <p className="text-xs text-on-surface-variant">
+        <p className="text-body-sm text-on-surface-variant">
           Vorschlag aus Fragebogen aktiv — Slider übernommen.
         </p>
       )}

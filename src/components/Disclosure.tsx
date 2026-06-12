@@ -21,24 +21,24 @@ export function Disclosure({ title, defaultOpen = false, children, hint }: Discl
         className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left transition-colors hover:bg-surface-container"
       >
         <span className="flex flex-col gap-0.5">
-          <span className="text-[15px] font-medium tracking-[-0.005em] text-on-surface">
+          <span className="text-body-lg font-medium tracking-[-0.005em] text-on-surface">
             {title}
           </span>
           {hint && (
-            <span className="text-[11px] uppercase tracking-[0.04em] text-on-surface-variant">
+            <span className="text-label-sm uppercase tracking-[0.04em] text-on-surface-variant">
               {hint}
             </span>
           )}
         </span>
         <span
           aria-hidden="true"
-          className={`text-[14px] text-on-surface-variant transition-transform ${open ? "rotate-180" : ""}`}
+          className={`m3-icon text-[20px] text-on-surface-variant transition-transform ${open ? "rotate-180" : ""}`}
         >
-          ▾
+          expand_more
         </span>
       </button>
       {open && (
-        <div className="border-t border-outline-variant px-5 py-4 text-[14px] text-on-surface">
+        <div className="border-t border-outline-variant px-5 py-4 text-body-md text-on-surface">
           {children}
         </div>
       )}

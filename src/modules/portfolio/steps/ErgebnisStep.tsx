@@ -65,7 +65,7 @@ export function ErgebnisStep() {
       {!hasAssets && (
         <Card>
           <p className="m3-eyebrow-muted">Hinweis</p>
-          <p className="mt-2 font-sans text-[13.5px] leading-relaxed text-on-surface-variant">
+          <p className="mt-2 font-sans text-body-sm leading-relaxed text-on-surface-variant">
             Noch keine Empfehlung möglich — trag in Schritt 1 mindestens eine Position ein
             (Tagesgeld, ETF-Depot, Festgeld …).
           </p>
@@ -74,12 +74,12 @@ export function ErgebnisStep() {
 
       {hasAssets && rebalance.direction === "shift-to-safe" && (
         <Card variant="hero">
-          <p className="text-[12px] uppercase tracking-[0.08em] opacity-85">Deine Empfehlung</p>
-          <p className="mt-3 text-[28px] font-semibold leading-[1.15] tracking-[-0.01em] sm:text-[34px]">
+          <p className="text-label-md uppercase tracking-[0.08em] opacity-85">Deine Empfehlung</p>
+          <p className="mt-3 text-title-lg font-semibold leading-[1.15] tracking-[-0.01em] sm:text-[34px]">
             Verschiebe {formatEURRounded(rebalance.deltaAmount, 100)} von Aktien in den
             sicheren Teil.
           </p>
-          <p className="mt-3 text-[13px] leading-relaxed opacity-85">
+          <p className="mt-3 text-body-sm leading-relaxed opacity-85">
             Du liegst {formatPp(rebalance.deltaPercent)} über deiner Wunsch-Aktienquote.
             Sicherer Teil = Tagesgeld, Anleihen, Geldmarkt.
           </p>
@@ -88,12 +88,12 @@ export function ErgebnisStep() {
 
       {hasAssets && rebalance.direction === "shift-to-equity" && (
         <Card variant="hero">
-          <p className="text-[12px] uppercase tracking-[0.08em] opacity-85">Deine Empfehlung</p>
-          <p className="mt-3 text-[28px] font-semibold leading-[1.15] tracking-[-0.01em] sm:text-[34px]">
+          <p className="text-label-md uppercase tracking-[0.08em] opacity-85">Deine Empfehlung</p>
+          <p className="mt-3 text-title-lg font-semibold leading-[1.15] tracking-[-0.01em] sm:text-[34px]">
             Verschiebe {formatEURRounded(rebalance.deltaAmount, 100)} in Aktien
             (z. B. Welt-ETF).
           </p>
-          <p className="mt-3 text-[13px] leading-relaxed opacity-85">
+          <p className="mt-3 text-body-sm leading-relaxed opacity-85">
             Du liegst {formatPp(rebalance.deltaPercent)} unter deiner Wunsch-Aktienquote.
           </p>
         </Card>
@@ -101,13 +101,14 @@ export function ErgebnisStep() {
 
       {hasAssets && rebalance.direction === "balanced" && (
         <Card>
-          <p className="text-[12px] font-medium uppercase tracking-[0.04em] text-success">
-            ◯ Alles im Lot
+          <p className="inline-flex items-center gap-1.5 text-label-md font-medium uppercase tracking-[0.04em] text-success">
+            <span aria-hidden className="m3-icon text-[16px] leading-none">check_circle</span>
+            Alles im Lot
           </p>
-          <p className="mt-3 text-3xl font-semibold tracking-[-0.02em] text-on-surface">
+          <p className="mt-3 text-title-lg font-semibold tracking-[-0.02em] text-on-surface">
             Nichts zu tun.
           </p>
-          <p className="mt-3 font-sans text-[13.5px] leading-relaxed text-on-surface-variant">
+          <p className="mt-3 font-sans text-body-sm leading-relaxed text-on-surface-variant">
             Deine Aufteilung weicht weniger als 1 Prozentpunkt von deinem Wunsch ab.
           </p>
         </Card>
@@ -119,13 +120,13 @@ export function ErgebnisStep() {
           <div className="mt-3">
             <StackedBar riskyPercent={breakdown.currentEquityPercent} />
           </div>
-          <p className="mt-2 font-sans text-[14px] text-on-surface">
+          <p className="mt-2 font-sans text-body-md text-on-surface">
             <strong className="tabular-nums">{breakdown.currentEquityPercent.toFixed(1)} %</strong>{" "}
             Aktien ({formatEUR(breakdown.riskyEuro)}) · {formatEUR(breakdown.safeEuro)} sicherer
             Teil
           </p>
           {breakdown.excludedEuro > 0 && (
-            <p className="mt-2 text-[13px] leading-relaxed text-on-surface-variant">
+            <p className="mt-2 text-body-sm leading-relaxed text-on-surface-variant">
               Zusätzlich {formatEUR(breakdown.excludedEuro)} außerhalb der Aufteilung
               (z. B. Immobilie, bAV) — lässt sich nicht einfach umschichten und wird deshalb
               separat ausgewiesen.
@@ -140,7 +141,7 @@ export function ErgebnisStep() {
           <div className="mt-3">
             <StackedBar riskyPercent={state.targetEquityPercent} />
           </div>
-          <p className="mt-2 font-sans text-[14px] text-on-surface">
+          <p className="mt-2 font-sans text-body-md text-on-surface">
             <strong className="tabular-nums">{state.targetEquityPercent} %</strong> Aktien ·{" "}
             {100 - state.targetEquityPercent} % sicherer Teil
           </p>
@@ -148,11 +149,11 @@ export function ErgebnisStep() {
       )}
 
       {hasAssets && (
-        <section className="border border-outline-variant bg-surface-container p-4">
+        <section className="rounded-m3-md border border-outline-variant bg-surface-container p-4">
           <p className="m3-eyebrow-muted">Die Rechnung dahinter</p>
-          <table className="mt-3 w-full font-sans text-sm tabular-nums">
+          <table className="mt-3 w-full font-sans text-body-md tabular-nums">
             <thead>
-              <tr className="text-[11px] uppercase tracking-[0.04em] text-on-surface-variant">
+              <tr className="text-label-sm uppercase tracking-[0.04em] text-on-surface-variant">
                 <th className="pb-2 text-left font-medium"></th>
                 <th className="pb-2 text-right font-medium">Aktuell</th>
                 <th className="pb-2 text-right font-medium">Ziel</th>

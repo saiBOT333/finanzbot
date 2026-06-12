@@ -39,10 +39,11 @@ export class ErrorBoundary extends Component<Props, State> {
     return (
       <div className="flex min-h-screen items-center justify-center p-6">
         <div className="max-w-md space-y-4 rounded-m3-md bg-surface-container p-6">
-          <p className="text-[12px] font-medium uppercase tracking-[0.04em] text-error">
-            ▲ Es ist ein Fehler aufgetreten
+          <p className="inline-flex items-center gap-1.5 text-label-md font-medium uppercase tracking-[0.04em] text-error">
+            <span aria-hidden className="m3-icon text-[16px] leading-none">warning</span>
+            Es ist ein Fehler aufgetreten
           </p>
-          <p className="font-sans text-[13.5px] leading-relaxed text-on-surface-variant">
+          <p className="font-sans text-body-sm leading-relaxed text-on-surface-variant">
             Die Anwendung konnte nicht dargestellt werden. Lade die Seite neu — meist
             behebt das den Fehler. Bleibt er bestehen, kannst du die gespeicherten
             Eingaben in diesem Browser zurücksetzen.
@@ -51,14 +52,14 @@ export class ErrorBoundary extends Component<Props, State> {
             <button
               type="button"
               onClick={this.reload}
-              className="rounded-m3-sm bg-primary px-4 py-2 text-[13px] font-medium text-on-primary"
+              className="rounded-m3-sm bg-primary px-4 py-2 text-label-lg font-medium text-on-primary"
             >
               Seite neu laden
             </button>
             <button
               type="button"
               onClick={this.resetData}
-              className="rounded-m3-sm px-4 py-2 text-[13px] font-medium text-primary hover:underline"
+              className="rounded-m3-sm px-4 py-2 text-label-lg font-medium text-primary hover:underline"
             >
               Eingaben zurücksetzen
             </button>

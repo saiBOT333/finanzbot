@@ -24,11 +24,11 @@ export function FragebogenSection({ initial, onApply }: Props) {
   const offen = QUESTIONS.filter((q) => antworten[q.key] === undefined).length;
 
   return (
-    <div className="space-y-5 border border-outline-variant bg-surface p-4">
+    <div className="space-y-5 rounded-m3-md border border-outline-variant bg-surface p-4">
       <ol className="space-y-5">
         {QUESTIONS.map((q) => (
           <li key={q.key}>
-            <p className="mb-2 font-sans text-[14px] font-medium text-on-surface">{q.title}</p>
+            <p className="mb-2 font-sans text-body-md font-medium text-on-surface">{q.title}</p>
             <div className="flex flex-wrap gap-2">
               {q.options.map((o) => (
                 <ChoiceChip
@@ -46,12 +46,12 @@ export function FragebogenSection({ initial, onApply }: Props) {
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-outline-variant pt-4">
         {complete ? (
-          <p className="font-sans text-[14px] text-on-surface">
+          <p className="font-sans text-body-md text-on-surface">
             Empfohlene Aktienquote:{" "}
             <strong className="tabular-nums">{recommendEquityPercent(antworten)} %</strong>
           </p>
         ) : (
-          <p className="font-sans text-[13px] text-on-surface-variant">
+          <p className="font-sans text-body-sm text-on-surface-variant">
             Noch {offen} {offen === 1 ? "Frage" : "Fragen"} offen.
           </p>
         )}

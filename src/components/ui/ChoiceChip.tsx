@@ -22,11 +22,15 @@ export function ChoiceChip({
   return (
     <button
       type={type}
-      className={`inline-flex items-center gap-2 rounded-m3-sm border px-4 py-2.5 text-[14px] font-medium transition-colors ${tone} ${className}`.trim()}
+      className={`inline-flex items-center gap-2 rounded-m3-sm border px-4 py-2.5 text-label-lg font-medium transition-colors ${tone} ${className}`.trim()}
       aria-pressed={selected}
       {...rest}
     >
-      {selected && <span aria-hidden>✓</span>}
+      {selected && (
+        <span aria-hidden className="m3-icon text-[18px] leading-none">
+          check
+        </span>
+      )}
       {children}
     </button>
   );

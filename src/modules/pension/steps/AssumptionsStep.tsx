@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { NumberInput } from "../../../components/NumberInput";
 import { Button } from "../../../components/ui/Button";
+import { Callout } from "../../../components/ui/Callout";
 import { Field } from "../../../components/ui/Field";
 import { ChoiceChip } from "../../../components/ui/ChoiceChip";
 import { Slider } from "../../../components/ui/Slider";
@@ -37,9 +38,8 @@ export function AssumptionsStep() {
 
   return (
     <div className="space-y-4">
-      <div className="border-l-[3px] border-primary bg-surface-container px-4 py-3">
-        <p className="m3-eyebrow-muted">Standard-Annahmen aktiv</p>
-        <p className="mt-1.5 font-sans text-[13px] leading-relaxed text-on-surface-variant">
+      <Callout tone="info" eyebrow="Standard-Annahmen aktiv">
+        <p className="font-sans text-body-sm leading-relaxed text-on-surface-variant">
           Wir rechnen mit vorsichtigen Standard-Annahmen: Dein Erspartes wächst mit{" "}
           <span className="tabular-nums">3 %</span> pro Jahr über der Inflation, im Ruhestand
           mit <span className="tabular-nums">1 %</span>. Das Geld soll bis Alter{" "}
@@ -47,14 +47,17 @@ export function AssumptionsStep() {
           <span className="tabular-nums">12 %</span> Reserve ein. Unten kannst du alles
           anpassen — auch die Geldanlage selbst.
         </p>
-      </div>
+      </Callout>
 
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="text-[11px] font-medium uppercase tracking-[0.04em] text-primary hover:underline underline-offset-4 decoration-2"
+        className="inline-flex items-center gap-1 text-label-sm font-medium uppercase tracking-[0.04em] text-primary hover:underline underline-offset-4 decoration-2"
       >
-        {open ? "▾ Annahmen ausblenden" : "▸ Annahmen anpassen"}
+        <span aria-hidden className="m3-icon text-[16px] leading-none">
+          {open ? "expand_more" : "chevron_right"}
+        </span>
+        {open ? "Annahmen ausblenden" : "Annahmen anpassen"}
       </button>
 
       {open && (
@@ -63,7 +66,7 @@ export function AssumptionsStep() {
             title="Ansparen"
             summary={`ø ${formatPercent(savingsReturn)} real`}
           >
-            <p className="font-sans text-[12px] leading-relaxed text-on-surface-variant">
+            <p className="font-sans text-body-sm leading-relaxed text-on-surface-variant">
               Anteile in %, die du regelmäßig in jede Anlageform investierst. Aus den
               gewichteten realen Renditen ergibt sich die Anspar-Rendite.
             </p>
@@ -99,7 +102,7 @@ export function AssumptionsStep() {
                 </div>
               )}
             </Field>
-            <p className="border-l-[2px] border-outline-variant pl-3 text-[12px] leading-relaxed text-on-surface-variant">
+            <p className="border-l-[2px] border-outline-variant pl-3 text-body-sm leading-relaxed text-on-surface-variant">
               {m.payoutMethod === "annuity"
                 ? "Annuität: dein Kapital ist nach X Jahren komplett aufgebraucht. Niedrigerer Kapitalbedarf, aber Risiko, dich zu überleben."
                 : "Sichere Entnahmerate: du entnimmst jedes Jahr eine feste Quote, das Kapital lebt theoretisch unbegrenzt. Höherer Kapitalbedarf, dafür Sicherheit gegen Langlebigkeitsrisiko."}
@@ -117,11 +120,11 @@ export function AssumptionsStep() {
                   tooltip={tooltips.planningAge}
                 />
                 {profile.retirementAge !== undefined ? (
-                  <p className="text-[11px] tabular-nums text-on-surface-variant">
+                  <p className="text-label-sm tabular-nums text-on-surface-variant">
                     Bei Renteneintritt mit {profile.retirementAge} = {derivedPayoutYears} Jahre Rentenzeit
                   </p>
                 ) : (
-                  <p className="text-[11px] text-on-surface-variant">
+                  <p className="text-label-sm text-on-surface-variant">
                     Trage zuerst dein Renteneintrittsalter in Schritt 01 ein, um die Rentenzeit zu sehen.
                   </p>
                 )}
@@ -141,7 +144,7 @@ export function AssumptionsStep() {
 
             {m.payoutMethod === "annuity" && (
               <div className="space-y-3 pt-2">
-                <p className="font-sans text-[12px] leading-relaxed text-on-surface-variant">
+                <p className="font-sans text-body-sm leading-relaxed text-on-surface-variant">
                   Im Alter ist die Aktien-Quote oft niedriger. Hier die geplante
                   Allokation während der Auszahlphase.
                 </p>
@@ -157,13 +160,13 @@ export function AssumptionsStep() {
             title="Bestehendes Vermögen"
             summary={assetsCount === 0 ? "Keine" : `${assetsCount} ${assetsCount === 1 ? "Posten" : "Posten"}`}
           >
-            <p className="font-sans text-[12px] leading-relaxed text-on-surface-variant">{tooltips.existingAssets}</p>
+            <p className="font-sans text-body-sm leading-relaxed text-on-surface-variant">{tooltips.existingAssets}</p>
             <AssetsManager
               assets={profile.assets ?? []}
               onChange={(assets) => setProfile({ assets })}
             />
             {(profile.assets ?? []).some((a) => a.type === "company-pension") && (
-              <p className="border-l-[2px] border-outline-variant pl-3 text-[12px] leading-relaxed text-on-surface-variant">
+              <p className="border-l-[2px] border-outline-variant pl-3 text-body-sm leading-relaxed text-on-surface-variant">
                 bAV / Riester / Rürup fließt nicht als Depotkapital in die Rechnung ein —
                 illiquide, Auszahlung als Rente, nachgelagert besteuert. Schlage die daraus
                 erwartete Monatsrente stattdessen auf die erwartete Netto-Rente auf (Feld oben
@@ -177,7 +180,7 @@ export function AssumptionsStep() {
             summary={`Inflation ${pct(m.inflation * 100)} · Steuer ${pct(m.taxBufferPct * 100, 0)}`}
           >
             <div className="space-y-3">
-              <p className="font-sans text-[12px] leading-relaxed text-on-surface-variant">
+              <p className="font-sans text-body-sm leading-relaxed text-on-surface-variant">
                 Aus Schritt 3 übernommen — falls du die gesetzliche Rente hier korrigieren willst:
               </p>
               <NumberInput
@@ -220,7 +223,7 @@ export function AssumptionsStep() {
                 ariaLabel="Steuerpuffer in Prozent"
               />
             </div>
-            <p className="text-[12px] text-on-surface-variant">
+            <p className="text-body-sm text-on-surface-variant">
               Faustformel Finanzfluss: 10–15 % Steuer-Puffer.
             </p>
           </AccordionSection>
@@ -254,7 +257,7 @@ function AccordionSection({
   const [expanded, setExpanded] = useState(defaultOpen);
   const regionId = `accordion-${title.replace(/\s+/g, "-").toLowerCase()}`;
   return (
-    <div className="border border-outline-variant">
+    <div className="overflow-hidden rounded-m3-sm border border-outline-variant">
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
@@ -262,15 +265,15 @@ function AccordionSection({
         aria-controls={regionId}
         className="flex w-full items-center gap-3 bg-surface-container px-3 py-2.5 text-left hover:bg-surface-container-high"
       >
-        <span aria-hidden className="font-mono text-[11px] text-on-surface-variant">
-          {expanded ? "▾" : "▸"}
+        <span aria-hidden className="m3-icon text-[16px] leading-none text-on-surface-variant">
+          {expanded ? "expand_more" : "chevron_right"}
         </span>
         <span aria-hidden className="h-[3px] w-6 bg-primary" />
-        <h3 className="flex-1 text-[10.5px] font-medium uppercase tracking-[0.04em] text-on-surface-variant">
+        <h3 className="flex-1 text-label-sm font-medium uppercase tracking-[0.04em] text-on-surface-variant">
           {title}
         </h3>
         {summary !== undefined && (
-          <span className="font-sans text-[11px] tabular-nums text-on-surface-variant">
+          <span className="font-sans text-label-sm tabular-nums text-on-surface-variant">
             {summary}
           </span>
         )}
